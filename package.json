@@ -8,7 +8,9 @@
     "start": "next start"
   },
   "dependencies": {
+    "global": "^4.4.0",
     "next": "9.4.4",
+    "next-transpile-modules": "^3.3.0",
     "react": "16.13.1",
     "react-dom": "16.13.1"
   },

@@ -1,3 +1,3 @@
-const withTM = require("next-transpile-modules")(["glana"]);
+const withTM = require("next-transpile-modules")(["glana", "ol"]);
 
 module.exports = withTM();

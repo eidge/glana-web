@@ -1,24 +1,20 @@
 import { Component, ChangeEvent } from "react";
 import IGCParser from "glana/src/igc/parser";
-import FlightComputer from "glana/src/flight_computer/computer";
-import SpeedCalculator from "glana/src/flight_computer/calculators/gps_speed";
-import HeadingCalculator from "glana/src/flight_computer/calculators/heading";
-import Calculator from "glana/src/flight_computer/calculators/calculator";
-import { analyseIGCTrack } from "glana/src";
 import FlightMap from "../src/components/flight_map";
 import SavedFlight from "glana/src/saved_flight";
+import { Datum } from "glana/src/flight_computer/computer";
+import { kilometersPerHour, metersPerSecond } from "glana/src/units/speed";
 
 interface Props {}
 
 interface State {
-  data?: any;
   flight: SavedFlight | null;
 }
 
 export default class Home extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
-    this.state = { data: null, flight: null };
+    this.state = { flight: null };
   }
 
   render() {
@@ -60,16 +56,17 @@ export default class Home extends Component<Props, State> {
   }
 
   table() {
-    if (!this.state.data) {
+    if (!this.state.flight) {
       return null;
     }
 
-    let rows = this.state.data.map((row: any) => {
+    let rows = this.state.flight.datums.map((datum: Datum) => {
       return (
         <tr>
-          {Object.values(row).map((cell: any) => (
-            <td key={cell[0]}>{cell.toString()}</td>
-          ))}
+          <td>{datum.updatedAt}</td>
+          <td>{datum.position.altitude.toString()}</td>
+          <td>{datum.speed.convertTo(kilometersPerHour).toString()}</td>
+          <td>{datum.vario.convertTo(metersPerSecond).toString()}</td>
         </tr>
       );
     });
@@ -109,14 +106,8 @@ export default class Home extends Component<Props, State> {
   }
 
   private analyseFlight(event: any) {
-    const flight = this.parseIGC(event);
-    const flightComputer = new FlightComputer(
-      new Map<string, Calculator>([
-        ["speed", new SpeedCalculator()],
-        ["heading", new HeadingCalculator()],
-      ])
-    );
-    this.setState({ data: analyseIGCTrack(flightComputer, flight), flight });
+    const flight = this.parseIGC(event).analise();
+    this.setState({ flight });
   }
 
   private parseIGC(event: any) {

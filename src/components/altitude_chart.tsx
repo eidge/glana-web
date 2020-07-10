@@ -1,7 +1,8 @@
 import { Component } from "react";
 import SavedFlight from "glana/src/saved_flight";
-import Fix from "glana/src/flight_computer/fix";
 import { ResponsiveLineCanvas as Line } from "@nivo/line";
+import { Datum } from "glana/src/flight_computer/computer";
+import { kilometersPerHour, metersPerSecond } from "glana/src/units/speed";
 
 const MAX_POINTS = 1000;
 
@@ -43,6 +44,7 @@ export default class AltitudeChart extends Component<Props, State> {
           enableArea={true}
           enableSlices="x"
           enablePoints={false}
+          margin={{ top: 10 }}
           xFormat={(x) => new Date(x).toLocaleTimeString()}
           yFormat={(y) => `${y}m`}
           curve="monotoneX"
@@ -64,9 +66,9 @@ export default class AltitudeChart extends Component<Props, State> {
 
   private renderTooltip() {
     if (!this.props.activePointIndex) return null;
-    let fix = this.props.flight.fixes[this.props.activePointIndex];
+    let datum = this.props.flight.datums[this.props.activePointIndex];
 
-    if (!fix) return null;
+    if (!datum) return null;
 
     return (
       <div
@@ -74,9 +76,13 @@ export default class AltitudeChart extends Component<Props, State> {
         style={{ left: `${this.relativePosition()}%` }}
       >
         <div className="tooltip">
-          {fix.updatedAt.toLocaleTimeString()}
+          {datum.updatedAt.toLocaleTimeString()}
           <br />
-          {fix.position.altitude.toString()}
+          {datum.position.altitude.toString()}
+          <br />
+          {datum.speed.convertTo(kilometersPerHour).toString()}
+          <br />
+          {datum.vario.convertTo(metersPerSecond).toString()}
         </div>
 
         <style jsx>{`
@@ -93,7 +99,11 @@ export default class AltitudeChart extends Component<Props, State> {
           .tooltip {
             position: absolute;
             bottom: 100%;
+            padding: 10px;
+            margin-bottom: 5px;
+            border-radius: 5px;
             color: #ff006a;
+            background-color: rgba(255, 255, 255, 0.4);
           }
         `}</style>
       </div>
@@ -116,14 +126,14 @@ export default class AltitudeChart extends Component<Props, State> {
   }
 
   private buildChartData(flight: SavedFlight) {
-    let fixes = this.limitNumberOfPoints(flight, MAX_POINTS);
+    let datums = this.limitNumberOfPoints(flight, MAX_POINTS);
     return [
       {
         id: "altitude",
-        data: fixes.map((fix: Fix) => {
+        data: datums.map((datum: Datum) => {
           return {
-            x: fix.updatedAt.getTime(),
-            y: fix.position.altitude.value,
+            x: datum.updatedAt.getTime(),
+            y: datum.position.altitude.value,
           };
         }),
       },
@@ -132,7 +142,7 @@ export default class AltitudeChart extends Component<Props, State> {
 
   private relativePosition() {
     if (!this.props.activePointIndex) return -100;
-    const numberOfPoints = this.props.flight.fixes.length;
+    const numberOfPoints = this.props.flight.datums.length;
     return (this.props.activePointIndex / numberOfPoints) * 100;
   }
 
@@ -153,7 +163,7 @@ export default class AltitudeChart extends Component<Props, State> {
     let relativeDistanceLeft =
       (event.clientX - chartRect.left) / chartRect.width;
     let flightPointIndex = Math.round(
-      relativeDistanceLeft * this.props.flight.fixes.length
+      relativeDistanceLeft * this.props.flight.datums.length
     );
 
     return new HoverState(flightPointIndex);
@@ -168,19 +178,19 @@ export default class AltitudeChart extends Component<Props, State> {
   }
 
   private limitNumberOfPoints(flight: SavedFlight, maxPoints: number) {
-    let fixes = flight.fixes;
+    let datums = flight.datums;
 
-    if (fixes.length > maxPoints) {
-      let numberOfSamples = Math.round(fixes.length / maxPoints);
-      let sampledFixes: Fix[] = [];
-      fixes.forEach((fix: Fix, index) => {
+    if (datums.length > maxPoints) {
+      let numberOfSamples = Math.round(datums.length / maxPoints);
+      let sampledDatums: Datum[] = [];
+      datums.forEach((datum: Datum, index) => {
         if (index % numberOfSamples === 0) {
-          sampledFixes.push(fix);
+          sampledDatums.push(datum);
         }
       });
-      fixes = sampledFixes;
+      datums = sampledDatums;
     }
 
-    return fixes;
+    return datums;
   }
 }

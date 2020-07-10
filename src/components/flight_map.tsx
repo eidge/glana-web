@@ -3,7 +3,6 @@ import { Component } from "react";
 import TileLayer from "ol/layer/Tile";
 import OSM from "ol/source/OSM";
 import SavedFlight from "glana/src/saved_flight";
-import Fix from "glana/src/flight_computer/fix";
 import VectorSource from "ol/source/Vector";
 import VectorLayer from "ol/layer/Vector";
 import { Circle as CircleStyle, Fill, Stroke, Style } from "ol/style";
@@ -12,6 +11,7 @@ import { fromLonLat } from "ol/proj";
 import AltitudeChart, { HoverState } from "./altitude_chart";
 import Feature from "ol/Feature";
 import Point from "ol/geom/Point";
+import { Datum } from "glana/src/flight_computer/computer";
 
 interface Props {
   flight: SavedFlight | null;
@@ -68,13 +68,13 @@ export default class FlightMap extends Component<Props, State> {
     let closestPoint = geometry.getClosestPoint(coordinate);
 
     let pointIndex = Math.round(closestPoint[2]);
-    let fix: Fix = this.props.flight.fixes[pointIndex];
+    let datum: Datum = this.props.flight.datums[pointIndex];
     this.setState(
       Object.assign({}, this.state, {
         activePointIndex: pointIndex,
       })
     );
-    this.showHighlight(this.flightSource, fix);
+    this.showHighlight(this.flightSource, datum);
   }
 
   componentDidUpdate() {
@@ -99,8 +99,8 @@ export default class FlightMap extends Component<Props, State> {
   private renderFlight(flight: SavedFlight) {
     let { Feature } = require("ol");
 
-    let points = flight.fixes.map((fix: Fix, index: number) =>
-      this.fixToPoint(fix, index)
+    let points = flight.datums.map((datum: Datum, index: number) =>
+      this.fixToPoint(datum, index)
     );
     let line = new LineString(points);
     let feature = new Feature({ geometry: line, name: "flightLine" });
@@ -122,10 +122,10 @@ export default class FlightMap extends Component<Props, State> {
     this.map.getView().fit(line, { padding: [10, 50, 110, 50], duration: 500 });
   }
 
-  private fixToPoint(fix: Fix, index: number = -1) {
+  private fixToPoint(datum: Datum, index: number = -1) {
     return fromLonLat([
-      fix.position.longitude.value,
-      fix.position.latitude.value,
+      datum.position.longitude.value,
+      datum.position.latitude.value,
       index,
     ]);
   }
@@ -220,18 +220,18 @@ export default class FlightMap extends Component<Props, State> {
       return;
     }
 
-    let fix = flight!.fixes[hoverState.flightPointIndex];
+    let datum = flight!.datums[hoverState.flightPointIndex];
     this.setState(
       Object.assign({}, this.state, {
         activePointIndex: hoverState.flightPointIndex,
       })
     );
-    this.showHighlight(this.flightSource, fix);
+    this.showHighlight(this.flightSource, datum);
   }
 
-  private showHighlight(flightSource: any, fix: Fix) {
+  private showHighlight(flightSource: any, datum: Datum) {
     flightSource.forEachFeature((feature: any) => {
-      let coordinate = this.fixToPoint(fix);
+      let coordinate = this.fixToPoint(datum);
       let highlight = feature.get("highlight");
 
       if (highlight) {

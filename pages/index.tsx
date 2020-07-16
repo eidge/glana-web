@@ -2,8 +2,10 @@ import { Component, ChangeEvent } from "react";
 import IGCParser from "glana/src/igc/parser";
 import FlightMap from "../src/components/flight_map";
 import SavedFlight from "glana/src/saved_flight";
-import { Datum } from "glana/src/flight_computer/computer";
+import FlightComputer, { Datum } from "glana/src/flight_computer/computer";
+import AverageVario from "glana/src/flight_computer/calculators/average_vario";
 import { kilometersPerHour, metersPerSecond } from "glana/src/units/speed";
+import { seconds } from "glana/src/units/duration";
 
 interface Props {}
 
@@ -106,8 +108,14 @@ export default class Home extends Component<Props, State> {
   }
 
   private analyseFlight(event: any) {
-    const flight = this.parseIGC(event).analise();
+    const flight = this.parseIGC(event).analise(this.flightComputer());
     this.setState({ flight });
+  }
+
+  private flightComputer() {
+    return new FlightComputer(
+      new Map([["averageVario", new AverageVario(seconds(30))]])
+    );
   }
 
   private parseIGC(event: any) {

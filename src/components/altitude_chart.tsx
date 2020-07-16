@@ -76,13 +76,17 @@ export default class AltitudeChart extends Component<Props, State> {
         style={{ left: `${this.relativePosition()}%` }}
       >
         <div className="tooltip">
+          {datum.state}
+          <br />
           {datum.updatedAt.toLocaleTimeString()}
           <br />
           {datum.position.altitude.toString()}
           <br />
           {datum.speed.convertTo(kilometersPerHour).toString()}
           <br />
-          {datum.vario.convertTo(metersPerSecond).toString()}
+          {datum.calculatedValues["averageVario"]
+            ?.convertTo(metersPerSecond)
+            .toString()}
         </div>
 
         <style jsx>{`

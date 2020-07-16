@@ -226,10 +226,10 @@ export default class FlightMap extends Component<Props, State> {
         activePointIndex: hoverState.flightPointIndex,
       })
     );
-    this.showHighlight(this.flightSource, datum);
+    this.showHighlight(this.flightSource, datum, true);
   }
 
-  private showHighlight(flightSource: any, datum: Datum) {
+  private showHighlight(flightSource: any, datum: Datum, recenter = false) {
     flightSource.forEachFeature((feature: any) => {
       let coordinate = this.fixToPoint(datum);
       let highlight = feature.get("highlight");
@@ -242,8 +242,13 @@ export default class FlightMap extends Component<Props, State> {
         this.overlayLayer.getSource().addFeature(highlight);
       }
 
-      // Use this once I had a center map checkbox
-      // this.map.getView().setCenter(coordinate);
+      if (recenter && this.isOutsideViewport(highlight.getGeometry())) {
+        this.map.getView().animate({ center: coordinate, duration: 400 });
+      }
     });
+  }
+
+  private isOutsideViewport(geometry: any) {
+    return !geometry.intersectsExtent(this.map.getView().calculateExtent());
   }
 }

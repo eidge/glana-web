@@ -75,7 +75,11 @@ export default class AltitudeChart extends Component<Props, State> {
         className="crosshair"
         style={{ left: `${this.relativePosition()}%` }}
       >
-        <div className="tooltip">
+        <div
+          className={`tooltip ${
+            this.relativePosition() > 50 ? "tooltip-left" : ""
+          }`}
+        >
           {datum.state}
           <br />
           {datum.updatedAt.toLocaleTimeString()}
@@ -103,11 +107,17 @@ export default class AltitudeChart extends Component<Props, State> {
           .tooltip {
             position: absolute;
             bottom: 100%;
+            left: 0;
             padding: 10px;
             margin-bottom: 5px;
             border-radius: 5px;
             color: #ff006a;
             background-color: rgba(255, 255, 255, 0.4);
+          }
+
+          .tooltip-left {
+            left: auto;
+            right: 0;
           }
         `}</style>
       </div>

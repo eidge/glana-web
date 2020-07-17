@@ -45,6 +45,7 @@ export default class AltitudeChart extends Component<Props, State> {
           enableSlices="x"
           enablePoints={false}
           margin={{ top: 10 }}
+          xScale={{ type: "linear", min: "auto", max: "auto" }}
           xFormat={(x) => new Date(x).toLocaleTimeString()}
           yFormat={(y) => `${y}m`}
           curve="monotoneX"
@@ -56,7 +57,7 @@ export default class AltitudeChart extends Component<Props, State> {
         <style jsx>{`
           .chart-container {
             width: 100%;
-            height: 100%;
+            height: 100px;
             position: relative;
           }
         `}</style>
@@ -80,9 +81,19 @@ export default class AltitudeChart extends Component<Props, State> {
             this.relativePosition() > 50 ? "tooltip-left" : ""
           }`}
         >
-          {datum.state}
+          {datum.state} ({this.props.flight.phaseAt(datum.timestamp)!.type} -
+          {this.props.flight.phases.indexOf(
+            this.props.flight.phaseAt(datum.timestamp)!
+          )}
+          {this.props.flight
+            .phaseAt(datum.timestamp)!
+            .startAt.toLocaleTimeString()}
+          {this.props.flight
+            .phaseAt(datum.timestamp)!
+            .finishAt.toLocaleTimeString()}
+          )
           <br />
-          {datum.updatedAt.toLocaleTimeString()}
+          {datum.timestamp.toLocaleTimeString()}
           <br />
           {datum.position.altitude.toString()}
           <br />
@@ -146,7 +157,7 @@ export default class AltitudeChart extends Component<Props, State> {
         id: "altitude",
         data: datums.map((datum: Datum) => {
           return {
-            x: datum.updatedAt.getTime(),
+            x: datum.timestamp.getTime(),
             y: datum.position.altitude.value,
           };
         }),
@@ -156,8 +167,17 @@ export default class AltitudeChart extends Component<Props, State> {
 
   private relativePosition() {
     if (!this.props.activePointIndex) return -100;
-    const numberOfPoints = this.props.flight.datums.length;
-    return (this.props.activePointIndex / numberOfPoints) * 100;
+    const datum = this.props.flight.datums[this.props.activePointIndex];
+    const firstPointTs = this.props.flight.datums[0];
+    const lastPointTs = this.props.flight.datums[
+      this.props.flight.datums.length - 1
+    ];
+
+    return (
+      ((datum.timestamp.getTime() - firstPointTs.timestamp.getTime()) /
+        (lastPointTs.timestamp.getTime() - firstPointTs.timestamp.getTime())) *
+      100
+    );
   }
 
   private onMouseMove(event: any) {
@@ -176,9 +196,25 @@ export default class AltitudeChart extends Component<Props, State> {
     let chartRect = container.parentElement.getBoundingClientRect() as ClientRect;
     let relativeDistanceLeft =
       (event.clientX - chartRect.left) / chartRect.width;
-    let flightPointIndex = Math.round(
-      relativeDistanceLeft * this.props.flight.datums.length
+
+    let firstPointTs = this.props.flight.datums[0].timestamp;
+    let lastPointTs = this.props.flight.datums[
+      this.props.flight.datums.length - 1
+    ].timestamp;
+
+    let hoveredTs =
+      (lastPointTs.getTime() - firstPointTs.getTime()) * relativeDistanceLeft +
+      firstPointTs.getTime();
+
+    // FIXME: This should be a binary search!j
+    let flightPointIndex = this.props.flight.datums.findIndex(
+      (d) => d.timestamp.getTime() > hoveredTs
     );
+    console.log(new Date(hoveredTs), flightPointIndex);
+
+    // let flightPointIndex = Math.round(
+    //   relativeDistanceLeft * this.props.flight.datums.length
+    // );
 
     return new HoverState(flightPointIndex);
   }

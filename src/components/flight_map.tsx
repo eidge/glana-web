@@ -12,6 +12,7 @@ import AltitudeChart, { HoverState } from "./altitude_chart";
 import Feature from "ol/Feature";
 import Point from "ol/geom/Point";
 import { Datum } from "glana/src/flight_computer/computer";
+import PhasesBar from "./phases_bar";
 
 interface Props {
   flight: SavedFlight | null;
@@ -68,7 +69,7 @@ export default class FlightMap extends Component<Props, State> {
     let closestPoint = geometry.getClosestPoint(coordinate);
 
     let pointIndex = Math.round(closestPoint[2]);
-    let datum: Datum = this.props.flight.datums[pointIndex];
+    let datum: Datum = this.props.flight.getDatums()[pointIndex];
     this.setState(
       Object.assign({}, this.state, {
         activePointIndex: pointIndex,
@@ -99,9 +100,9 @@ export default class FlightMap extends Component<Props, State> {
   private renderFlight(flight: SavedFlight) {
     let { Feature } = require("ol");
 
-    let points = flight.datums.map((datum: Datum, index: number) =>
-      this.fixToPoint(datum, index)
-    );
+    let points = flight
+      .getDatums()
+      .map((datum: Datum, index: number) => this.fixToPoint(datum, index));
     let line = new LineString(points);
     let feature = new Feature({ geometry: line, name: "flightLine" });
     let source = new VectorSource({ features: [feature] });
@@ -200,11 +201,11 @@ export default class FlightMap extends Component<Props, State> {
           activePointIndex={this.state.activePointIndex}
           onHover={(hoverState) => this.updateActivePosition(hoverState)}
         />
+        <PhasesBar flight={this.props.flight} />
         <style jsx>{`
           .altitude-chart-container {
             position: absolute;
             width: 100%;
-            height: 100px;
 
             bottom: 0;
           }
@@ -220,7 +221,7 @@ export default class FlightMap extends Component<Props, State> {
       return;
     }
 
-    let datum = flight!.datums[hoverState.flightPointIndex];
+    let datum = flight!.getDatums()[hoverState.flightPointIndex];
     this.setState(
       Object.assign({}, this.state, {
         activePointIndex: hoverState.flightPointIndex,

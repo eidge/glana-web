@@ -1,10 +1,9 @@
-import { Component, ChangeEvent } from "react";
+import { Component } from "react";
 import IGCParser from "glana/src/igc/parser";
 import FlightMap from "../src/components/flight_map";
 import SavedFlight from "glana/src/saved_flight";
-import FlightComputer, { Datum } from "glana/src/flight_computer/computer";
+import FlightComputer from "glana/src/flight_computer/computer";
 import AverageVario from "glana/src/flight_computer/calculators/average_vario";
-import { kilometersPerHour, metersPerSecond } from "glana/src/units/speed";
 import { seconds } from "glana/src/units/duration";
 
 interface Props {}
@@ -28,8 +27,6 @@ export default class Home extends Component<Props, State> {
         onDrop={(event) => this.handleDroppedFile(event)}
       >
         <FlightMap flight={this.state.flight} />
-
-        <input type="file" onChange={this.loadIGC.bind(this)} />
 
         <style jsx>{`
           .container {
@@ -57,29 +54,6 @@ export default class Home extends Component<Props, State> {
     );
   }
 
-  table() {
-    if (!this.state.flight) {
-      return null;
-    }
-
-    let rows = this.state.flight.datums.map((datum: Datum) => {
-      return (
-        <tr>
-          <td>{datum.updatedAt}</td>
-          <td>{datum.position.altitude.toString()}</td>
-          <td>{datum.speed.convertTo(kilometersPerHour).toString()}</td>
-          <td>{datum.vario.convertTo(metersPerSecond).toString()}</td>
-        </tr>
-      );
-    });
-
-    return (
-      <table>
-        <tbody>{rows}</tbody>
-      </table>
-    );
-  }
-
   private handleDroppedFile(event: any) {
     event.preventDefault();
 
@@ -87,19 +61,20 @@ export default class Home extends Component<Props, State> {
       return;
     }
 
+    // Can handle reading multiple files here
     this.readFile(event.dataTransfer.files[0]);
   }
 
-  private loadIGC(event: ChangeEvent) {
-    let target = event.currentTarget as any;
-    let files = target.files;
+  // private loadIGC(event: ChangeEvent) {
+  //   let target = event.currentTarget as any;
+  //   let files = target.files;
 
-    if (!files) {
-      return;
-    }
+  //   if (!files) {
+  //     return;
+  //   }
 
-    this.readFile(files[0]);
-  }
+  //   this.readFile(files[0]);
+  // }
 
   private readFile(file: Blob) {
     let reader = new FileReader();

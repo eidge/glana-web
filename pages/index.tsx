@@ -1,21 +1,21 @@
-import { Component } from "react";
+import React, { Component } from "react";
 import IGCParser from "glana/src/igc/parser";
-import FlightMap from "../src/components/flight_map";
-import SavedFlight from "glana/src/saved_flight";
 import FlightComputer from "glana/src/flight_computer/computer";
 import AverageVario from "glana/src/flight_computer/calculators/average_vario";
 import { seconds } from "glana/src/units/duration";
+import FlightAnalysis from "../src/components/flight_analysis";
+import FlightGroup from "glana/src/analysis/flight_group";
 
 interface Props {}
 
 interface State {
-  flight: SavedFlight | null;
+  flightGroup: FlightGroup | null;
 }
 
 export default class Home extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
-    this.state = { flight: null };
+    this.state = { flightGroup: null };
   }
 
   render() {
@@ -26,7 +26,7 @@ export default class Home extends Component<Props, State> {
         onDragOver={(event) => event.preventDefault()}
         onDrop={(event) => this.handleDroppedFile(event)}
       >
-        <FlightMap flight={this.state.flight} />
+        <FlightAnalysis flightGroup={this.state.flightGroup} />
 
         <style jsx>{`
           .container {
@@ -54,37 +54,37 @@ export default class Home extends Component<Props, State> {
     );
   }
 
-  private handleDroppedFile(event: any) {
+  private async handleDroppedFile(event: any) {
     event.preventDefault();
 
-    if (event.dataTransfer.files.length < 1) {
-      return;
-    }
+    let files = Array.from(event.dataTransfer.files) as Blob[];
+    if (files.length < 1) return;
 
-    // Can handle reading multiple files here
-    this.readFile(event.dataTransfer.files[0]);
+    let fileContents = await this.readFiles(files);
+    let savedFlights = fileContents.map((contents) =>
+      this.analyseFlight(contents)
+    );
+
+    this.setState({ flightGroup: new FlightGroup(savedFlights) });
   }
 
-  // private loadIGC(event: ChangeEvent) {
-  //   let target = event.currentTarget as any;
-  //   let files = target.files;
-
-  //   if (!files) {
-  //     return;
-  //   }
-
-  //   this.readFile(files[0]);
-  // }
+  private readFiles(blobs: Blob[]) {
+    let fileContentPromises = blobs.map((file) => this.readFile(file as Blob));
+    return Promise.all(fileContentPromises);
+  }
 
   private readFile(file: Blob) {
-    let reader = new FileReader();
-    reader.onload = this.analyseFlight.bind(this);
-    reader.readAsText(file);
+    return new Promise((resolve, reject) => {
+      let reader = new FileReader();
+      reader.onload = (fileContents) => resolve(fileContents);
+      reader.onerror = (error) => reject(error);
+      reader.readAsText(file);
+    });
   }
 
   private analyseFlight(event: any) {
     const flight = this.parseIGC(event).analise(this.flightComputer());
-    this.setState({ flight });
+    return flight;
   }
 
   private flightComputer() {

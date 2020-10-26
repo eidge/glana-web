@@ -1,54 +1,39 @@
-// This will be the context object for the map
-//
-// Map
-//    # new(element)
-//    # onHover({isDragging, coordinate} => void)
-//    # setPosition(coordinate)
-//    # inViewport(coordinate | geom)
-//
-// Flight (render, setActiveTimestamp)
-// Task (render)
-//
-// On the component:
-// map = new Map(el)
-// map.onHover(({isDragging, coordinate} => {
-//    if (isDragging) return;
-//    index = followedFlightRenderer.closestPointIndexTo(coordinate)
-//    datum = followedFlightRenderer.flight.getDatums()[index]
-//    setActiveTimestamp(datum.timestamp);
-// }))
 import { createEmpty, extend } from "ol/extent";
 import TileLayer from "ol/layer/Tile";
 import OSM from "ol/source/OSM";
+import { positionToOlPoint } from "./utils";
+import Point from "ol/geom/Point";
+import Position from "glana/src/flight_computer/position";
 
 export default class Map {
   private domElement: HTMLElement;
-  ol: any;
+  olMap: any;
+  ol = require("ol");
 
   constructor(domElement: HTMLElement) {
     this.domElement = domElement;
-    this.ol = this.buildMap();
+    this.olMap = this.buildMap();
   }
 
   render() {
-    this.ol.setTarget(this.domElement);
+    this.olMap.setTarget(this.domElement);
   }
 
   reset() {
     this.getLayers().forEach((layer: any) => {
-      this.ol.removeLayer(layer);
+      this.olMap.removeLayer(layer);
     });
   }
 
   private getLayers(): any[] {
-    return this.ol
+    return this.olMap
       .getLayers()
       .getArray()
       .filter((layer: any) => !this.isTileLayer(layer));
   }
 
   zoomToFit() {
-    this.ol.getView().fit(this.allFeaturesExtent(), {
+    this.olMap.getView().fit(this.allFeaturesExtent(), {
       padding: [10, 50, 110, 50],
       duration: 500,
     });
@@ -66,7 +51,7 @@ export default class Map {
   }
 
   private buildMap() {
-    const { Map, View } = require("ol");
+    const { Map, View } = this.ol;
     const { defaults } = require("ol/control");
     return new Map({
       controls: defaults({ attribution: false }),
@@ -83,5 +68,18 @@ export default class Map {
         zoom: 0,
       }),
     });
+  }
+
+  isVisible(position: Position) {
+    let coordinate = positionToOlPoint(position);
+    let point = new Point(coordinate);
+    //this.olMap.getPixelFromCoordinate(coordinate); this gets me DOM XY
+    //coordinates I can use this to center point when 50px away from border!
+    return point.intersectsExtent(this.olMap.getView().calculateExtent());
+  }
+
+  centerOn(position: Position) {
+    let coordinate = positionToOlPoint(position);
+    this.olMap.getView().animate({ center: coordinate, duration: 400 });
   }
 }

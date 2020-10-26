@@ -2,9 +2,12 @@ import { Component } from "react";
 
 import FlightGroup from "glana/src/analysis/flight_group";
 import Map from "./flight_analysis/map";
+import Timeline from "./flight_analysis/timeline";
+import Task from "glana/src/flight_computer/tasks/task";
 
 interface Props {
   flightGroup: FlightGroup | null;
+  task: Task | null;
 }
 
 interface State {
@@ -32,7 +35,12 @@ export default class FlightAnalysis extends Component<Props, State> {
       f.getDatums()[0].timestamp.getTime()
     );
     let firstDatum = Math.min(...firstTimestamps);
-    this.setState({ activeTimestamp: new Date(firstDatum) });
+
+    this.setActiveTimestamp(new Date(firstDatum));
+  }
+
+  private setActiveTimestamp(timestamp: Date): void {
+    this.setState({ activeTimestamp: new Date(timestamp) });
   }
 
   render() {
@@ -40,8 +48,11 @@ export default class FlightAnalysis extends Component<Props, State> {
       <div className="container">
         <Map
           flightGroup={this.props.flightGroup}
+          task={this.props.task}
           activeTimestamp={this.state.activeTimestamp}
         />
+
+        {this.maybeRenderTimeline()}
 
         <style jsx>{`
           .container {
@@ -51,6 +62,18 @@ export default class FlightAnalysis extends Component<Props, State> {
           }
         `}</style>
       </div>
+    );
+  }
+
+  private maybeRenderTimeline() {
+    if (!this.props.flightGroup || !this.state.activeTimestamp) return null;
+
+    return (
+      <Timeline
+        flightGroup={this.props.flightGroup}
+        activeTimestamp={this.state.activeTimestamp}
+        onTimestampChange={(timestamp) => this.setActiveTimestamp(timestamp)}
+      />
     );
   }
 }

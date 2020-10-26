@@ -4,18 +4,23 @@ import FlightComputer from "glana/src/flight_computer/computer";
 import AverageVario from "glana/src/flight_computer/calculators/average_vario";
 import { seconds } from "glana/src/units/duration";
 import FlightAnalysis from "../src/components/flight_analysis";
-import FlightGroup from "glana/src/analysis/flight_group";
+import FlightGroup, {
+  synchronizationMethods,
+} from "glana/src/analysis/flight_group";
+import SavedFlight from "glana/src/saved_flight";
+import Task from "glana/src/flight_computer/tasks/task";
 
 interface Props {}
 
 interface State {
   flightGroup: FlightGroup | null;
+  task: Task | null;
 }
 
 export default class Home extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
-    this.state = { flightGroup: null };
+    this.state = { flightGroup: null, task: null };
   }
 
   render() {
@@ -26,7 +31,10 @@ export default class Home extends Component<Props, State> {
         onDragOver={(event) => event.preventDefault()}
         onDrop={(event) => this.handleDroppedFile(event)}
       >
-        <FlightAnalysis flightGroup={this.state.flightGroup} />
+        <FlightAnalysis
+          flightGroup={this.state.flightGroup}
+          task={this.state.task}
+        />
 
         <style jsx>{`
           .container {
@@ -65,7 +73,13 @@ export default class Home extends Component<Props, State> {
       this.analyseFlight(contents)
     );
 
-    this.setState({ flightGroup: new FlightGroup(savedFlights) });
+    let flightGroup = new FlightGroup(savedFlights);
+    flightGroup.synchronize(synchronizationMethods.recordingStarted);
+
+    let task: Task | null = flightGroup.flights.find((f: SavedFlight) => f.task)
+      .task;
+
+    this.setState({ flightGroup, task });
   }
 
   private readFiles(blobs: Blob[]) {

@@ -18,6 +18,9 @@
     "react-dom": "16.13.1"
   },
   "devDependencies": {
-    "@types/react": "^16.9.36"
+    "@fullhuman/postcss-purgecss": "^3.0.0",
+    "@types/react": "^16.9.36",
+    "postcss-preset-env": "^6.7.0",
+    "tailwindcss": "^1.9.6"
   }
 }

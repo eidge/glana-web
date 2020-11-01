@@ -1,7 +1,14 @@
 import SavedFlight from "glana/src/saved_flight";
 
 export class TrackColors {
-  private COLORS: string[] = ["#1f78b4", "#e31a1c", "#ff7f00", "#33a02c"];
+  private COLORS: string[] = [
+    "#E53E3E", // red-600
+    "#48BB78", // green-500
+    "#319795", // teal-600
+    "#D69E2E", // yellow-600
+    "#3182CE", // blue-600
+    "#ED64A6", // pink-500
+  ];
   private index: number;
   private colorMap: WeakMap<SavedFlight, string>;
 

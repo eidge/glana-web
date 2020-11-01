@@ -84,7 +84,7 @@ export default class Timeline extends Component<Props, State> {
   }
 
   private timestampDetails() {
-    return this.props.flightGroup.flights.map(
+    return this.flightsSortedByEarliestStart().map(
       (f: SavedFlight, index: number) => {
         let datum = f.datumAt(this.props.activeTimestamp);
         return {
@@ -97,6 +97,14 @@ export default class Timeline extends Component<Props, State> {
           timestampOffset: f.getTimeOffsetInMilliseconds(),
         };
       }
+    );
+  }
+
+  private flightsSortedByEarliestStart() {
+    return this.props.flightGroup.flights.sort(
+      (f1: SavedFlight, f2: SavedFlight) =>
+        f1.getRecordingStartedAt(true).getTime() -
+        f2.getRecordingStartedAt(true).getTime()
     );
   }
 }

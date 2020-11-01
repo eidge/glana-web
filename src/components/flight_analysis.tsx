@@ -45,7 +45,7 @@ export default class FlightAnalysis extends Component<Props, State> {
 
   render() {
     return (
-      <div className="container">
+      <div className="w-screen h-screen relative">
         <Map
           flightGroup={this.props.flightGroup}
           task={this.props.task}
@@ -53,14 +53,6 @@ export default class FlightAnalysis extends Component<Props, State> {
         />
 
         {this.maybeRenderTimeline()}
-
-        <style jsx>{`
-          .container {
-            position: relative;
-            width: 100vw;
-            height: 100vh;
-          }
-        `}</style>
       </div>
     );
   }

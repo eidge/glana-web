@@ -26,7 +26,7 @@ export default class Home extends Component<Props, State> {
   render() {
     return (
       <div
-        className="container"
+        className="w-screen"
         onDragEnter={(event) => event.preventDefault()}
         onDragOver={(event) => event.preventDefault()}
         onDrop={(event) => this.handleDroppedFile(event)}
@@ -35,29 +35,6 @@ export default class Home extends Component<Props, State> {
           flightGroup={this.state.flightGroup}
           task={this.state.task}
         />
-
-        <style jsx>{`
-          .container {
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-          }
-        `}</style>
-
-        <style jsx global>{`
-          html,
-          body {
-            padding: 0;
-            margin: 0;
-            font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto,
-              Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue,
-              sans-serif;
-          }
-
-          * {
-            box-sizing: border-box;
-          }
-        `}</style>
       </div>
     );
   }

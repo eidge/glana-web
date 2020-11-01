@@ -24,7 +24,7 @@ export default class TimelineMarker extends Component<Props, State> {
   render() {
     return (
       <div
-        className="marker"
+        className="absolute w-0 h-full bottom-0 border-l-2 border-white border-dashed"
         style={{ left: `${this.props.relativeLeftPosition}%` }}
       >
         <div className={this.markerDetailsClassNames()}>
@@ -32,31 +32,18 @@ export default class TimelineMarker extends Component<Props, State> {
         </div>
 
         <style jsx>{`
-          .marker {
-            position: absolute;
-            width: 0px;
-            height: 100%;
-            bottom: 0;
-            border-left: dashed 1px black;
-          }
-
           .marker-details {
-            position: absolute;
-            bottom: 100%;
-            left: -1px;
-            background-color: white;
-            padding: 5px 10px;
-            border-radius: 4px;
+            left: -2px;
           }
 
-          .marker-details.marker-details-left {
+          .marker-details-right {
+            left: -2px;
+            right: auto;
+          }
+
+          .marker-details-left {
             left: auto;
-            right: -1px;
-          }
-
-          .marker-details-single {
-            display: flex;
-            flex-direction: row;
+            right: 0;
           }
         `}</style>
       </div>
@@ -64,65 +51,44 @@ export default class TimelineMarker extends Component<Props, State> {
   }
 
   private markerDetailsClassNames() {
-    let classes = ["marker-details"];
+    let classes = [
+      "absolute bottom-full marker-details bg-white py-2 px-3 rounded",
+    ];
     if (this.props.relativeLeftPosition > 50) {
       classes.push("marker-details-left");
+    } else {
+      classes.push("marker-details-right");
     }
     return classes.join(" ");
   }
 
   private markerDetails(details: TimestampDetails, index: number) {
     return (
-      <div className="marker-details-single" key={index}>
-        <div className="marker-details-label">
+      <div
+        className="gl-marker-details-single"
+        data-other="flex flex-row justify-between items-center"
+        key={index}
+      >
+        <div className="flex flex-row items-center text-base w-16 font-medium leading-none overflow-hidden mr-3">
           <div
-            className="marker-details-dot"
+            className="w-2 h-2 rounded-full mr-2"
             style={{ backgroundColor: details.color }}
           ></div>
           <div>{details.label}</div>
         </div>
-        <div className="marker-details-values">
+        <div className="flex flex-col text-right ">
           {this.maybeVario(details)}
           {this.maybeAltitude(details)}
           {this.timestamp(details)}
         </div>
 
         <style jsx>{`
-          .marker-details-single {
-            display: flex;
-            flex-direction: row;
-            justify-content: space-between;
-            align-items: center;
-            padding: 6px 0;
-          }
-
-          :global(.marker-details-single) + :global(.marker-details-single) {
+          :global(.gl-marker-details-single)
+            + :global(.gl-marker-details-single) {
+            @apply flex flex-row justify-between items-center;
             border-top: solid 1px #ddd;
-          }
-
-          .marker-details-label {
-            display: flex;
-            flex-direction: row;
-            align-items: center;
-            width: 60px;
-            font-size: 14px;
-            font-weight: 500;
-            line-height: 1;
-            overflow: hidden;
-          }
-
-          .marker-details-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            margin-right: 10px;
-          }
-
-          .marker-details-values {
-            display: flex;
-            flex-direction: column;
-            text-align: right;
-            min-width: 60px;
+            padding-top: 8px;
+            margin-top: 8px;
           }
         `}</style>
       </div>
@@ -132,12 +98,12 @@ export default class TimelineMarker extends Component<Props, State> {
   private maybeAltitude(details: TimestampDetails) {
     if (!details.altitude) return null;
     return (
-      <div className="marker-details-altitude">
+      <div className="marker-details-altitude text-xs">
         {details.altitude.convertTo(meters).toString()}
 
         <style jsx>{`
           .marker-details-altitude {
-            font-size: 12px;
+            //font-size: 12px;
             line-height: 1;
             margin-top: 2px;
             font-family: monospace;
@@ -154,12 +120,12 @@ export default class TimelineMarker extends Component<Props, State> {
       ? "green"
       : "red";
     return (
-      <div className="marker-details-vario" style={{ color: color }}>
+      <div className="marker-details-vario text-xs" style={{ color: color }}>
         {details.vario.convertTo(metersPerSecond).toString()}
 
         <style jsx>{`
           .marker-details-vario {
-            font-size: 10px;
+            //font-size: 10px;
             line-height: 1;
             font-family: monospace;
             text-align: right;
@@ -175,12 +141,12 @@ export default class TimelineMarker extends Component<Props, State> {
     let timestamp = new Date(timestampInMillis - offsetInMillis);
 
     return (
-      <div className="marker-details-timestamp">
+      <div className="marker-details-timestamp text-sm">
         {timestamp.toLocaleTimeString()}
 
         <style jsx>{`
           .marker-details-timestamp {
-            font-size: 12px;
+            //font-size: 12px;
             line-height: 1;
             margin-top: 2px;
             font-family: monospace;

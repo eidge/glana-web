@@ -22,29 +22,16 @@ export default class Timeline extends Component<Props, State> {
   render() {
     return (
       <div
-        className="container"
+        className="w-full absolute bottom-0 h-24"
         ref={(el) => (this.containerEl = el)}
         onMouseMove={(e) => this.onMouseMove(e)}
       >
+        <AltitudeChart flightGroup={this.props.flightGroup} />
         <TimelineMarker
           activeTimestamp={this.props.activeTimestamp}
           relativeLeftPosition={this.relativeLeftPosition() * 100}
           timestampDetails={this.timestampDetails()}
         />
-        <AltitudeChart flightGroup={this.props.flightGroup} />
-        <style jsx>{`
-          .container {
-            width: 100%;
-            height: 100px;
-            position: absolute;
-            bottom: 0;
-          }
-
-          .debug {
-            position: absolute;
-            bottom: 100%;
-          }
-        `}</style>
       </div>
     );
   }

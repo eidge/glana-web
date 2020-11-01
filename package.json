@@ -21,6 +21,7 @@
     "@fullhuman/postcss-purgecss": "^3.0.0",
     "@types/react": "^16.9.36",
     "postcss-preset-env": "^6.7.0",
+    "styled-jsx-plugin-postcss": "^3.0.2",
     "tailwindcss": "^1.9.6"
   }
 }

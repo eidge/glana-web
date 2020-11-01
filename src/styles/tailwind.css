@@ -1,5 +1,9 @@
 /* purgecss start ignore */
 @tailwind  base;
 @tailwind  components;
+
+html {
+  font-size: 14px;
+}
 /* purgecss end ignore */
 @tailwind utilities;

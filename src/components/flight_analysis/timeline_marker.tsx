@@ -24,7 +24,7 @@ export default class TimelineMarker extends Component<Props, State> {
   render() {
     return (
       <div
-        className="absolute w-0 h-full bottom-0 border-l-2 border-white border-dashed"
+        className="absolute w-0 h-full bottom-0 border-l-2 border-white border-dashed shadow"
         style={{ left: `${this.props.relativeLeftPosition}%` }}
       >
         <div className={this.markerDetailsClassNames()}>
@@ -52,7 +52,7 @@ export default class TimelineMarker extends Component<Props, State> {
 
   private markerDetailsClassNames() {
     let classes = [
-      "absolute bottom-full marker-details bg-white py-2 px-3 rounded",
+      "absolute bottom-full marker-details bg-white py-2 px-3 rounded shadow",
     ];
     if (this.props.relativeLeftPosition > 50) {
       classes.push("marker-details-left");
@@ -64,50 +64,41 @@ export default class TimelineMarker extends Component<Props, State> {
 
   private markerDetails(details: TimestampDetails, index: number) {
     return (
-      <div
-        className="gl-marker-details-single"
-        data-other="flex flex-row justify-between items-center"
-        key={index}
-      >
-        <div className="flex flex-row items-center text-base w-16 font-medium leading-none overflow-hidden mr-3">
+      <div className="gl-marker-details" key={index}>
+        <div className="gl-marker-details-label">
           <div
-            className="w-2 h-2 rounded-full mr-2"
+            className="gl-marker-details-dot"
             style={{ backgroundColor: details.color }}
           ></div>
           <div>{details.label}</div>
         </div>
-        <div className="flex flex-col text-right ">
+        <div className="gl-marker-details-values">
           {this.maybeVario(details)}
           {this.maybeAltitude(details)}
           {this.timestamp(details)}
         </div>
 
         <style jsx>{`
-          :global(.gl-marker-details-single)
-            + :global(.gl-marker-details-single) {
+          .gl-marker-details {
             @apply flex flex-row justify-between items-center;
+          }
+
+          .gl-marker-details-label {
+            @apply flex flex-row items-center text-base w-16 font-semibold leading-none overflow-hidden mr-3;
+          }
+
+          .gl-marker-details-dot {
+            @apply w-2 h-2 rounded-full mr-2;
+          }
+
+          .gl-marker-details-values {
+            @apply flex flex-col text-right;
+          }
+
+          :global(.gl-marker-details) + :global(.gl-marker-details) {
             border-top: solid 1px #ddd;
             padding-top: 8px;
             margin-top: 8px;
-          }
-        `}</style>
-      </div>
-    );
-  }
-
-  private maybeAltitude(details: TimestampDetails) {
-    if (!details.altitude) return null;
-    return (
-      <div className="marker-details-altitude text-xs">
-        {details.altitude.convertTo(meters).toString()}
-
-        <style jsx>{`
-          .marker-details-altitude {
-            //font-size: 12px;
-            line-height: 1;
-            margin-top: 2px;
-            font-family: monospace;
-            text-align: right;
           }
         `}</style>
       </div>
@@ -120,17 +111,20 @@ export default class TimelineMarker extends Component<Props, State> {
       ? "green"
       : "red";
     return (
-      <div className="marker-details-vario text-xs" style={{ color: color }}>
+      <div
+        className="text-xs leading-none font-mono font-hairline"
+        style={{ color: color }}
+      >
         {details.vario.convertTo(metersPerSecond).toString()}
+      </div>
+    );
+  }
 
-        <style jsx>{`
-          .marker-details-vario {
-            //font-size: 10px;
-            line-height: 1;
-            font-family: monospace;
-            text-align: right;
-          }
-        `}</style>
+  private maybeAltitude(details: TimestampDetails) {
+    if (!details.altitude) return null;
+    return (
+      <div className="text-xs leading-none font-mono font-hairline mt-1">
+        {details.altitude.convertTo(meters).toString()}
       </div>
     );
   }
@@ -139,22 +133,12 @@ export default class TimelineMarker extends Component<Props, State> {
     let timestampInMillis = this.props.activeTimestamp.getTime();
     let offsetInMillis = details.timestampOffset.convertTo(milliseconds).value;
     let timestamp = new Date(timestampInMillis - offsetInMillis);
+    let className = "leading-none text-sm font-mono";
 
-    return (
-      <div className="marker-details-timestamp text-sm">
-        {timestamp.toLocaleTimeString()}
+    if (details.vario || details.altitude) {
+      className += " mt-2";
+    }
 
-        <style jsx>{`
-          .marker-details-timestamp {
-            //font-size: 12px;
-            line-height: 1;
-            margin-top: 2px;
-            font-family: monospace;
-            text-align: right;
-            margin-top: 5px;
-          }
-        `}</style>
-      </div>
-    );
+    return <div className={className}>{timestamp.toLocaleTimeString()}</div>;
   }
 }

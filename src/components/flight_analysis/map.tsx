@@ -87,14 +87,7 @@ export default class Map extends Component<Props, State> {
 
   render() {
     return (
-      <div className="map" ref={(el) => (this.el = el)}>
-        <style jsx>{`
-          .map {
-            width: 100%;
-            height: 100%;
-          }
-        `}</style>
-      </div>
+      <div className="map w-full h-full" ref={(el) => (this.el = el)}></div>
     );
   }
 }

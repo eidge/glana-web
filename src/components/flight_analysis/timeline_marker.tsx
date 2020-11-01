@@ -52,7 +52,7 @@ export default class TimelineMarker extends Component<Props, State> {
 
   private markerDetailsClassNames() {
     let classes = [
-      "absolute bottom-full marker-details bg-white py-2 px-3 rounded shadow",
+      "absolute bottom-full marker-details bg-white px-3 rounded shadow divide-y",
     ];
     if (this.props.relativeLeftPosition > 50) {
       classes.push("marker-details-left");
@@ -80,7 +80,7 @@ export default class TimelineMarker extends Component<Props, State> {
 
         <style jsx>{`
           .gl-marker-details {
-            @apply flex flex-row justify-between items-center;
+            @apply flex flex-row justify-between items-center py-2;
           }
 
           .gl-marker-details-label {
@@ -93,12 +93,6 @@ export default class TimelineMarker extends Component<Props, State> {
 
           .gl-marker-details-values {
             @apply flex flex-col text-right;
-          }
-
-          :global(.gl-marker-details) + :global(.gl-marker-details) {
-            border-top: solid 1px #ddd;
-            padding-top: 8px;
-            margin-top: 8px;
           }
         `}</style>
       </div>

@@ -37,10 +37,13 @@ export default class Timeline extends Component<Props, State> {
   }
 
   private relativeLeftPosition() {
-    return (
+    let relativeValue =
       (this.props.activeTimestamp.getTime() - this.earliestDatum().getTime()) /
-      (this.latestDatum().getTime() - this.earliestDatum().getTime())
-    );
+      (this.latestDatum().getTime() - this.earliestDatum().getTime());
+
+    if (relativeValue < 0) return 0;
+    if (relativeValue > 1) return 1;
+    return relativeValue;
   }
 
   private onMouseMove(event: any) {

@@ -12,15 +12,21 @@ import { positionToOlPoint } from "./utils";
 
 export const COLORS = new TrackColors();
 
+interface Options {
+  renderFullTrack?: boolean;
+}
+
 export default class FlightRenderer {
   private flight: SavedFlight;
   private map: Map;
   private flightTrackFeature: any;
   private positionMarkerFeature: any;
+  private renderFullTrack: boolean;
 
-  constructor(map: Map, flight: SavedFlight) {
+  constructor(map: Map, flight: SavedFlight, options: Options = {}) {
     this.map = map;
     this.flight = flight;
+    this.renderFullTrack = options.renderFullTrack || false;
   }
 
   render() {
@@ -40,6 +46,23 @@ export default class FlightRenderer {
     if (!datum) {
       datum = this.flight.getDatums()[0];
     }
+
+    if (!this.renderFullTrack) {
+      this.drawFlightTrackUntil(timestamp);
+    }
+    this.updateMarkerPosition(datum);
+  }
+
+  private drawFlightTrackUntil(timestamp: Date) {
+    let datums = this.flight
+      .getDatums()
+      .filter((d) => d.timestamp <= timestamp);
+    this.flightTrackFeature
+      .getGeometry()
+      .setCoordinates(datums.map((d) => this.fixToPoint(d)));
+  }
+
+  private updateMarkerPosition(datum: Datum) {
     this.positionMarkerFeature
       .getGeometry()
       .setCoordinates(this.fixToPoint(datum));
@@ -49,9 +72,10 @@ export default class FlightRenderer {
     const { Feature } = this.map.ol;
     let points = this.flight
       .getDatums()
-      .map((datum: Datum, index: number) => this.fixToPoint(datum, index));
+      .map((datum: Datum) => this.fixToPoint(datum));
     let line = new LineString(points);
-    return new Feature({ geometry: line });
+    let feature = new Feature({ geometry: line });
+    return feature;
   }
 
   private buildPositionMarkerFeature() {
@@ -61,8 +85,8 @@ export default class FlightRenderer {
     });
   }
 
-  private fixToPoint(datum: Datum, index: number = -1) {
-    return [...positionToOlPoint(datum.position), index];
+  private fixToPoint(datum: Datum) {
+    return [...positionToOlPoint(datum.position), datum.timestamp.getTime()];
   }
 
   private olStyle(color: string) {

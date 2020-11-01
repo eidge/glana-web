@@ -5,11 +5,13 @@ import FlightRenderer from "../../maps/flight_renderer";
 import TaskRenderer from "../../maps/task_renderer";
 import Task from "glana/src/flight_computer/tasks/task";
 import SavedFlight from "glana/src/saved_flight";
+import { SettingsModel } from "./settings";
 
 interface Props {
   flightGroup: FlightGroup | null;
   task: Task | null;
   activeTimestamp: Date | null;
+  settings: SettingsModel;
 }
 
 interface State {}
@@ -17,7 +19,7 @@ interface State {}
 export default class Map extends Component<Props, State> {
   private el: HTMLDivElement | null = null;
   private mapRenderer!: MapRenderer;
-  private currentFlightGroup: FlightGroup | null = null;
+  private lastProps: Props | null = null;
   private flightRenderers: FlightRenderer[] = [];
   private followFlight: SavedFlight | null = null;
 
@@ -37,17 +39,26 @@ export default class Map extends Component<Props, State> {
   }
 
   componentDidUpdate() {
-    if (this.props.flightGroup === this.currentFlightGroup) {
+    if (this.shouldUpdateCurrentFlightGroup()) {
       this.maybeCenterFlight(this.followFlight);
       this.updateFlightMarkers();
       return;
     }
+
     this.reset();
-    this.followFlight = this.props.flightGroup?.flights[0];
+    if (!this.props.flightGroup) return;
+
+    this.followFlight = this.props.flightGroup.flights[0];
     this.maybeRenderTask();
     this.renderFlights();
     this.mapRenderer.zoomToFit();
-    this.currentFlightGroup = this.props.flightGroup;
+  }
+
+  private shouldUpdateCurrentFlightGroup() {
+    return (
+      this.props.flightGroup === this.lastProps?.flightGroup &&
+      this.props.settings === this.lastProps.settings
+    );
   }
 
   private maybeCenterFlight(flight: SavedFlight | null) {
@@ -68,7 +79,7 @@ export default class Map extends Component<Props, State> {
     this.followFlight = null;
     this.mapRenderer.reset();
     this.flightRenderers = [];
-    this.currentFlightGroup = null;
+    this.lastProps = this.props;
   }
 
   private maybeRenderTask() {
@@ -80,9 +91,16 @@ export default class Map extends Component<Props, State> {
   private renderFlights() {
     if (!this.props.flightGroup) return;
     this.flightRenderers = this.props.flightGroup.flights.map((flight) => {
-      return new FlightRenderer(this.mapRenderer, flight);
+      return new FlightRenderer(this.mapRenderer, flight, {
+        renderFullTrack: this.props.settings.renderFullTracks,
+      });
     });
-    this.flightRenderers.forEach((fr) => fr.render());
+    this.flightRenderers.forEach((fr) => {
+      fr.render();
+      if (this.props.activeTimestamp) {
+        fr.setActiveTimestamp(this.props.activeTimestamp);
+      }
+    });
   }
 
   render() {

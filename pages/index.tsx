@@ -9,18 +9,32 @@ import FlightGroup, {
 } from "glana/src/analysis/flight_group";
 import SavedFlight from "glana/src/saved_flight";
 import Task from "glana/src/flight_computer/tasks/task";
+import SynchronizationMethod from "glana/src/analysis/synchronization/method";
+import { SettingsModel } from "../src/components/flight_analysis/settings";
 
 interface Props {}
 
 interface State {
   flightGroup: FlightGroup | null;
   task: Task | null;
+  settings: SettingsModel;
 }
 
 export default class Home extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
-    this.state = { flightGroup: null, task: null };
+    this.state = {
+      flightGroup: null,
+      task: null,
+      settings: this.buildSettings(),
+    };
+  }
+
+  private buildSettings() {
+    return {
+      synchronizationMethod: synchronizationMethods.realTime,
+      renderFullTracks: false,
+    };
   }
 
   render() {
@@ -32,11 +46,26 @@ export default class Home extends Component<Props, State> {
         onDrop={(event) => this.handleDroppedFile(event)}
       >
         <FlightAnalysis
+          settings={this.state.settings}
+          updateSettings={(settings: SettingsModel) =>
+            this.updateSettings(settings)
+          }
           flightGroup={this.state.flightGroup}
           task={this.state.task}
         />
       </div>
     );
+  }
+
+  private updateSettings(settings: SettingsModel) {
+    if (
+      this.state.settings.synchronizationMethod !==
+      settings.synchronizationMethod
+    ) {
+      this.synchronizeFlightGroup(settings.synchronizationMethod);
+    }
+
+    this.setState({ settings });
   }
 
   private async handleDroppedFile(event: any) {
@@ -51,7 +80,7 @@ export default class Home extends Component<Props, State> {
     );
 
     let flightGroup = new FlightGroup(savedFlights);
-    flightGroup.synchronize(synchronizationMethods.recordingStarted);
+    flightGroup.synchronize(this.state.settings.synchronizationMethod);
 
     let task: Task | null = flightGroup.flights.find((f: SavedFlight) => f.task)
       .task;
@@ -87,5 +116,13 @@ export default class Home extends Component<Props, State> {
   private parseIGC(event: any) {
     let parser = new IGCParser();
     return parser.parse(event.target.result as string);
+  }
+
+  private synchronizeFlightGroup(method: SynchronizationMethod) {
+    if (!this.state.flightGroup) return;
+    this.state.flightGroup.synchronize(method);
+    this.setState({
+      flightGroup: Object.create(this.state.flightGroup),
+    });
   }
 }

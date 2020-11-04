@@ -5,6 +5,8 @@ import { positionToOlPoint } from "./utils";
 import Point from "ol/geom/Point";
 import Position from "glana/src/flight_computer/position";
 
+const ANIMATION_DURATION = 400;
+
 export default class Map {
   private domElement: HTMLElement;
   olMap: any;
@@ -25,17 +27,38 @@ export default class Map {
     });
   }
 
-  zoomIn() {
-    this.olMap.getView().animate({
+  isVisible(position: Position) {
+    let coordinate = positionToOlPoint(position);
+    let point = new Point(coordinate);
+    //this.olMap.getPixelFromCoordinate(coordinate); this gets me DOM XY
+    //coordinates I can use this to center point when 50px away from border!
+    return point.intersectsExtent(this.olMap.getView().calculateExtent());
+  }
+
+  centerOn(position: Position) {
+    let coordinate = positionToOlPoint(position);
+    this.olMap
+      .getView()
+      .animate({ center: coordinate, duration: ANIMATION_DURATION });
+  }
+
+  zoomIn(position?: Position) {
+    let options = {
       zoom: this.olMap.getView().getZoom() + 1,
-      duration: 250,
-    });
+      duration: ANIMATION_DURATION,
+    } as any;
+
+    if (position) {
+      options.center = positionToOlPoint(position);
+    }
+
+    this.olMap.getView().animate(options);
   }
 
   zoomOut() {
     this.olMap.getView().animate({
       zoom: this.olMap.getView().getZoom() - 1,
-      duration: 250,
+      duration: ANIMATION_DURATION,
     });
   }
 
@@ -44,7 +67,7 @@ export default class Map {
     if (renderedExtent[0] === Infinity) return;
     this.olMap.getView().fit(renderedExtent, {
       padding: [10, 50, 110, 50],
-      duration: 500,
+      duration: ANIMATION_DURATION,
     });
   }
 
@@ -83,18 +106,5 @@ export default class Map {
         zoom: 0,
       }),
     });
-  }
-
-  isVisible(position: Position) {
-    let coordinate = positionToOlPoint(position);
-    let point = new Point(coordinate);
-    //this.olMap.getPixelFromCoordinate(coordinate); this gets me DOM XY
-    //coordinates I can use this to center point when 50px away from border!
-    return point.intersectsExtent(this.olMap.getView().calculateExtent());
-  }
-
-  centerOn(position: Position) {
-    let coordinate = positionToOlPoint(position);
-    this.olMap.getView().animate({ center: coordinate, duration: 400 });
   }
 }

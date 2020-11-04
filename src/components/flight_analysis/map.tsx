@@ -16,17 +16,19 @@ interface Props {
   settings: SettingsModel;
 }
 
-interface State {}
+interface State {
+  followFlight: SavedFlight | null;
+}
 
 export default class Map extends Component<Props, State> {
   private el: HTMLDivElement | null = null;
   private mapRenderer!: MapRenderer;
   private lastProps: Props | null = null;
   private flightRenderers: FlightRenderer[] = [];
-  private followFlight: SavedFlight | null = null;
 
   constructor(props: Props) {
     super(props);
+    this.state = { followFlight: props.flightGroup?.flights[0] || null };
   }
 
   componentDidMount() {
@@ -42,7 +44,7 @@ export default class Map extends Component<Props, State> {
 
   componentDidUpdate() {
     if (this.shouldUpdateCurrentFlightGroup()) {
-      this.maybeCenterFlight(this.followFlight);
+      this.maybeCenterFlight(this.state.followFlight);
       this.updateFlightMarkers();
       return;
     }
@@ -50,7 +52,9 @@ export default class Map extends Component<Props, State> {
     this.reset();
     if (!this.props.flightGroup) return;
 
-    this.followFlight = this.props.flightGroup.flights[0];
+    this.setState((state, props) => {
+      return { ...state, followFlight: props.flightGroup?.flights[0] || null };
+    });
     this.maybeRenderTask();
     this.renderFlights();
     this.mapRenderer.zoomToFit();
@@ -78,7 +82,7 @@ export default class Map extends Component<Props, State> {
   }
 
   private reset() {
-    this.followFlight = null;
+    this.setState({ followFlight: null });
     this.mapRenderer.reset();
     this.flightRenderers = [];
     this.lastProps = this.props;
@@ -111,15 +115,35 @@ export default class Map extends Component<Props, State> {
         <div className="w-full h-full" ref={(el) => (this.el = el)}></div>
         <div className="absolute left-0 top-0 ml-2 mt-2">
           <ButtonGroup>
-            <Button icon="zoomIn" onClick={() => this.mapRenderer.zoomIn()} />
-            <Button
-              icon="search"
-              onClick={() => this.mapRenderer.zoomToFit()}
-            />
-            <Button icon="zoomOut" onClick={() => this.mapRenderer.zoomOut()} />
+            <Button icon="zoomIn" onClick={() => this.zoomIn()} />
+            <Button icon="search" onClick={() => this.zoomToFit()} />
+            <Button icon="zoomOut" onClick={() => this.zoomOut()} />
           </ButtonGroup>
         </div>
       </div>
     );
+  }
+
+  private zoomIn() {
+    this.mapRenderer.zoomIn(this.zoomFocalPoint());
+  }
+
+  private zoomFocalPoint() {
+    if (!this.state.followFlight) {
+      return;
+    } else if (this.props.activeTimestamp) {
+      return this.state.followFlight.datumAt(this.props.activeTimestamp)
+        ?.position;
+    } else {
+      return this.state.followFlight.getDatums()[0].position;
+    }
+  }
+
+  private zoomOut() {
+    this.mapRenderer.zoomOut();
+  }
+
+  private zoomToFit() {
+    this.mapRenderer.zoomToFit();
   }
 }

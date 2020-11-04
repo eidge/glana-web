@@ -36,7 +36,7 @@ export default class TaskRenderer {
     let format = new GeoJSON();
     let features = format.readFeatures(turnpoint.toGeoJSON());
     features.forEach((f) =>
-      f.getGeometry().transform("EPSG:4326", "EPSG:3857")
+      f.getGeometry()?.transform("EPSG:4326", "EPSG:3857")
     );
     return features;
   }

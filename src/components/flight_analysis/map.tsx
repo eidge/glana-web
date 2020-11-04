@@ -5,7 +5,7 @@ import FlightRenderer from "../../maps/flight_renderer";
 import TaskRenderer from "../../maps/task_renderer";
 import Task from "glana/src/flight_computer/tasks/task";
 import SavedFlight from "glana/src/saved_flight";
-import { SettingsModel } from "/settings";
+import { SettingsModel } from "./settings";
 import Button from "../ui/button";
 import ButtonGroup from "../ui/button_group";
 

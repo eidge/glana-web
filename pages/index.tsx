@@ -82,8 +82,8 @@ export default class Home extends Component<Props, State> {
     let flightGroup = new FlightGroup(savedFlights);
     flightGroup.synchronize(this.state.settings.synchronizationMethod);
 
-    let task: Task | null = flightGroup.flights.find((f: SavedFlight) => f.task)
-      .task;
+    let task: Task | null =
+      flightGroup.flights.find((f: SavedFlight) => f.task)?.task || null;
 
     this.setState({ flightGroup, task });
   }

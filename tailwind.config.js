@@ -1,9 +1,14 @@
 module.exports = {
   future: {
     // removeDeprecatedGapUtilities: true,
-    // purgeLayersByDefault: true,
+    purgeLayersByDefault: true,
   },
-  purge: [],
+  purge: [
+    "./src/**/*.css",
+    "./src/**/*.jsx",
+    "./src/**/*.tsx",
+    "./pages/**/*.tsx",
+  ],
   theme: {
     inset: {
       "0": 0,

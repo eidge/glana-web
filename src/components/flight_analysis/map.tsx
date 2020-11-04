@@ -5,7 +5,9 @@ import FlightRenderer from "../../maps/flight_renderer";
 import TaskRenderer from "../../maps/task_renderer";
 import Task from "glana/src/flight_computer/tasks/task";
 import SavedFlight from "glana/src/saved_flight";
-import { SettingsModel } from "./settings";
+import { SettingsModel } from "/settings";
+import Button from "../ui/button";
+import ButtonGroup from "../ui/button_group";
 
 interface Props {
   flightGroup: FlightGroup | null;
@@ -105,7 +107,19 @@ export default class Map extends Component<Props, State> {
 
   render() {
     return (
-      <div className="map w-full h-full" ref={(el) => (this.el = el)}></div>
+      <div className="w-full h-full">
+        <div className="w-full h-full" ref={(el) => (this.el = el)}></div>
+        <div className="absolute left-0 top-0 ml-2 mt-2">
+          <ButtonGroup>
+            <Button icon="zoomIn" onClick={() => this.mapRenderer.zoomIn()} />
+            <Button
+              icon="search"
+              onClick={() => this.mapRenderer.zoomToFit()}
+            />
+            <Button icon="zoomOut" onClick={() => this.mapRenderer.zoomOut()} />
+          </ButtonGroup>
+        </div>
+      </div>
     );
   }
 }

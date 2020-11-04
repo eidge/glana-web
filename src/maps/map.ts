@@ -25,15 +25,24 @@ export default class Map {
     });
   }
 
-  private getLayers(): any[] {
-    return this.olMap
-      .getLayers()
-      .getArray()
-      .filter((layer: any) => !this.isTileLayer(layer));
+  zoomIn() {
+    this.olMap.getView().animate({
+      zoom: this.olMap.getView().getZoom() + 1,
+      duration: 250,
+    });
+  }
+
+  zoomOut() {
+    this.olMap.getView().animate({
+      zoom: this.olMap.getView().getZoom() - 1,
+      duration: 250,
+    });
   }
 
   zoomToFit() {
-    this.olMap.getView().fit(this.allFeaturesExtent(), {
+    let renderedExtent = this.allFeaturesExtent();
+    if (renderedExtent[0] === Infinity) return;
+    this.olMap.getView().fit(renderedExtent, {
       padding: [10, 50, 110, 50],
       duration: 500,
     });
@@ -46,15 +55,21 @@ export default class Map {
     );
   }
 
+  private getLayers(): any[] {
+    return this.olMap
+      .getLayers()
+      .getArray()
+      .filter((layer: any) => !this.isTileLayer(layer));
+  }
+
   private isTileLayer(layer: any) {
     return layer instanceof TileLayer;
   }
 
   private buildMap() {
     const { Map, View } = this.ol;
-    const { defaults } = require("ol/control");
     return new Map({
-      controls: defaults({ attribution: false }),
+      controls: [],
       layers: [
         new TileLayer({
           source: new OSM({

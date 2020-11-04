@@ -21,17 +21,18 @@ export default class Timeline extends Component<Props, State> {
 
   render() {
     return (
-      <div
-        className="w-full absolute bottom-0 h-24"
-        ref={(el) => (this.containerEl = el)}
-        onMouseMove={(e) => this.onMouseMove(e)}
-      >
+      <div className="w-full absolute bottom-0 h-24 cursor-default">
         <AltitudeChart flightGroup={this.props.flightGroup} />
         <TimelineMarker
           activeTimestamp={this.props.activeTimestamp}
           relativeLeftPosition={this.relativeLeftPosition() * 100}
           timestampDetails={this.timestampDetails()}
         />
+        <div
+          className="w-full h-full absolute bottom-0 left-0 cursor-crosshair"
+          ref={(el) => (this.containerEl = el)}
+          onMouseMove={(e) => this.onMouseMove(e)}
+        ></div>
       </div>
     );
   }

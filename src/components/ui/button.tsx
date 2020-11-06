@@ -1,26 +1,102 @@
 import * as icons from "./icons";
 
-type iconKey = keyof typeof icons;
+export type IconKey = keyof typeof icons;
+export type SizeOptions = "md" | "lg";
+export type ColorOptions = "primary" | "secondary" | "white";
 
-interface Props {
-  icon?: iconKey;
+export interface ButtonProps {
+  icon?: IconKey | null;
+  size?: SizeOptions;
+  color?: ColorOptions;
   onClick: () => void;
 }
 
-let iconComponent = (iconKey?: iconKey) => {
-  if (!iconKey) return null;
-  let IconComponent = icons[iconKey];
-  return <IconComponent />;
+function addDefaultProps(props: ButtonProps) {
+  return {
+    ...props,
+    size: props.size || "md",
+    icon: props.icon || null,
+    color: props.color || "secondary",
+  };
+}
+
+const iconSizeClasses: { [key in SizeOptions]: string } = {
+  md: "w-6 h-6",
+  lg: "w-8 h-8",
 };
 
-const Button = (props: Props) => {
+const iconComponent = (props: Required<ButtonProps>) => {
+  if (!props.icon) return null;
+  let IconComponent = icons[props.icon];
+  return (
+    <div className={iconSizeClasses[props.size]}>
+      <IconComponent />
+    </div>
+  );
+};
+
+const sizeClasses: { [key in SizeOptions]: string } = {
+  md: "btn--md",
+  lg: "btn--lg",
+};
+
+const colorClasses: { [key in ColorOptions]: string } = {
+  primary: "btn--primary",
+  secondary: "btn--secondary",
+  white: "btn--white",
+};
+
+const Button = (p: ButtonProps) => {
+  const props = addDefaultProps(p);
+
   return (
     <a
       href="#"
-      className="p-1 bg-white text-gray-700 hover:bg-gray-100 hover:text-gray-900 hover:shadow-inner shadow-md block rounded font-sm p-2"
+      className={`btn ${sizeClasses[props.size]} ${colorClasses[props.color]}`}
       onClick={props.onClick}
     >
-      <div className="w-8 h-8">{iconComponent(props.icon)}</div>
+      {iconComponent(props)}
+      <style global jsx>{`
+        .btn {
+          @apply bg-gray-600 shadow-md rounded leading-none cursor-pointer border border-solid inline-block;
+        }
+
+        .btn:hover {
+          @apply bg-gray-700 shadow-inner;
+        }
+
+        .btn--md {
+          @apply p-2;
+        }
+
+        .btn--lg {
+          @apply p-2;
+        }
+
+        .btn--primary {
+          @apply bg-teal-600 text-white border-teal-700;
+        }
+
+        .btn--primary:hover {
+          @apply bg-teal-700;
+        }
+
+        .btn--secondary {
+          @apply bg-gray-200 text-black border-gray-500;
+        }
+
+        .btn--secondary:hover {
+          @apply bg-gray-300;
+        }
+
+        .btn--white {
+          @apply bg-white text-black border-gray-200;
+        }
+
+        .btn--white:hover {
+          @apply bg-gray-100;
+        }
+      `}</style>
     </a>
   );
 };

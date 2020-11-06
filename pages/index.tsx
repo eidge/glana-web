@@ -11,6 +11,7 @@ import SavedFlight from "glana/src/saved_flight";
 import Task from "glana/src/flight_computer/tasks/task";
 import SynchronizationMethod from "glana/src/analysis/synchronization/method";
 import { SettingsModel } from "../src/components/flight_analysis/settings";
+import Modal from "../src/components/ui/modal";
 
 interface Props {}
 
@@ -34,6 +35,7 @@ export default class Home extends Component<Props, State> {
     return {
       synchronizationMethod: synchronizationMethods.realTime,
       renderFullTracks: false,
+      followFlight: true,
     };
   }
 
@@ -43,7 +45,7 @@ export default class Home extends Component<Props, State> {
         className="w-screen"
         onDragEnter={(event) => event.preventDefault()}
         onDragOver={(event) => event.preventDefault()}
-        onDrop={(event) => this.handleDroppedFile(event)}
+        onDrop={(event) => this.handleDroppedFiles(event)}
       >
         <FlightAnalysis
           settings={this.state.settings}
@@ -53,6 +55,27 @@ export default class Home extends Component<Props, State> {
           flightGroup={this.state.flightGroup}
           task={this.state.task}
         />
+        <Modal isOpen={!this.state.flightGroup} onClose={() => {}}>
+          <div>
+            <h1 className="text-xl font-semibold mb-4">Welcome to Glana</h1>
+            <div className="mt-4">
+              <span className="text-gray-700">
+                Select one or more flights to continue
+              </span>
+              <div className="mt-2">
+                <label className="btn btn--primary btn--md">
+                  Choose file(s)
+                  <input
+                    className="invisible w-0"
+                    type="file"
+                    multiple={true}
+                    onChange={(e) => this.handleFileInput(e)}
+                  />
+                </label>
+              </div>
+            </div>
+          </div>
+        </Modal>
       </div>
     );
   }
@@ -68,12 +91,23 @@ export default class Home extends Component<Props, State> {
     this.setState({ settings });
   }
 
-  private async handleDroppedFile(event: any) {
+  private handleDroppedFiles(event: any) {
     event.preventDefault();
-
     let files = Array.from(event.dataTransfer.files) as Blob[];
     if (files.length < 1) return;
 
+    this.readAndAnalyseIgcs(files);
+  }
+
+  private handleFileInput(event: any) {
+    event.preventDefault();
+    let files = Array.from(event.target.files) as Blob[];
+    if (files.length < 1) return;
+
+    this.readAndAnalyseIgcs(files);
+  }
+
+  private async readAndAnalyseIgcs(files: Blob[]) {
     let fileContents = await this.readFiles(files);
     let savedFlights = fileContents.map((contents) =>
       this.analyseFlight(contents)

@@ -87,7 +87,12 @@ export default class FlightAnalysis extends Component<Props, State> {
 
     return (
       <div className="absolute right-0 top-0 mr-2 mt-2">
-        <Button icon="cog" onClick={() => this.openSettingsModal()} />
+        <Button
+          icon="cog"
+          size="lg"
+          color="white"
+          onClick={() => this.openSettingsModal()}
+        />
 
         <Modal
           isOpen={this.state.isSettingsOpen}

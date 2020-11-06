@@ -2,10 +2,12 @@ import { createEmpty, extend } from "ol/extent";
 import TileLayer from "ol/layer/Tile";
 import OSM from "ol/source/OSM";
 import { positionToOlPoint } from "./utils";
-import Point from "ol/geom/Point";
+import { defaults as interactionDefaults } from "ol/interaction";
 import Position from "glana/src/flight_computer/position";
 
 const ANIMATION_DURATION = 400;
+const DEFAULT_PADDING = 50;
+const TIMELINE_SIZE = 110;
 
 export default class Map {
   private domElement: HTMLElement;
@@ -27,12 +29,18 @@ export default class Map {
     });
   }
 
-  isVisible(position: Position) {
+  isVisible(position: Position, paddingInPixels: number = DEFAULT_PADDING) {
     let coordinate = positionToOlPoint(position);
-    let point = new Point(coordinate);
-    //this.olMap.getPixelFromCoordinate(coordinate); this gets me DOM XY
-    //coordinates I can use this to center point when 50px away from border!
-    return point.intersectsExtent(this.olMap.getView().calculateExtent());
+    let positionXY = this.olMap.getPixelFromCoordinate(coordinate);
+    if (!positionXY) return true;
+
+    let mapClientRect = this.domElement.getBoundingClientRect();
+    return (
+      positionXY[0] >= paddingInPixels &&
+      positionXY[1] >= paddingInPixels &&
+      positionXY[0] < mapClientRect.right - paddingInPixels &&
+      positionXY[1] < mapClientRect.bottom - paddingInPixels
+    );
   }
 
   centerOn(position: Position) {
@@ -66,7 +74,12 @@ export default class Map {
     let renderedExtent = this.allFeaturesExtent();
     if (renderedExtent[0] === Infinity) return;
     this.olMap.getView().fit(renderedExtent, {
-      padding: [10, 50, 110, 50],
+      padding: [
+        DEFAULT_PADDING,
+        DEFAULT_PADDING,
+        TIMELINE_SIZE,
+        DEFAULT_PADDING,
+      ],
       duration: ANIMATION_DURATION,
     });
   }
@@ -91,8 +104,13 @@ export default class Map {
 
   private buildMap() {
     const { Map, View } = this.ol;
+    const interactions = interactionDefaults({
+      altShiftDragRotate: false,
+      pinchRotate: false,
+    });
     return new Map({
       controls: [],
+      interactions: interactions,
       layers: [
         new TileLayer({
           source: new OSM({

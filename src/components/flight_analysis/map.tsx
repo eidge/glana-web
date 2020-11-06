@@ -6,7 +6,7 @@ import TaskRenderer from "../../maps/task_renderer";
 import Task from "glana/src/flight_computer/tasks/task";
 import SavedFlight from "glana/src/saved_flight";
 import { SettingsModel } from "./settings";
-import Button from "../ui/button";
+import { ButtonProps, IconKey } from "../ui/button";
 import ButtonGroup from "../ui/button_group";
 
 interface Props {
@@ -68,11 +68,15 @@ export default class Map extends Component<Props, State> {
   }
 
   private maybeCenterFlight(flight: SavedFlight | null) {
-    if (!flight || !this.props.activeTimestamp) return;
-    let currentDatum = flight.datumAt(this.props.activeTimestamp);
+    if (!flight || !this.shouldFollowFlight()) return;
+    let currentDatum = flight.datumAt(this.props.activeTimestamp!);
     if (currentDatum && !this.mapRenderer.isVisible(currentDatum.position)) {
       this.mapRenderer.centerOn(currentDatum.position);
     }
+  }
+
+  private shouldFollowFlight() {
+    return this.props.settings.followFlight && this.props.activeTimestamp;
   }
 
   private updateFlightMarkers() {
@@ -114,14 +118,27 @@ export default class Map extends Component<Props, State> {
       <div className="w-full h-full">
         <div className="w-full h-full" ref={(el) => (this.el = el)}></div>
         <div className="absolute left-0 top-0 ml-2 mt-2">
-          <ButtonGroup>
-            <Button icon="zoomIn" onClick={() => this.zoomIn()} />
-            <Button icon="search" onClick={() => this.zoomToFit()} />
-            <Button icon="zoomOut" onClick={() => this.zoomOut()} />
-          </ButtonGroup>
+          <ButtonGroup buttons={this.mapControlButtons()}></ButtonGroup>
         </div>
       </div>
     );
+  }
+
+  private mapControlButtons() {
+    return [
+      this.makeButton("zoomIn", () => this.zoomIn()),
+      this.makeButton("search", () => this.zoomToFit()),
+      this.makeButton("zoomIn", () => this.zoomOut()),
+    ];
+  }
+
+  private makeButton(icon: IconKey, onClick: () => void): ButtonProps {
+    return {
+      icon,
+      onClick,
+      color: "white",
+      size: "lg",
+    };
   }
 
   private zoomIn() {

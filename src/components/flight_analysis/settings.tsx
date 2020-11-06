@@ -28,6 +28,7 @@ const synchronizationOptions = [
 export interface SettingsModel {
   synchronizationMethod: SynchronizationMethod;
   renderFullTracks: boolean;
+  followFlight: boolean;
 }
 
 interface Props {
@@ -51,6 +52,7 @@ export default class Settings extends Component<Props, State> {
         <div className="mt-4">
           <span className="text-gray-700">Flight track</span>
           <div className="mt-2">{this.renderFullTracksInput()}</div>
+          <div className="mt-2">{this.renderFollowFlightInput()}</div>
         </div>
       </div>
     );
@@ -80,6 +82,7 @@ export default class Settings extends Component<Props, State> {
       );
     });
   }
+
   private renderFullTracksInput() {
     return (
       <label className="inline-flex items-center mr-6">
@@ -94,7 +97,28 @@ export default class Settings extends Component<Props, State> {
             })
           }
         />
-        <span className="ml-2">Render full tracks</span>
+        <span className="ml-2">Show entire flight track</span>
+      </label>
+    );
+  }
+
+  private renderFollowFlightInput() {
+    return (
+      <label className="inline-flex items-center mr-6">
+        <input
+          type="checkbox"
+          name="followFlight"
+          checked={this.props.settings.followFlight}
+          onChange={(event) =>
+            this.props.onChange({
+              ...this.props.settings,
+              followFlight: event.target.checked,
+            })
+          }
+        />
+        <span className="ml-2">
+          Re-center map when flight leaves the screen
+        </span>
       </label>
     );
   }

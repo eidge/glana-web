@@ -1,4 +1,5 @@
 import { Component } from "react";
+import Div100vh from "react-div-100vh";
 
 import FlightGroup from "glana/src/analysis/flight_group";
 import Map from "./flight_analysis/map";
@@ -52,16 +53,18 @@ export default class FlightAnalysis extends Component<Props, State> {
 
   render() {
     return (
-      <div className="w-screen h-screen relative">
-        <Map
-          flightGroup={this.props.flightGroup}
-          task={this.props.task}
-          activeTimestamp={this.state.activeTimestamp}
-          settings={this.props.settings}
-        />
+      <div className="w-screen relative">
+        <Div100vh>
+          <Map
+            flightGroup={this.props.flightGroup}
+            task={this.props.task}
+            activeTimestamp={this.state.activeTimestamp}
+            settings={this.props.settings}
+          />
 
-        {this.maybeRenderSettingsModalAndButton()}
-        {this.maybeRenderTimeline()}
+          {this.maybeRenderSettingsModalAndButton()}
+          {this.maybeRenderTimeline()}
+        </Div100vh>
       </div>
     );
   }

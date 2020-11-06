@@ -1,4 +1,5 @@
 import ReactModal from "react-modal";
+import { use100vh } from "react-div-100vh";
 
 interface Props {
   isOpen: boolean;
@@ -7,6 +8,7 @@ interface Props {
 }
 
 const Modal = (props: Props) => {
+  const height = use100vh();
   return (
     <ReactModal
       isOpen={props.isOpen}
@@ -23,8 +25,9 @@ const Modal = (props: Props) => {
 
         .gl-modal-overlay {
           @apply flex flex-row items-center justify-center;
-          @apply fixed w-screen h-screen top-0 left-0;
+          @apply fixed w-screen top-0 left-0;
           @apply bg-gray-500 bg-opacity-25;
+          height: ${height ? `${height}px` : "100vh"};
         }
       `}</style>
     </ReactModal>

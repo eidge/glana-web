@@ -21,7 +21,7 @@ export default class Timeline extends Component<Props, State> {
 
   render() {
     return (
-      <div className="w-full absolute bottom-0 h-24 cursor-default">
+      <div className="w-full absolute bottom-0 h-24 cursor-default select-none">
         <AltitudeChart flightGroup={this.props.flightGroup} />
         <TimelineMarker
           activeTimestamp={this.props.activeTimestamp}
@@ -32,6 +32,7 @@ export default class Timeline extends Component<Props, State> {
           className="w-full h-full absolute bottom-0 left-0 cursor-crosshair"
           ref={(el) => (this.containerEl = el)}
           onMouseMove={(e) => this.onMouseMove(e)}
+          onTouchMove={(e) => this.onTouchMove(e)}
         ></div>
       </div>
     );
@@ -47,11 +48,24 @@ export default class Timeline extends Component<Props, State> {
     return relativeValue;
   }
 
-  private onMouseMove(event: any) {
+  private onMouseMove(event: React.MouseEvent<HTMLDivElement, MouseEvent>) {
+    event.preventDefault();
+    event.stopPropagation();
+    this.updateCurrentTimestamp(event.clientX);
+  }
+
+  private onTouchMove(event: React.TouchEvent<HTMLDivElement>) {
+    event.preventDefault();
+    event.stopPropagation();
+    const lastTouch = event.touches[event.touches.length - 1];
+    this.updateCurrentTimestamp(lastTouch.clientX);
+  }
+
+  private updateCurrentTimestamp(mouseOverX: number) {
     if (!this.props.onTimestampChange || !this.containerEl) return;
     let relativePosition = this.calculateMouseRelativePositionLeft(
       this.containerEl,
-      event
+      mouseOverX
     );
     let timestampAtPosition = this.timestampAtRelativePosition(
       relativePosition
@@ -61,10 +75,10 @@ export default class Timeline extends Component<Props, State> {
 
   private calculateMouseRelativePositionLeft(
     container: HTMLElement,
-    event: any
+    clientX: number
   ) {
     let containerRect = container.getBoundingClientRect();
-    return (event.clientX - containerRect.left) / containerRect.width;
+    return (clientX - containerRect.left) / containerRect.width;
   }
 
   private timestampAtRelativePosition(relativePosition: number) {

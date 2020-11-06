@@ -7,8 +7,8 @@ interface Props {
 const ButtonGroup = (props: Props) => {
   return (
     <div className="bg-white rounded divide-y overflow-hidden shadow-md flex flex-col">
-      {props.buttons.map((bProps) => (
-        <Button {...bProps} />
+      {props.buttons.map((bProps, index) => (
+        <Button {...bProps} key={index} />
       ))}
     </div>
   );

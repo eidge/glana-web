@@ -12,6 +12,7 @@ import Task from "glana/src/flight_computer/tasks/task";
 import SynchronizationMethod from "glana/src/analysis/synchronization/method";
 import { SettingsModel } from "../src/components/flight_analysis/settings";
 import Modal from "../src/components/ui/modal";
+import Head from "next/head";
 
 interface Props {}
 
@@ -41,42 +42,50 @@ export default class Home extends Component<Props, State> {
 
   render() {
     return (
-      <div
-        className="w-screen"
-        onDragEnter={(event) => event.preventDefault()}
-        onDragOver={(event) => event.preventDefault()}
-        onDrop={(event) => this.handleDroppedFiles(event)}
-      >
-        <FlightAnalysis
-          settings={this.state.settings}
-          updateSettings={(settings: SettingsModel) =>
-            this.updateSettings(settings)
-          }
-          flightGroup={this.state.flightGroup}
-          task={this.state.task}
-        />
-        <Modal isOpen={!this.state.flightGroup} onClose={() => {}}>
-          <div>
-            <h1 className="text-xl font-semibold mb-4">Welcome to Glana</h1>
-            <div className="mt-4">
-              <span className="text-gray-700">
-                Select one or more flights to continue
-              </span>
-              <div className="mt-2">
-                <label className="btn btn--primary btn--md">
-                  Choose file(s)
-                  <input
-                    className="invisible w-0"
-                    type="file"
-                    multiple={true}
-                    onChange={(e) => this.handleFileInput(e)}
-                  />
-                </label>
+      <>
+        <Head>
+          <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+          />
+        </Head>
+        <div
+          className="w-screen"
+          onDragEnter={(event) => event.preventDefault()}
+          onDragOver={(event) => event.preventDefault()}
+          onDrop={(event) => this.handleDroppedFiles(event)}
+        >
+          <FlightAnalysis
+            settings={this.state.settings}
+            updateSettings={(settings: SettingsModel) =>
+              this.updateSettings(settings)
+            }
+            flightGroup={this.state.flightGroup}
+            task={this.state.task}
+          />
+          <Modal isOpen={!this.state.flightGroup} onClose={() => {}}>
+            <div>
+              <h1 className="text-xl font-semibold mb-4">Welcome to Glana</h1>
+              <div className="mt-4">
+                <span className="text-gray-700">
+                  Select one or more flights to continue
+                </span>
+                <div className="mt-2">
+                  <label className="btn btn--primary btn--md">
+                    Choose file(s)
+                    <input
+                      className="invisible w-0"
+                      type="file"
+                      multiple={true}
+                      onChange={(e) => this.handleFileInput(e)}
+                    />
+                  </label>
+                </div>
               </div>
             </div>
-          </div>
-        </Modal>
-      </div>
+          </Modal>
+        </div>
+      </>
     );
   }
 

@@ -73,12 +73,10 @@ export default class AltitudeChart extends Component<Props, State> {
         enableGridY={false}
         isInteractive={false}
         enableArea={true}
-        enableSlices="x"
+        enableSlices={false}
         enablePoints={false}
         margin={{ top: 10 }}
         xScale={{ type: "linear", min: "auto", max: "auto" }}
-        xFormat={(x) => new Date(x).toLocaleTimeString()}
-        yFormat={(y) => `${y}m`}
         curve="monotoneX"
         colors={this.flightTrackColors()}
       />

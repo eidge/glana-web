@@ -7,8 +7,6 @@ import FlightAnalysis from "../src/components/flight_analysis";
 import FlightGroup, {
   synchronizationMethods,
 } from "glana/src/analysis/flight_group";
-import SavedFlight from "glana/src/saved_flight";
-import Task from "glana/src/flight_computer/tasks/task";
 import SynchronizationMethod from "glana/src/analysis/synchronization/method";
 import { SettingsModel } from "../src/components/flight_analysis/settings";
 import Modal from "../src/components/ui/modal";
@@ -18,7 +16,6 @@ interface Props {}
 
 interface State {
   flightGroup: FlightGroup | null;
-  task: Task | null;
   settings: SettingsModel;
   isLoading: boolean;
 }
@@ -28,7 +25,6 @@ export default class Home extends Component<Props, State> {
     super(props);
     this.state = {
       flightGroup: null,
-      task: null,
       settings: this.buildSettings(),
       isLoading: false,
     };
@@ -64,7 +60,6 @@ export default class Home extends Component<Props, State> {
               this.updateSettings(settings)
             }
             flightGroup={this.state.flightGroup}
-            task={this.state.task}
           />
 
           <Modal
@@ -146,10 +141,7 @@ export default class Home extends Component<Props, State> {
         let flightGroup = new FlightGroup(savedFlights);
         flightGroup.synchronize(this.state.settings.synchronizationMethod);
 
-        let task: Task | null =
-          flightGroup.flights.find((f: SavedFlight) => f.task)?.task || null;
-
-        this.setState({ flightGroup, task, isLoading: false });
+        this.setState({ flightGroup, isLoading: false });
       } catch {
         this.setState({ isLoading: false });
       }

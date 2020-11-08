@@ -14,11 +14,10 @@ interface Props {
   task: Task | null;
   activeTimestamp: Date | null;
   settings: SettingsModel;
-}
-
-interface State {
   followFlight: SavedFlight | null;
 }
+
+interface State {}
 
 export default class Map extends Component<Props, State> {
   private el: HTMLDivElement | null = null;
@@ -27,7 +26,6 @@ export default class Map extends Component<Props, State> {
 
   constructor(props: Props) {
     super(props);
-    this.state = { followFlight: props.flightGroup?.flights[0] || null };
   }
 
   componentDidMount() {
@@ -43,7 +41,7 @@ export default class Map extends Component<Props, State> {
 
   componentDidUpdate(previousProps: Props) {
     if (this.shouldUpdateCurrentFlightGroup(previousProps)) {
-      this.maybeCenterFlight(this.state.followFlight);
+      this.maybeCenterFlight(this.props.followFlight);
       this.updateFlightMarkers();
       return;
     }
@@ -80,16 +78,12 @@ export default class Map extends Component<Props, State> {
     this.reset();
     if (!this.props.flightGroup) return;
 
-    this.setState((state, props) => {
-      return { ...state, followFlight: props.flightGroup?.flights[0] || null };
-    });
     this.maybeRenderTask();
     this.renderFlights();
     this.mapRenderer.zoomToFit();
   }
 
   private reset() {
-    this.setState({ followFlight: null });
     this.mapRenderer.reset();
     this.flightRenderers = [];
   }
@@ -148,13 +142,13 @@ export default class Map extends Component<Props, State> {
   }
 
   private zoomFocalPoint() {
-    if (!this.state.followFlight) {
+    if (!this.props.followFlight) {
       return;
     } else if (this.props.activeTimestamp) {
-      return this.state.followFlight.datumAt(this.props.activeTimestamp)
+      return this.props.followFlight.datumAt(this.props.activeTimestamp)
         ?.position;
     } else {
-      return this.state.followFlight.getDatums()[0].position;
+      return this.props.followFlight.getDatums()[0].position;
     }
   }
 

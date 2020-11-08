@@ -12,7 +12,6 @@ import SavedFlight from "glana/src/saved_flight";
 
 interface Props {
   flightGroup: FlightGroup | null;
-  task: Task | null;
   settings: SettingsModel;
   updateSettings: (settings: SettingsModel) => void;
 }
@@ -21,6 +20,7 @@ interface State {
   isSettingsOpen: boolean;
   activeTimestamp: Date | null;
   followFlight: SavedFlight | null;
+  task: Task | null;
 }
 
 export default class FlightAnalysis extends Component<Props, State> {
@@ -29,7 +29,15 @@ export default class FlightAnalysis extends Component<Props, State> {
     this.state = {
       isSettingsOpen: false,
       activeTimestamp: null,
-      followFlight: props.flightGroup?.flights[0] || null,
+      ...this.followFlightAndTask(props),
+    };
+  }
+
+  private followFlightAndTask(props: Props) {
+    const followFlight = props.flightGroup?.flights[0] || null;
+    return {
+      followFlight: followFlight,
+      task: followFlight?.task || null,
     };
   }
 
@@ -39,7 +47,7 @@ export default class FlightAnalysis extends Component<Props, State> {
 
   componentDidUpdate(previousProps: Props) {
     if (previousProps.flightGroup !== this.props.flightGroup) {
-      this.setState({ followFlight: null });
+      this.setState({ ...this.followFlightAndTask(this.props) });
     }
     this.maybeSetActiveTimestamp();
   }
@@ -65,7 +73,8 @@ export default class FlightAnalysis extends Component<Props, State> {
         <Div100vh>
           <Map
             flightGroup={this.props.flightGroup}
-            task={this.props.task}
+            followFlight={this.state.followFlight}
+            task={this.state.task}
             activeTimestamp={this.state.activeTimestamp}
             settings={this.props.settings}
           />

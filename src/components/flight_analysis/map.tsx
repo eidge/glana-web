@@ -29,10 +29,21 @@ export default class Map extends Component<Props, State> {
     super(props);
   }
 
+  render() {
+    return (
+      <div className="w-full h-full">
+        <div className="w-full h-full" ref={(el) => (this.el = el)}></div>
+        <div className="absolute left-0 top-0 ml-2 mt-2">
+          <ButtonGroup buttons={this.mapControlButtons()}></ButtonGroup>
+        </div>
+      </div>
+    );
+  }
+
   componentDidMount() {
     this.renderMap();
     this.taskRenderer = new TaskRenderer(this.mapRenderer);
-    this.renderNewFlightGroup(null);
+    this.renderNewFlightGroup();
   }
 
   private renderMap() {
@@ -43,13 +54,13 @@ export default class Map extends Component<Props, State> {
 
   componentDidUpdate(previousProps: Props) {
     if (this.shouldUpdateCurrentFlightGroup(previousProps)) {
-      this.maybeRenderTask(previousProps);
+      this.maybeRenderTask();
       this.updateFlightMarkers();
       this.maybeCenterFlight(this.props.followFlight);
       return;
     }
 
-    this.renderNewFlightGroup(previousProps);
+    this.renderNewFlightGroup();
   }
 
   private shouldUpdateCurrentFlightGroup(previousProps: Props) {
@@ -77,11 +88,11 @@ export default class Map extends Component<Props, State> {
     );
   }
 
-  private renderNewFlightGroup(previousProps: Props | null) {
+  private renderNewFlightGroup() {
     this.reset();
     if (!this.props.flightGroup) return;
 
-    this.maybeRenderTask(previousProps);
+    this.maybeRenderTask();
     this.renderFlights();
     this.zoomToFit();
   }
@@ -92,9 +103,9 @@ export default class Map extends Component<Props, State> {
     this.flightRenderers = [];
   }
 
-  private maybeRenderTask(previousProps: Props | null) {
+  private maybeRenderTask() {
     if (!this.props.task) return;
-    if (previousProps && previousProps.task === this.props.task) return;
+    if (this.taskRenderer.task === this.props.task) return;
     this.taskRenderer.render(this.props.task);
   }
 
@@ -111,17 +122,6 @@ export default class Map extends Component<Props, State> {
         fr.setActiveTimestamp(this.props.activeTimestamp);
       }
     });
-  }
-
-  render() {
-    return (
-      <div className="w-full h-full">
-        <div className="w-full h-full" ref={(el) => (this.el = el)}></div>
-        <div className="absolute left-0 top-0 ml-2 mt-2">
-          <ButtonGroup buttons={this.mapControlButtons()}></ButtonGroup>
-        </div>
-      </div>
-    );
   }
 
   private mapControlButtons() {

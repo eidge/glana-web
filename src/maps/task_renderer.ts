@@ -10,6 +10,7 @@ import GeoJSON from "ol/format/GeoJSON";
 export default class TaskRenderer {
   private map: MapRenderer;
   private layer: any;
+  task: Task | null = null;
 
   constructor(map: MapRenderer) {
     this.map = map;
@@ -32,6 +33,7 @@ export default class TaskRenderer {
 
     this.layer = layer;
     this.map.olMap.addLayer(layer);
+    this.task = task;
   }
 
   private buildFeatures(task: Task) {

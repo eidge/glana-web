@@ -25,10 +25,49 @@ const synchronizationOptions = [
   },
 ];
 
+const playbackSpeedOptions = [
+  {
+    label: "10x",
+    value: 10,
+    stringValue: "10",
+  },
+  {
+    label: "25x",
+    value: 25,
+    stringValue: "25",
+  },
+  {
+    label: "50x",
+    value: 50,
+    stringValue: "50",
+  },
+  {
+    label: "100x",
+    value: 100,
+    stringValue: "100",
+  },
+  {
+    label: "250x",
+    value: 250,
+    stringValue: "250",
+  },
+  {
+    label: "500x",
+    value: 500,
+    stringValue: "500",
+  },
+  {
+    label: "1000x",
+    value: 1000,
+    stringValue: "1000",
+  },
+];
+
 export interface SettingsModel {
   synchronizationMethod: SynchronizationMethod;
   renderFullTracks: boolean;
   followFlight: boolean;
+  playbackSpeed: number;
 }
 
 interface Props {
@@ -48,6 +87,10 @@ export default class Settings extends Component<Props, State> {
         <div className="mt-4">
           <span className="text-gray-700">Synchronize flights by</span>
           <div className="mt-2">{this.synchronizationMethodInput()}</div>
+        </div>
+        <div className="mt-4">
+          <span className="text-gray-700">Playback speed</span>
+          <div className="mt-2">{this.playbackSpeedInput()}</div>
         </div>
         <div className="mt-4">
           <span className="text-gray-700">Flight track</span>
@@ -74,6 +117,31 @@ export default class Settings extends Component<Props, State> {
               this.props.onChange({
                 ...this.props.settings,
                 synchronizationMethod: option.value,
+              })
+            }
+          />
+          <span className="ml-2">{option.label}</span>
+        </label>
+      );
+    });
+  }
+
+  playbackSpeedInput() {
+    return playbackSpeedOptions.map((option) => {
+      return (
+        <label
+          className="inline-flex items-center mr-6"
+          key={option.stringValue}
+        >
+          <input
+            type="radio"
+            name="playbackSpeed"
+            value={option.stringValue}
+            checked={this.props.settings.playbackSpeed === option.value}
+            onChange={() =>
+              this.props.onChange({
+                ...this.props.settings,
+                playbackSpeed: option.value,
               })
             }
           />

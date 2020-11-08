@@ -22,15 +22,19 @@ interface State {
   activeTimestamp: Date | null;
   followFlight: SavedFlight | null;
   task: Task | null;
+  isPlaying: boolean;
 }
 
 export default class FlightAnalysis extends Component<Props, State> {
+  private ticker: any = null;
+
   constructor(props: Props) {
     super(props);
     this.state = {
-      flightGroup: null,
+      flightGroup: props.flightGroup,
       isSettingsOpen: false,
       activeTimestamp: null,
+      isPlaying: false,
       ...this.followFlightAndTask(props),
     };
   }
@@ -64,13 +68,15 @@ export default class FlightAnalysis extends Component<Props, State> {
 
   private maybeSetActiveTimestamp() {
     if (this.state.activeTimestamp || !this.props.flightGroup) return;
+    this.setActiveTimestamp(this.oldestTimestamp());
+  }
 
-    let timestamps = this.props.flightGroup.flights.map((f: SavedFlight) =>
-      f.getRecordingStoppedAt().getTime()
-    );
-    let oldestTimestamp = Math.max(...timestamps);
-
-    this.setActiveTimestamp(new Date(oldestTimestamp));
+  private oldestTimestamp() {
+    if (!this.props.flightGroup) return new Date();
+    const timestamps = this.props.flightGroup.flights
+      .map((f) => f.getRecordingStoppedAt())
+      .sort();
+    return timestamps[timestamps.length - 1];
   }
 
   private setActiveTimestamp(timestamp: Date): void {
@@ -132,6 +138,13 @@ export default class FlightAnalysis extends Component<Props, State> {
     return (
       <div className="absolute right-0 top-0 mr-2 mt-2">
         <Button
+          icon={this.state.isPlaying ? "pause" : "play"}
+          size="lg"
+          color="white"
+          onClick={() => this.togglePlaying()}
+        />
+
+        <Button
           icon="cog"
           size="lg"
           color="white"
@@ -153,5 +166,67 @@ export default class FlightAnalysis extends Component<Props, State> {
 
   private openSettingsModal() {
     this.setState(Object.assign(this.state, { isSettingsOpen: true }));
+  }
+
+  private togglePlaying() {
+    if (this.state.isPlaying) {
+      this.setState({ isPlaying: false });
+    } else {
+      const fps = 20;
+      this.ticker = setInterval(() => {
+        this.tick((1000 / fps) * this.props.settings.playbackSpeed);
+      }, 1000 / fps);
+      const timestamp = this.shouldRewind()
+        ? this.newestTimestamp()
+        : this.state.activeTimestamp;
+      this.setState({ isPlaying: true, activeTimestamp: timestamp });
+    }
+  }
+
+  private shouldRewind() {
+    if (!this.state.activeTimestamp) {
+      return true;
+    }
+    return (
+      this.state.activeTimestamp.getTime() + 60000 >
+      this.oldestTimestamp().getTime()
+    );
+  }
+
+  private newestTimestamp() {
+    if (!this.props.flightGroup) return new Date();
+    const timestamps = this.props.flightGroup.flights
+      .map((f) => f.getRecordingStartedAt())
+      .sort();
+    return timestamps[0];
+  }
+
+  private tick(incrementInMillis: number) {
+    if (!this.state.isPlaying) {
+      this.ticker && clearInterval(this.ticker);
+      this.ticker = null;
+      return;
+    }
+
+    if (this.playbackIsDone()) {
+      this.setState({ isPlaying: false });
+    }
+
+    this.setState((state) => {
+      if (!state.activeTimestamp) return state;
+      return {
+        ...state,
+        activeTimestamp: new Date(
+          state.activeTimestamp?.getTime() + incrementInMillis
+        ),
+      };
+    });
+  }
+
+  private playbackIsDone() {
+    return (
+      this.state.activeTimestamp &&
+      this.state.activeTimestamp > this.oldestTimestamp()
+    );
   }
 }

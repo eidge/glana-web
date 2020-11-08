@@ -35,6 +35,7 @@ export default class Home extends Component<Props, State> {
       synchronizationMethod: synchronizationMethods.realTime,
       renderFullTracks: false,
       followFlight: true,
+      playbackSpeed: 250,
     };
   }
 

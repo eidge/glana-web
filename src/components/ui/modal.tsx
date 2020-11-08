@@ -3,7 +3,7 @@ import { use100vh } from "react-div-100vh";
 
 interface Props {
   isOpen: boolean;
-  onClose: () => void;
+  onClose?: () => void;
   children: JSX.Element[] | JSX.Element;
 }
 

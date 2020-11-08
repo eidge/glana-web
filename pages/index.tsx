@@ -20,6 +20,7 @@ interface State {
   flightGroup: FlightGroup | null;
   task: Task | null;
   settings: SettingsModel;
+  isLoading: boolean;
 }
 
 export default class Home extends Component<Props, State> {
@@ -29,6 +30,7 @@ export default class Home extends Component<Props, State> {
       flightGroup: null,
       task: null,
       settings: this.buildSettings(),
+      isLoading: false,
     };
   }
 
@@ -49,6 +51,7 @@ export default class Home extends Component<Props, State> {
             content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
           />
         </Head>
+
         <div
           className="w-screen"
           onDragEnter={(event) => event.preventDefault()}
@@ -63,30 +66,46 @@ export default class Home extends Component<Props, State> {
             flightGroup={this.state.flightGroup}
             task={this.state.task}
           />
-          <Modal isOpen={!this.state.flightGroup} onClose={() => {}}>
-            <div>
-              <h1 className="text-xl font-semibold mb-4">Welcome to Glana</h1>
-              <div className="mt-4">
-                <span className="text-gray-700">
-                  Select one or more flights to continue
-                </span>
-                <div className="mt-2">
-                  <label className="btn btn--primary btn--md">
-                    Choose file(s)
-                    <input
-                      className="invisible w-0"
-                      type="file"
-                      multiple={true}
-                      onChange={(e) => this.handleFileInput(e)}
-                    />
-                  </label>
-                </div>
-              </div>
-            </div>
+
+          <Modal
+            isOpen={!this.state.flightGroup || this.state.isLoading}
+            onClose={() => {}}
+          >
+            {this.state.isLoading
+              ? this.loadingModal()
+              : this.flightUploadModal()}
           </Modal>
         </div>
       </>
     );
+  }
+
+  private flightUploadModal() {
+    return (
+      <div>
+        <h1 className="text-xl font-semibold mb-4">Welcome to Glana</h1>
+        <div className="mt-4">
+          <span className="text-gray-700">
+            Select one or more flights to continue
+          </span>
+          <div className="mt-2">
+            <label className="btn btn--primary btn--md">
+              Choose file(s)
+              <input
+                className="invisible w-0"
+                type="file"
+                multiple={true}
+                onChange={(e) => this.handleFileInput(e)}
+              />
+            </label>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  private loadingModal() {
+    return <p className="text-xl font-semibold">Loading...</p>;
   }
 
   private updateSettings(settings: SettingsModel) {
@@ -117,18 +136,24 @@ export default class Home extends Component<Props, State> {
   }
 
   private async readAndAnalyseIgcs(files: Blob[]) {
-    let fileContents = await this.readFiles(files);
-    let savedFlights = fileContents.map((contents) =>
-      this.analyseFlight(contents)
-    );
+    try {
+      this.setState({ isLoading: true });
 
-    let flightGroup = new FlightGroup(savedFlights);
-    flightGroup.synchronize(this.state.settings.synchronizationMethod);
+      let fileContents = await this.readFiles(files);
+      let savedFlights = fileContents.map((contents) =>
+        this.analyseFlight(contents)
+      );
 
-    let task: Task | null =
-      flightGroup.flights.find((f: SavedFlight) => f.task)?.task || null;
+      let flightGroup = new FlightGroup(savedFlights);
+      flightGroup.synchronize(this.state.settings.synchronizationMethod);
 
-    this.setState({ flightGroup, task });
+      let task: Task | null =
+        flightGroup.flights.find((f: SavedFlight) => f.task)?.task || null;
+
+      this.setState({ flightGroup, task, isLoading: false });
+    } catch {
+      this.setState({ isLoading: false });
+    }
   }
 
   private readFiles(blobs: Blob[]) {

@@ -10,8 +10,10 @@ import { Speed } from "glana/src/units/speed";
 
 interface Props {
   flightGroup: FlightGroup;
+  followFlight: SavedFlight;
   activeTimestamp: Date;
   onTimestampChange: (timestamp: Date) => void;
+  setFollowFlight: (flight: SavedFlight) => void;
 }
 
 interface State {}
@@ -113,6 +115,10 @@ export default class Timeline extends Component<Props, State> {
             (datum?.calculatedValues["averageVario"] as Quantity<Speed>) ||
             null,
           timestampOffset: f.getTimeOffsetInMilliseconds(),
+          isActive: this.props.followFlight === f,
+          onClick: () => {
+            this.props.setFollowFlight(f);
+          },
         };
       }
     );

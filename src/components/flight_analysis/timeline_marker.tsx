@@ -10,6 +10,8 @@ interface TimestampDetails {
   altitude: Quantity<Length> | null;
   vario: Quantity<Speed> | null;
   timestampOffset: Quantity<Duration>;
+  isActive: boolean;
+  onClick: () => void;
 }
 
 interface Props {
@@ -28,7 +30,7 @@ export default class TimelineMarker extends Component<Props, State> {
         style={{ left: `${this.props.relativeLeftPosition}%` }}
       >
         <div className={this.markerDetailsClassNames()}>
-          {this.props.timestampDetails.map((d, i) => this.markerDetails(d, i))}
+          {this.props.timestampDetails.map((d) => this.markerDetails(d))}
         </div>
 
         <style jsx>{`
@@ -62,39 +64,50 @@ export default class TimelineMarker extends Component<Props, State> {
     return classes.join(" ");
   }
 
-  private markerDetails(details: TimestampDetails, index: number) {
+  private markerDetails(details: TimestampDetails) {
     return (
-      <div className="gl-marker-details" key={index}>
-        <div className="gl-marker-details-label">
-          <div
-            className="gl-marker-details-dot"
-            style={{ backgroundColor: details.color }}
-          ></div>
-          <div className="overflow-hidden">{details.label}</div>
+      <div className="py-2" key={details.label}>
+        <div className="gl-marker-details-clickable" onClick={details.onClick}>
+          <div className="gl-marker-details-label">
+            <div
+              className="gl-marker-details-dot"
+              style={{
+                backgroundColor: details.isActive
+                  ? details.color
+                  : "transparent",
+                borderColor: details.color,
+              }}
+            ></div>
+            <div className="overflow-hidden">{details.label}</div>
+          </div>
+          <div className="gl-marker-details-values">
+            {this.maybeVario(details)}
+            {this.maybeAltitude(details)}
+            {this.timestamp(details)}
+          </div>
+
+          <style jsx>{`
+            .gl-marker-details-clickable {
+              @apply flex flex-row justify-between items-center rounded cursor-pointer;
+            }
+
+            .gl-marker-details-clickable:hover {
+              @apply bg-gray-200;
+            }
+
+            .gl-marker-details-label {
+              @apply flex flex-row items-center text-base w-16 font-semibold leading-none overflow-hidden mr-3;
+            }
+
+            .gl-marker-details-dot {
+              @apply w-2 h-2 rounded-full mr-2 flex-shrink-0 border-2;
+            }
+
+            .gl-marker-details-values {
+              @apply flex flex-col text-right;
+            }
+          `}</style>
         </div>
-        <div className="gl-marker-details-values">
-          {this.maybeVario(details)}
-          {this.maybeAltitude(details)}
-          {this.timestamp(details)}
-        </div>
-
-        <style jsx>{`
-          .gl-marker-details {
-            @apply flex flex-row justify-between items-center py-2;
-          }
-
-          .gl-marker-details-label {
-            @apply flex flex-row items-center text-base w-16 font-semibold leading-none overflow-hidden mr-3;
-          }
-
-          .gl-marker-details-dot {
-            @apply w-2 h-2 rounded-full mr-2 flex-shrink-0;
-          }
-
-          .gl-marker-details-values {
-            @apply flex flex-col text-right;
-          }
-        `}</style>
       </div>
     );
   }

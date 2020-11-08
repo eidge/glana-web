@@ -91,15 +91,29 @@ export default class FlightAnalysis extends Component<Props, State> {
   }
 
   private maybeRenderTimeline() {
-    if (!this.props.flightGroup || !this.state.activeTimestamp) return null;
+    if (
+      !this.props.flightGroup ||
+      !this.state.followFlight ||
+      !this.state.activeTimestamp
+    )
+      return null;
 
     return (
       <Timeline
+        followFlight={this.state.followFlight}
+        setFollowFlight={(f: SavedFlight) => this.setFollowFlight(f)}
         flightGroup={this.props.flightGroup}
         activeTimestamp={this.state.activeTimestamp}
         onTimestampChange={(timestamp) => this.setActiveTimestamp(timestamp)}
       />
     );
+  }
+
+  private setFollowFlight(f: SavedFlight) {
+    this.setState({
+      followFlight: f,
+      task: f.task,
+    });
   }
 
   private maybeRenderSettingsModalAndButton() {

@@ -136,24 +136,24 @@ export default class Home extends Component<Props, State> {
   }
 
   private async readAndAnalyseIgcs(files: Blob[]) {
-    try {
-      this.setState({ isLoading: true });
+    this.setState({ isLoading: true }, async () => {
+      try {
+        let fileContents = await this.readFiles(files);
+        let savedFlights = fileContents.map((contents) =>
+          this.analyseFlight(contents)
+        );
 
-      let fileContents = await this.readFiles(files);
-      let savedFlights = fileContents.map((contents) =>
-        this.analyseFlight(contents)
-      );
+        let flightGroup = new FlightGroup(savedFlights);
+        flightGroup.synchronize(this.state.settings.synchronizationMethod);
 
-      let flightGroup = new FlightGroup(savedFlights);
-      flightGroup.synchronize(this.state.settings.synchronizationMethod);
+        let task: Task | null =
+          flightGroup.flights.find((f: SavedFlight) => f.task)?.task || null;
 
-      let task: Task | null =
-        flightGroup.flights.find((f: SavedFlight) => f.task)?.task || null;
-
-      this.setState({ flightGroup, task, isLoading: false });
-    } catch {
-      this.setState({ isLoading: false });
-    }
+        this.setState({ flightGroup, task, isLoading: false });
+      } catch {
+        this.setState({ isLoading: false });
+      }
+    });
   }
 
   private readFiles(blobs: Blob[]) {

@@ -23,7 +23,6 @@ interface State {
 export default class Map extends Component<Props, State> {
   private el: HTMLDivElement | null = null;
   private mapRenderer!: MapRenderer;
-  private lastProps: Props | null = null;
   private flightRenderers: FlightRenderer[] = [];
 
   constructor(props: Props) {
@@ -33,7 +32,7 @@ export default class Map extends Component<Props, State> {
 
   componentDidMount() {
     this.renderMap();
-    this.componentDidUpdate();
+    this.renderNewFlightGroup();
   }
 
   private renderMap() {
@@ -42,28 +41,20 @@ export default class Map extends Component<Props, State> {
     this.mapRenderer.render();
   }
 
-  componentDidUpdate() {
-    if (this.shouldUpdateCurrentFlightGroup()) {
+  componentDidUpdate(previousProps: Props) {
+    if (this.shouldUpdateCurrentFlightGroup(previousProps)) {
       this.maybeCenterFlight(this.state.followFlight);
       this.updateFlightMarkers();
       return;
     }
 
-    this.reset();
-    if (!this.props.flightGroup) return;
-
-    this.setState((state, props) => {
-      return { ...state, followFlight: props.flightGroup?.flights[0] || null };
-    });
-    this.maybeRenderTask();
-    this.renderFlights();
-    this.mapRenderer.zoomToFit();
+    this.renderNewFlightGroup();
   }
 
-  private shouldUpdateCurrentFlightGroup() {
+  private shouldUpdateCurrentFlightGroup(previousProps: Props) {
     return (
-      this.props.flightGroup === this.lastProps?.flightGroup &&
-      this.props.settings === this.lastProps.settings
+      this.props.flightGroup === previousProps?.flightGroup &&
+      this.props.settings === previousProps.settings
     );
   }
 
@@ -85,11 +76,22 @@ export default class Map extends Component<Props, State> {
     );
   }
 
+  private renderNewFlightGroup() {
+    this.reset();
+    if (!this.props.flightGroup) return;
+
+    this.setState((state, props) => {
+      return { ...state, followFlight: props.flightGroup?.flights[0] || null };
+    });
+    this.maybeRenderTask();
+    this.renderFlights();
+    this.mapRenderer.zoomToFit();
+  }
+
   private reset() {
     this.setState({ followFlight: null });
     this.mapRenderer.reset();
     this.flightRenderers = [];
-    this.lastProps = this.props;
   }
 
   private maybeRenderTask() {

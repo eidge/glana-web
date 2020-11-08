@@ -20,19 +20,27 @@ interface Props {
 interface State {
   isSettingsOpen: boolean;
   activeTimestamp: Date | null;
+  followFlight: SavedFlight | null;
 }
 
 export default class FlightAnalysis extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
-    this.state = { isSettingsOpen: false, activeTimestamp: null };
+    this.state = {
+      isSettingsOpen: false,
+      activeTimestamp: null,
+      followFlight: props.flightGroup?.flights[0] || null,
+    };
   }
 
   componentDidMount() {
     this.maybeSetActiveTimestamp();
   }
 
-  componentDidUpdate() {
+  componentDidUpdate(previousProps: Props) {
+    if (previousProps.flightGroup !== this.props.flightGroup) {
+      this.setState({ followFlight: null });
+    }
     this.maybeSetActiveTimestamp();
   }
 

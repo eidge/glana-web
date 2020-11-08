@@ -16,17 +16,13 @@ interface State {
 }
 
 export default class AltitudeChart extends Component<Props, State> {
-  private flightGroup: FlightGroup;
-
   constructor(props: Props) {
     super(props);
-    this.flightGroup = props.flightGroup;
     this.state = { chartData: this.buildChartData(this.props.flightGroup) };
   }
 
-  componentDidUpdate() {
-    if (this.flightGroup !== this.props.flightGroup) {
-      this.flightGroup = this.props.flightGroup;
+  componentDidUpdate(previousProps: Props) {
+    if (previousProps.flightGroup !== this.props.flightGroup) {
       this.setState({ chartData: this.buildChartData(this.props.flightGroup) });
     }
   }

@@ -70,7 +70,7 @@ export default class TimelineMarker extends Component<Props, State> {
             className="gl-marker-details-dot"
             style={{ backgroundColor: details.color }}
           ></div>
-          <div>{details.label}</div>
+          <div className="overflow-hidden">{details.label}</div>
         </div>
         <div className="gl-marker-details-values">
           {this.maybeVario(details)}
@@ -88,7 +88,7 @@ export default class TimelineMarker extends Component<Props, State> {
           }
 
           .gl-marker-details-dot {
-            @apply w-2 h-2 rounded-full mr-2;
+            @apply w-2 h-2 rounded-full mr-2 flex-shrink-0;
           }
 
           .gl-marker-details-values {

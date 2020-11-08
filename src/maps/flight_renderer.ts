@@ -37,7 +37,12 @@ export default class FlightRenderer {
     });
 
     let color = COLORS.getColorFor(this.flight);
-    let layer = new VectorLayer({ source, style: () => this.olStyle(color) });
+    let layer = new VectorLayer({
+      source,
+      style: () => this.olStyle(color),
+      updateWhileAnimating: true,
+      updateWhileInteracting: true,
+    });
     this.map.olMap.addLayer(layer);
   }
 

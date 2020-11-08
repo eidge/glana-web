@@ -17,6 +17,7 @@ interface Props {
 }
 
 interface State {
+  flightGroup: FlightGroup | null;
   isSettingsOpen: boolean;
   activeTimestamp: Date | null;
   followFlight: SavedFlight | null;
@@ -27,6 +28,7 @@ export default class FlightAnalysis extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {
+      flightGroup: null,
       isSettingsOpen: false,
       activeTimestamp: null,
       ...this.followFlightAndTask(props),
@@ -47,7 +49,15 @@ export default class FlightAnalysis extends Component<Props, State> {
 
   componentDidUpdate(previousProps: Props) {
     if (previousProps.flightGroup !== this.props.flightGroup) {
-      this.setState({ ...this.followFlightAndTask(this.props) });
+      // flightGroup is stored in state so that we can change
+      // flightGroup, followFlight && task atomically.
+      //
+      // This is required to zoom to fit correctly only when the flight group is
+      // changed, but not when a task changes without changing task group.
+      this.setState({
+        flightGroup: this.props.flightGroup,
+        ...this.followFlightAndTask(this.props),
+      });
     }
     this.maybeSetActiveTimestamp();
   }
@@ -72,7 +82,7 @@ export default class FlightAnalysis extends Component<Props, State> {
       <div className="w-screen relative">
         <Div100vh>
           <Map
-            flightGroup={this.props.flightGroup}
+            flightGroup={this.state.flightGroup}
             followFlight={this.state.followFlight}
             task={this.state.task}
             activeTimestamp={this.state.activeTimestamp}

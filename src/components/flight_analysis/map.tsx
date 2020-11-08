@@ -23,6 +23,7 @@ export default class Map extends Component<Props, State> {
   private el: HTMLDivElement | null = null;
   private mapRenderer!: MapRenderer;
   private flightRenderers: FlightRenderer[] = [];
+  private taskRenderer!: TaskRenderer;
 
   constructor(props: Props) {
     super(props);
@@ -30,7 +31,8 @@ export default class Map extends Component<Props, State> {
 
   componentDidMount() {
     this.renderMap();
-    this.renderNewFlightGroup();
+    this.taskRenderer = new TaskRenderer(this.mapRenderer);
+    this.renderNewFlightGroup(null);
   }
 
   private renderMap() {
@@ -41,12 +43,13 @@ export default class Map extends Component<Props, State> {
 
   componentDidUpdate(previousProps: Props) {
     if (this.shouldUpdateCurrentFlightGroup(previousProps)) {
-      this.maybeCenterFlight(this.props.followFlight);
+      this.maybeRenderTask(previousProps);
       this.updateFlightMarkers();
+      this.maybeCenterFlight(this.props.followFlight);
       return;
     }
 
-    this.renderNewFlightGroup();
+    this.renderNewFlightGroup(previousProps);
   }
 
   private shouldUpdateCurrentFlightGroup(previousProps: Props) {
@@ -74,24 +77,25 @@ export default class Map extends Component<Props, State> {
     );
   }
 
-  private renderNewFlightGroup() {
+  private renderNewFlightGroup(previousProps: Props | null) {
     this.reset();
     if (!this.props.flightGroup) return;
 
-    this.maybeRenderTask();
+    this.maybeRenderTask(previousProps);
     this.renderFlights();
-    this.mapRenderer.zoomToFit();
+    this.zoomToFit();
   }
 
   private reset() {
     this.mapRenderer.reset();
+    this.taskRenderer = new TaskRenderer(this.mapRenderer);
     this.flightRenderers = [];
   }
 
-  private maybeRenderTask() {
+  private maybeRenderTask(previousProps: Props | null) {
     if (!this.props.task) return;
-    let task = new TaskRenderer(this.mapRenderer, this.props.task);
-    task.render();
+    if (previousProps && previousProps.task === this.props.task) return;
+    this.taskRenderer.render(this.props.task);
   }
 
   private renderFlights() {
@@ -124,7 +128,7 @@ export default class Map extends Component<Props, State> {
     return [
       this.makeButton("zoomIn", () => this.zoomIn()),
       this.makeButton("search", () => this.zoomToFit()),
-      this.makeButton("zoomIn", () => this.zoomOut()),
+      this.makeButton("zoomOut", () => this.zoomOut()),
     ];
   }
 

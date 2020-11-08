@@ -113,6 +113,7 @@ export default class Map {
       interactions: interactions,
       layers: [
         new TileLayer({
+          preload: Infinity,
           source: new OSM({
             url:
               "https://api.mapbox.com/styles/v1/mapbox/outdoors-v11/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1IjoiZWlkZ2UiLCJhIjoiNjVmYTRkMWY0NzM0NDdhZThmYmY4MzI2ZjU2Njg5NTIifQ.7IevRmRnToydZ2fJMGLZRQ",

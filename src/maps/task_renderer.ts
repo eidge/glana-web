@@ -9,27 +9,37 @@ import GeoJSON from "ol/format/GeoJSON";
 
 export default class TaskRenderer {
   private map: MapRenderer;
-  private task: Task;
+  private layer: any;
 
-  constructor(map: MapRenderer, task: Task) {
+  constructor(map: MapRenderer) {
     this.map = map;
-    this.task = task;
   }
 
-  render() {
-    let features = this.buildFeatures();
+  render(task: Task) {
+    if (this.layer) {
+      this.map.olMap.removeLayer(this.layer);
+    }
+
+    let features = this.buildFeatures(task);
     let source = new VectorSource({ features });
     let style = () => this.olStyle();
-    let layer = new VectorLayer({ source, style });
+    let layer = new VectorLayer({
+      source,
+      style,
+      updateWhileAnimating: true,
+      updateWhileInteracting: true,
+    });
+
+    this.layer = layer;
     this.map.olMap.addLayer(layer);
   }
 
-  private buildFeatures() {
-    return [...this.buildTurnpoints(), ...this.buildTrack()];
+  private buildFeatures(task: Task) {
+    return [...this.buildTurnpoints(task), ...this.buildTrack(task)];
   }
 
-  private buildTurnpoints() {
-    return this.task.turnpoints.flatMap((tp) => this.buildFeature(tp));
+  private buildTurnpoints(task: Task) {
+    return task.turnpoints.flatMap((tp) => this.buildFeature(tp));
   }
 
   private buildFeature(turnpoint: TaskTurnpoint) {
@@ -41,9 +51,9 @@ export default class TaskRenderer {
     return features;
   }
 
-  private buildTrack() {
+  private buildTrack(task: Task) {
     const { Feature } = this.map.ol;
-    let points = this.task.turnpoints.map((tp) => positionToOlPoint(tp.center));
+    let points = task.turnpoints.map((tp) => positionToOlPoint(tp.center));
     let track = new LineString(points);
     return [new Feature({ geometry: track })];
   }

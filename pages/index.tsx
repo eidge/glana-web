@@ -11,8 +11,11 @@ import SynchronizationMethod from "glana/src/analysis/synchronization/method";
 import { SettingsModel } from "../src/components/flight_analysis/settings";
 import Modal from "../src/components/ui/modal";
 import Head from "next/head";
+import { Router, withRouter } from "next/router";
 
-interface Props {}
+interface Props {
+  router: Router;
+}
 
 interface State {
   flightGroup: FlightGroup | null;
@@ -20,7 +23,7 @@ interface State {
   isLoading: boolean;
 }
 
-export default class Home extends Component<Props, State> {
+class Home extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {
@@ -28,6 +31,46 @@ export default class Home extends Component<Props, State> {
       settings: this.buildSettings(),
       isLoading: false,
     };
+  }
+
+  componentDidMount() {
+    this.maybeLoadIGCFromUrl();
+  }
+
+  componentDidUpdate() {
+    this.maybeLoadIGCFromUrl();
+  }
+
+  private async maybeLoadIGCFromUrl() {
+    let igcUrl = this.props.router.query.igcUrl;
+    if (!igcUrl || this.state.flightGroup || this.state.isLoading) return;
+
+    this.setState({ isLoading: true }, async () => {
+      try {
+        await this.loadIGCFromUrl(igcUrl as string | string[]);
+      } catch {
+        await this.props.router.push("/");
+        this.setState({ isLoading: false });
+      }
+    });
+  }
+
+  private async loadIGCFromUrl(igcUrl: string | string[]) {
+    if (igcUrl instanceof Array) {
+      let responses = igcUrl.map((url) => {
+        return this.fetchText(url);
+      });
+      let igcContents = await Promise.all(responses);
+      this.parseIGCs(igcContents);
+    } else {
+      let igcContent = await this.fetchText(igcUrl);
+      this.parseIGCs([igcContent]);
+    }
+  }
+
+  private async fetchText(url: string) {
+    let response = await fetch(url);
+    return await response.text();
   }
 
   private buildSettings() {
@@ -135,18 +178,22 @@ export default class Home extends Component<Props, State> {
     this.setState({ isLoading: true }, async () => {
       try {
         let fileContents = await this.readFiles(files);
-        let savedFlights = fileContents.map((contents) =>
-          this.analyseFlight(contents)
-        );
-
-        let flightGroup = new FlightGroup(savedFlights);
-        flightGroup.synchronize(this.state.settings.synchronizationMethod);
-
-        this.setState({ flightGroup, isLoading: false });
+        this.parseIGCs(fileContents);
       } catch {
         this.setState({ isLoading: false });
       }
     });
+  }
+
+  private parseIGCs(fileContents: string[]) {
+    let savedFlights = fileContents.map((contents) =>
+      this.analyseFlight(contents)
+    );
+
+    let flightGroup = new FlightGroup(savedFlights);
+    flightGroup.synchronize(this.state.settings.synchronizationMethod);
+
+    this.setState({ flightGroup, isLoading: false });
   }
 
   private readFiles(blobs: Blob[]) {
@@ -154,17 +201,19 @@ export default class Home extends Component<Props, State> {
     return Promise.all(fileContentPromises);
   }
 
-  private readFile(file: Blob) {
+  private readFile(file: Blob): Promise<string> {
     return new Promise((resolve, reject) => {
       let reader = new FileReader();
-      reader.onload = (fileContents) => resolve(fileContents);
+      reader.onload = (fileContents) =>
+        resolve(fileContents.target?.result as string);
       reader.onerror = (error) => reject(error);
       reader.readAsText(file);
     });
   }
 
-  private analyseFlight(event: any) {
-    const flight = this.parseIGC(event).analise(this.flightComputer());
+  private analyseFlight(contents: string) {
+    let parser = new IGCParser();
+    const flight = parser.parse(contents).analise(this.flightComputer());
     return flight;
   }
 
@@ -172,11 +221,6 @@ export default class Home extends Component<Props, State> {
     return new FlightComputer(
       new Map([["averageVario", new AverageVario(seconds(30))]])
     );
-  }
-
-  private parseIGC(event: any) {
-    let parser = new IGCParser();
-    return parser.parse(event.target.result as string);
   }
 
   private synchronizeFlightGroup(method: SynchronizationMethod) {
@@ -187,3 +231,5 @@ export default class Home extends Component<Props, State> {
     });
   }
 }
+
+export default withRouter(Home);

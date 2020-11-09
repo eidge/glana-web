@@ -34,7 +34,10 @@ export default class Map extends Component<Props, State> {
       <div className="w-full h-full">
         <div className="w-full h-full" ref={(el) => (this.el = el)}></div>
         <div className="absolute left-0 top-0 ml-2 mt-2">
-          <ButtonGroup buttons={this.mapControlButtons()}></ButtonGroup>
+          <ButtonGroup
+            direction="vertical"
+            buttons={this.mapControlButtons()}
+          ></ButtonGroup>
         </div>
       </div>
     );

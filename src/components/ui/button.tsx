@@ -8,6 +8,7 @@ export interface ButtonProps {
   icon?: IconKey | null;
   size?: SizeOptions;
   color?: ColorOptions;
+  inButtonGroup?: boolean;
   onClick: () => void;
 }
 
@@ -17,6 +18,8 @@ function addDefaultProps(props: ButtonProps) {
     size: props.size || "md",
     icon: props.icon || null,
     color: props.color || "secondary",
+    inButtonGroup:
+      props.inButtonGroup === undefined ? false : props.inButtonGroup,
   };
 }
 
@@ -48,17 +51,29 @@ const colorClasses: { [key in ColorOptions]: string } = {
 
 const Button = (p: ButtonProps) => {
   const props = addDefaultProps(p);
+  const classes = ["btn"];
+  classes.push(sizeClasses[props.size]);
+  classes.push(colorClasses[props.color]);
+
+  if (props.inButtonGroup) {
+    classes.push("btn--grouped");
+  }
 
   return (
-    <a
-      href="#"
-      className={`btn ${sizeClasses[props.size]} ${colorClasses[props.color]}`}
-      onClick={props.onClick}
-    >
+    <a href="#" className={classes.join(" ")} onClick={props.onClick}>
       {iconComponent(props)}
       <style global jsx>{`
         .btn {
-          @apply bg-gray-600 shadow-md rounded leading-none cursor-pointer border border-solid inline-block;
+          @apply bg-gray-600 leading-none cursor-pointer inline-block;
+        }
+
+        .btn:not(.btn--grouped),
+        .btn-group {
+          @apply rounded shadow-md border border-solid;
+        }
+
+        .btn-group {
+          @apply overflow-hidden flex;
         }
 
         .btn:hover {

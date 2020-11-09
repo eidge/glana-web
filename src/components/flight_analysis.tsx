@@ -136,20 +136,22 @@ export default class FlightAnalysis extends Component<Props, State> {
     if (!this.props.flightGroup || !this.state.activeTimestamp) return null;
 
     return (
-      <div className="absolute right-0 top-0 mr-2 mt-2">
-        <Button
-          icon={this.state.isPlaying ? "pause" : "play"}
-          size="lg"
-          color="white"
-          onClick={() => this.togglePlaying()}
-        />
-
+      <div className="absolute right-0 top-0 mr-2 mt-2 flex flex-col">
         <Button
           icon="cog"
           size="lg"
           color="white"
           onClick={() => this.openSettingsModal()}
         />
+
+        <div className="mt-2">
+          <Button
+            icon={this.state.isPlaying ? "pause" : "play"}
+            size="lg"
+            color="white"
+            onClick={() => this.togglePlaying()}
+          />
+        </div>
 
         <Modal
           isOpen={this.state.isSettingsOpen}

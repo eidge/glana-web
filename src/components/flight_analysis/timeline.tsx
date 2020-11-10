@@ -7,6 +7,7 @@ import { COLORS } from "../../maps/flight_renderer";
 import SavedFlight from "glana/src/saved_flight";
 import Quantity from "glana/src/units/quantity";
 import { Speed } from "glana/src/units/speed";
+import { SettingsModel } from "./settings";
 
 interface Props {
   flightGroup: FlightGroup;
@@ -14,6 +15,7 @@ interface Props {
   activeTimestamp: Date;
   onTimestampChange: (timestamp: Date) => void;
   setFollowFlight: (flight: SavedFlight) => void;
+  settings: SettingsModel;
 }
 
 interface State {}
@@ -29,6 +31,7 @@ export default class Timeline extends Component<Props, State> {
           activeTimestamp={this.props.activeTimestamp}
           relativeLeftPosition={this.relativeLeftPosition() * 100}
           timestampDetails={this.timestampDetails()}
+          settings={this.props.settings}
         />
         <div
           className="w-full h-full absolute bottom-0 left-0 cursor-crosshair"

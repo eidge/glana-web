@@ -1,8 +1,9 @@
 import { Duration, milliseconds } from "glana/src/units/duration";
-import { Length, meters } from "glana/src/units/length";
+import { Length } from "glana/src/units/length";
 import Quantity from "glana/src/units/quantity";
-import { metersPerSecond, Speed } from "glana/src/units/speed";
+import { knots, Speed } from "glana/src/units/speed";
 import { Component } from "react";
+import { SettingsModel, units } from "./settings";
 
 interface TimestampDetails {
   color: string;
@@ -18,6 +19,7 @@ interface Props {
   activeTimestamp: Date;
   relativeLeftPosition: number;
   timestampDetails: TimestampDetails[];
+  settings: SettingsModel;
 }
 
 interface State {}
@@ -114,24 +116,26 @@ export default class TimelineMarker extends Component<Props, State> {
 
   private maybeVario(details: TimestampDetails) {
     if (!details.vario) return null;
-    let color = details.vario.equalOrGreaterThan(metersPerSecond(0))
-      ? "green"
-      : "red";
+    let color = details.vario.equalOrGreaterThan(knots(0)) ? "green" : "red";
     return (
       <div
         className="text-xs leading-none font-mono font-hairline"
         style={{ color: color }}
       >
-        {details.vario.convertTo(metersPerSecond).toString()}
+        {details.vario.convertTo(this.unitConfig().vario).toString()}
       </div>
     );
+  }
+
+  private unitConfig() {
+    return units[this.props.settings.units];
   }
 
   private maybeAltitude(details: TimestampDetails) {
     if (!details.altitude) return null;
     return (
       <div className="text-xs leading-none font-mono font-hairline mt-1">
-        {details.altitude.convertTo(meters).toString()}
+        {details.altitude.convertTo(this.unitConfig().altitude).toString()}
       </div>
     );
   }

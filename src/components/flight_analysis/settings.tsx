@@ -1,5 +1,13 @@
 import { synchronizationMethods } from "glana/src/analysis/flight_group";
 import SynchronizationMethod from "glana/src/analysis/synchronization/method";
+import { feet, meters } from "glana/src/units/length";
+import { QuantityFactory } from "glana/src/units/quantity_factory";
+import {
+  kilometersPerHour,
+  knots,
+  metersPerSecond,
+} from "glana/src/units/speed";
+import Unit from "glana/src/units/unit";
 import { Component } from "react";
 
 const synchronizationOptions = [
@@ -63,11 +71,40 @@ const playbackSpeedOptions = [
   },
 ];
 
+type UnitOption = "metric" | "imperial";
+
+const unitOptions = [
+  {
+    label: "Imperial",
+    value: "imperial" as UnitOption,
+    stringValue: "imperial",
+  },
+  {
+    label: "Metric",
+    value: "metric" as UnitOption,
+    stringValue: "metric",
+  },
+];
+
+export const units = {
+  metric: {
+    vario: metersPerSecond,
+    altitude: meters,
+    speed: kilometersPerHour,
+  },
+  imperial: {
+    vario: knots,
+    altitude: feet,
+    speed: knots,
+  },
+};
+
 export interface SettingsModel {
   synchronizationMethod: SynchronizationMethod;
   renderFullTracks: boolean;
   followFlight: boolean;
   playbackSpeed: number;
+  units: UnitOption;
 }
 
 interface Props {
@@ -85,6 +122,10 @@ export default class Settings extends Component<Props, State> {
       <div>
         <h1 className="text-xl font-semibold mb-4">Settings</h1>
         <div className="mt-4">
+          <span className="text-gray-700">Units</span>
+          <div className="mt-2">{this.unitInput()}</div>
+        </div>
+        <div className="mt-4">
           <span className="text-gray-700">Synchronize flights by</span>
           <div className="mt-2">{this.synchronizationMethodInput()}</div>
         </div>
@@ -99,6 +140,31 @@ export default class Settings extends Component<Props, State> {
         </div>
       </div>
     );
+  }
+
+  private unitInput() {
+    return unitOptions.map((option) => {
+      return (
+        <label
+          className="inline-flex items-center mr-6"
+          key={option.stringValue}
+        >
+          <input
+            type="radio"
+            name="unit"
+            value={option.stringValue}
+            checked={this.props.settings.units === option.value}
+            onChange={() =>
+              this.props.onChange({
+                ...this.props.settings,
+                units: option.value,
+              })
+            }
+          />
+          <span className="ml-2">{option.label}</span>
+        </label>
+      );
+    });
   }
 
   private synchronizationMethodInput() {

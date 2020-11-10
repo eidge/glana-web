@@ -121,6 +121,7 @@ export default class FlightAnalysis extends Component<Props, State> {
         flightGroup={this.props.flightGroup}
         activeTimestamp={this.state.activeTimestamp}
         onTimestampChange={(timestamp) => this.setActiveTimestamp(timestamp)}
+        settings={this.props.settings}
       />
     );
   }

@@ -73,12 +73,13 @@ class Home extends Component<Props, State> {
     return await response.text();
   }
 
-  private buildSettings() {
+  private buildSettings(): SettingsModel {
     return {
       synchronizationMethod: synchronizationMethods.realTime,
       renderFullTracks: false,
       followFlight: true,
       playbackSpeed: 250,
+      units: "imperial",
     };
   }
 

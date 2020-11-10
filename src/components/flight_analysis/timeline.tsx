@@ -8,6 +8,7 @@ import SavedFlight from "glana/src/saved_flight";
 import Quantity from "glana/src/units/quantity";
 import { Speed } from "glana/src/units/speed";
 import { SettingsModel } from "./settings";
+import TaskTimeline from "./task_timeline";
 
 interface Props {
   flightGroup: FlightGroup;
@@ -25,14 +26,25 @@ export default class Timeline extends Component<Props, State> {
 
   render() {
     return (
-      <div className="w-full absolute bottom-0 h-24 cursor-default select-none">
-        <AltitudeChart flightGroup={this.props.flightGroup} />
+      <div className="w-full absolute bottom-0 cursor-default select-none">
+        <div className="h-24">
+          <AltitudeChart flightGroup={this.props.flightGroup} />
+        </div>
+
+        {this.props.flightGroup.flights.map((f) => (
+          <TaskTimeline
+            flight={f}
+            relativeLeftPositionAt={(d) => this.relativeLeftPosition(d)}
+          />
+        ))}
+
         <TimelineMarker
           activeTimestamp={this.props.activeTimestamp}
-          relativeLeftPosition={this.relativeLeftPosition() * 100}
+          relativeLeftPosition={this.relativeLeftAtActiveTimestamp()}
           timestampDetails={this.timestampDetails()}
           settings={this.props.settings}
         />
+
         <div
           className="w-full h-full absolute bottom-0 left-0 cursor-crosshair"
           ref={(el) => (this.containerEl = el)}
@@ -43,14 +55,19 @@ export default class Timeline extends Component<Props, State> {
     );
   }
 
-  private relativeLeftPosition() {
+  private relativeLeftAtActiveTimestamp() {
+    return this.relativeLeftPosition(this.props.activeTimestamp);
+  }
+
+  private relativeLeftPosition(timestamp: Date) {
     let relativeValue =
-      (this.props.activeTimestamp.getTime() - this.earliestDatum().getTime()) /
+      (timestamp.getTime() - this.earliestDatum().getTime()) /
       (this.latestDatum().getTime() - this.earliestDatum().getTime());
 
     if (relativeValue < 0) return 0;
     if (relativeValue > 1) return 1;
-    return relativeValue;
+
+    return relativeValue * 100;
   }
 
   private onMouseMove(event: React.MouseEvent<HTMLDivElement, MouseEvent>) {

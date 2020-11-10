@@ -4588,10 +4588,10 @@ get-value@^2.0.3, get-value@^2.0.6:
   resolved "https://registry.yarnpkg.com/get-value/-/get-value-2.0.6.tgz#dc15ca1c672387ca76bd37ac0a395ba2042a2c28"
   integrity sha1-3BXKHGcjh8p2vTesCjlbogQqLCg=
 
-glana@^0.2.5:
-  version "0.2.5"
-  resolved "https://registry.yarnpkg.com/glana/-/glana-0.2.5.tgz#ca4c05664204d533eb6ad63e02de807149b1a5fd"
-  integrity sha512-iqAADHuD+Q6i27ETf/g16SUa+4caLEI5Jh8y+GfhRHxSpguvuW8AtigXiOTGqnQGaj/kEHJb6EXC6L5vUwU5EQ==
+glana@^0.2.6:
+  version "0.2.6"
+  resolved "https://registry.yarnpkg.com/glana/-/glana-0.2.6.tgz#d3fc824cfef5f3050ea1ac5c66b4311226911123"
+  integrity sha512-nVwOwBnqp+PWBfDLjBP3+YhqFOBxrsr1FQdiFbl1HAdzYvJGVPzQoerAYWdnkuOoUoZP7WBX7QeLDrgUWeMsoQ==
   dependencies:
     "@turf/turf" "^5.1.6"
     igc-parser "^0.5.0"

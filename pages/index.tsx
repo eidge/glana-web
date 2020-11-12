@@ -42,7 +42,7 @@ class Home extends Component<Props, State> {
   }
 
   private async maybeLoadIGCFromUrl() {
-    let igcUrl = this.props.router.query.igcUrl;
+    let igcUrl = this.props.router.query.igcUrl || this.igcUrlFromBGAIds();
     if (!igcUrl || this.state.flightGroup || this.state.isLoading) return;
 
     this.setState({ isLoading: true }, async () => {
@@ -53,6 +53,16 @@ class Home extends Component<Props, State> {
         this.setState({ isLoading: false });
       }
     });
+  }
+
+  private igcUrlFromBGAIds() {
+    const bgaId = this.props.router.query.bgaId;
+    if (!bgaId) return null;
+    if (bgaId instanceof Array) {
+      return bgaId.map((id) => `https://www.bgaladder.net/FlightIGC/${id}`);
+    } else {
+      return `https://www.bgaladder.net/FlightIGC/${bgaId}`;
+    }
   }
 
   private async loadIGCFromUrl(igcUrl: string | string[]) {

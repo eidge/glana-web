@@ -85,7 +85,7 @@ class Home extends Component<Props, State> {
 
   private buildSettings(): SettingsModel {
     return {
-      synchronizationMethod: synchronizationMethods.realTime,
+      synchronizationMethod: synchronizationMethods.recordingStarted,
       renderFullTracks: false,
       followFlight: true,
       playbackSpeed: 250,

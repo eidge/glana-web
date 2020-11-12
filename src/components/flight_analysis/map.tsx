@@ -107,7 +107,10 @@ export default class Map extends Component<Props, State> {
   }
 
   private maybeRenderTask() {
-    if (!this.props.task) return;
+    if (!this.props.task) {
+      this.taskRenderer.reset();
+      return;
+    }
     if (this.taskRenderer.task === this.props.task) return;
     this.taskRenderer.render(this.props.task);
   }

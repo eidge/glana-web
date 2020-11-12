@@ -17,9 +17,7 @@ export default class TaskRenderer {
   }
 
   render(task: Task) {
-    if (this.layer) {
-      this.map.olMap.removeLayer(this.layer);
-    }
+    this.reset();
 
     let features = this.buildFeatures(task);
     let source = new VectorSource({ features });
@@ -34,6 +32,13 @@ export default class TaskRenderer {
     this.layer = layer;
     this.map.olMap.addLayer(layer);
     this.task = task;
+  }
+
+  reset() {
+    if (this.layer) {
+      this.map.olMap.removeLayer(this.layer);
+      this.task = null;
+    }
   }
 
   private buildFeatures(task: Task) {

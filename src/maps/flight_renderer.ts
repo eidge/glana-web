@@ -43,6 +43,7 @@ export default class FlightRenderer {
       updateWhileAnimating: true,
       updateWhileInteracting: true,
     });
+    layer.setZIndex(1);
     this.map.olMap.addLayer(layer);
   }
 

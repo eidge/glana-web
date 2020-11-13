@@ -56,13 +56,19 @@ class Home extends Component<Props, State> {
   }
 
   private igcUrlFromBGAIds() {
-    const bgaId = this.props.router.query.bgaId;
+    const bgaId = this.props.router.query.bgaID;
     if (!bgaId) return null;
     if (bgaId instanceof Array) {
-      return bgaId.map((id) => `https://www.bgaladder.net/FlightIGC/${id}`);
+      return this.parseBgaId(bgaId.join(","));
     } else {
-      return `https://www.bgaladder.net/FlightIGC/${bgaId}`;
+      return this.parseBgaId(bgaId);
     }
+  }
+
+  private parseBgaId(bgaIdAttr: string) {
+    return bgaIdAttr
+      .split(",")
+      .map((id) => `https://www.bgaladder.net/FlightIGC/${id}`);
   }
 
   private async loadIGCFromUrl(igcUrl: string | string[]) {

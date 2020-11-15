@@ -1,13 +1,14 @@
 import ReactModal from "react-modal";
 import { use100vh } from "react-div-100vh";
+import Button from "./button";
 
-interface Props {
+interface ModalProps {
   isOpen: boolean;
   onClose?: () => void;
   children: JSX.Element[] | JSX.Element;
 }
 
-const Modal = (props: Props) => {
+const Modal = (props: ModalProps) => {
   const height = use100vh();
   return (
     <ReactModal
@@ -20,7 +21,9 @@ const Modal = (props: Props) => {
       {props.children}
       <style global jsx>{`
         .gl-modal {
-          @apply bg-white shadow-xl rounded-lg outline-none p-4;
+          @apply bg-white shadow-xl rounded-lg outline-none;
+          @apply overflow-hidden overflow-y-scroll;
+          max-height: ${height ? `${height}px` : "100vh"};
         }
 
         .gl-modal-overlay {
@@ -35,3 +38,34 @@ const Modal = (props: Props) => {
 };
 
 export default Modal;
+
+interface ModalHeaderProps {
+  title?: string;
+  onClose?: () => void;
+}
+
+export const ModalHeader = (props: ModalHeaderProps) => {
+  return (
+    <div className="bg-teal-600 p-4 pb-6 flex flex-row justify-between items-center">
+      {props.title && (
+        <h1 className="text-xl text-white font-semibold">{props.title}</h1>
+      )}
+      {props.onClose && (
+        <Button
+          color="primary"
+          inButtonGroup={true}
+          onClick={props.onClose}
+          icon="close"
+        />
+      )}
+    </div>
+  );
+};
+
+interface ModalBodyProps {
+  children: JSX.Element[] | JSX.Element;
+}
+
+export const ModalBody = (props: ModalBodyProps) => {
+  return <div className="p-4">{props.children}</div>;
+};

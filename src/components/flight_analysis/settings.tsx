@@ -119,7 +119,6 @@ export default class Settings extends Component<Props, State> {
   render() {
     return (
       <div>
-        <h1 className="text-xl font-semibold mb-4">Settings</h1>
         <div className="mt-4">
           <span className="text-gray-700">Units</span>
           <div className="mt-2">{this.unitInput()}</div>

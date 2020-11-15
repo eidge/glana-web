@@ -9,7 +9,7 @@ import FlightGroup, {
 } from "glana/src/analysis/flight_group";
 import SynchronizationMethod from "glana/src/analysis/synchronization/method";
 import { SettingsModel } from "../src/components/flight_analysis/settings";
-import Modal from "../src/components/ui/modal";
+import Modal, { ModalBody } from "../src/components/ui/modal";
 import Head from "next/head";
 import { Router, withRouter } from "next/router";
 
@@ -128,9 +128,11 @@ class Home extends Component<Props, State> {
             isOpen={!this.state.flightGroup || this.state.isLoading}
             onClose={() => {}}
           >
-            {this.state.isLoading
-              ? this.loadingModal()
-              : this.flightUploadModal()}
+            <ModalBody>
+              {this.state.isLoading
+                ? this.loadingModal()
+                : this.flightUploadModal()}
+            </ModalBody>
           </Modal>
         </div>
       </>

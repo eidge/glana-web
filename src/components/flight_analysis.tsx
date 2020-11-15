@@ -7,7 +7,7 @@ import Settings, { SettingsModel } from "./flight_analysis/settings";
 import Timeline from "./flight_analysis/timeline";
 import Task from "glana/src/flight_computer/tasks/task";
 import Button from "./ui/button";
-import Modal from "./ui/modal";
+import Modal, { ModalBody, ModalHeader } from "./ui/modal";
 import SavedFlight from "glana/src/saved_flight";
 import BGALadder from "../bga_ladder/api";
 
@@ -166,10 +166,16 @@ export default class FlightAnalysis extends Component<Props, State> {
           isOpen={this.state.isSettingsOpen}
           onClose={() => this.closeSettingsModal()}
         >
-          <Settings
-            settings={this.props.settings}
-            onChange={this.props.updateSettings}
+          <ModalHeader
+            title="Settings"
+            onClose={() => this.closeSettingsModal()}
           />
+          <ModalBody>
+            <Settings
+              settings={this.props.settings}
+              onChange={this.props.updateSettings}
+            />
+          </ModalBody>
         </Modal>
       </div>
     );

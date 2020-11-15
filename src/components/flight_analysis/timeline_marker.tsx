@@ -20,6 +20,7 @@ interface Props {
   relativeLeftPosition: number;
   timestampDetails: TimestampDetails[];
   settings: SettingsModel;
+  isCompact: boolean;
 }
 
 interface State {}
@@ -32,6 +33,13 @@ export default class TimelineMarker extends Component<Props, State> {
         style={{ left: `${this.props.relativeLeftPosition}%` }}
       >
         <div className={this.markerDetailsClassNames()}>
+          {this.props.isCompact && (
+            <div className="text-xs leading-none font-mono font-hairline text-center py-1">
+              {this.offsetTimestamp(
+                this.props.timestampDetails.find((td) => td.isActive)!
+              ).toLocaleTimeString()}
+            </div>
+          )}
           {this.props.timestampDetails.map((d) => this.markerDetails(d))}
         </div>
 
@@ -70,7 +78,13 @@ export default class TimelineMarker extends Component<Props, State> {
     return (
       <div className="py-2" key={details.label}>
         <div className="gl-marker-details-clickable" onClick={details.onClick}>
-          <div className="gl-marker-details-label">
+          <div
+            className={
+              this.props.isCompact
+                ? "gl-marker-details-label gl-marker-details-label-compact"
+                : "gl-marker-details-label"
+            }
+          >
             <div
               className="gl-marker-details-dot"
               style={{
@@ -83,9 +97,9 @@ export default class TimelineMarker extends Component<Props, State> {
             <div className="overflow-hidden">{details.label}</div>
           </div>
           <div className="gl-marker-details-values">
-            {this.maybeVario(details)}
-            {this.maybeAltitude(details)}
-            {this.timestamp(details)}
+            {this.maybeRenderVario(details)}
+            {this.maybeRenderAltitude(details)}
+            {this.maybeRenderTimestamp(details)}
           </div>
 
           <style jsx>{`
@@ -101,6 +115,10 @@ export default class TimelineMarker extends Component<Props, State> {
               @apply flex flex-row items-center text-base w-16 font-semibold leading-none overflow-hidden mr-3;
             }
 
+            .gl-marker-details-label-compact {
+              @apply text-sm;
+            }
+
             .gl-marker-details-dot {
               @apply w-2 h-2 rounded-full mr-2 flex-shrink-0 border-2;
             }
@@ -114,8 +132,8 @@ export default class TimelineMarker extends Component<Props, State> {
     );
   }
 
-  private maybeVario(details: TimestampDetails) {
-    if (!details.vario) return null;
+  private maybeRenderVario(details: TimestampDetails) {
+    if (this.props.isCompact || !details.vario) return null;
     let color = details.vario.equalOrGreaterThan(knots(0)) ? "green" : "red";
     return (
       <div
@@ -131,19 +149,25 @@ export default class TimelineMarker extends Component<Props, State> {
     return units[this.props.settings.units];
   }
 
-  private maybeAltitude(details: TimestampDetails) {
+  private maybeRenderAltitude(details: TimestampDetails) {
     if (!details.altitude) return null;
+    let classes = "text-xs leading-none font-mono font-hairline";
+
+    if (!this.props.isCompact) {
+      classes += " mt-1";
+    }
+
     return (
-      <div className="text-xs leading-none font-mono font-hairline mt-1">
+      <div className={classes}>
         {details.altitude.convertTo(this.unitConfig().altitude).toString()}
       </div>
     );
   }
 
-  private timestamp(details: TimestampDetails) {
-    let timestampInMillis = this.props.activeTimestamp.getTime();
-    let offsetInMillis = details.timestampOffset.convertTo(milliseconds).value;
-    let timestamp = new Date(timestampInMillis - offsetInMillis);
+  private maybeRenderTimestamp(details: TimestampDetails) {
+    if (this.props.isCompact) return null;
+
+    let timestamp = this.offsetTimestamp(details);
     let className = "leading-none text-sm font-mono";
 
     if (details.vario || details.altitude) {
@@ -151,5 +175,11 @@ export default class TimelineMarker extends Component<Props, State> {
     }
 
     return <div className={className}>{timestamp.toLocaleTimeString()}</div>;
+  }
+
+  private offsetTimestamp(details: TimestampDetails) {
+    let timestampInMillis = this.props.activeTimestamp.getTime();
+    let offsetInMillis = details.timestampOffset.convertTo(milliseconds).value;
+    return new Date(timestampInMillis - offsetInMillis);
   }
 }

@@ -25,13 +25,14 @@ export default class Timeline extends Component<Props, State> {
   containerEl: HTMLDivElement | null = null;
 
   render() {
+    const flights = this.props.flightGroup.flights;
     return (
       <div className="w-full absolute bottom-0 cursor-default select-none">
         <div className="h-24">
           <AltitudeChart flightGroup={this.props.flightGroup} />
         </div>
 
-        {this.props.flightGroup.flights.map((f, index) => (
+        {flights.map((f, index) => (
           <TaskTimeline
             key={index}
             flight={f}
@@ -40,6 +41,7 @@ export default class Timeline extends Component<Props, State> {
         ))}
 
         <TimelineMarker
+          isCompact={flights.length > 3}
           activeTimestamp={this.props.activeTimestamp}
           relativeLeftPosition={this.relativeLeftAtActiveTimestamp()}
           timestampDetails={this.timestampDetails()}

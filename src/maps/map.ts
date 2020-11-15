@@ -4,6 +4,7 @@ import OSM from "ol/source/OSM";
 import { positionToOlPoint } from "./utils";
 import { defaults as interactionDefaults } from "ol/interaction";
 import Position from "glana/src/flight_computer/position";
+import TileImage from "ol/source/XYZ";
 
 const ANIMATION_DURATION = 400;
 const DEFAULT_PADDING = 50;
@@ -11,6 +12,9 @@ const TIMELINE_SIZE = 110;
 
 export default class Map {
   private domElement: HTMLElement;
+  private isInitialized = false;
+  private airspaceLayer!: TileLayer;
+
   olMap: any;
   ol = require("ol");
 
@@ -19,8 +23,13 @@ export default class Map {
     this.olMap = this.buildMap();
   }
 
-  render() {
-    this.olMap.setTarget(this.domElement);
+  render(showAirspace: boolean) {
+    if (!this.isInitialized) {
+      this.olMap.setTarget(this.domElement);
+      this.isInitialized = true;
+    }
+
+    this.airspaceLayer.setVisible(showAirspace);
   }
 
   reset() {
@@ -108,21 +117,41 @@ export default class Map {
       altShiftDragRotate: false,
       pinchRotate: false,
     });
+
+    this.airspaceLayer = this.buildAirspaceLayer();
+
     return new Map({
       controls: [],
       interactions: interactions,
-      layers: [
-        new TileLayer({
-          preload: Infinity,
-          source: new OSM({
-            url:
-              "https://api.mapbox.com/styles/v1/mapbox/outdoors-v11/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1IjoiZWlkZ2UiLCJhIjoiNjVmYTRkMWY0NzM0NDdhZThmYmY4MzI2ZjU2Njg5NTIifQ.7IevRmRnToydZ2fJMGLZRQ",
-          }),
-        }),
-      ],
+      layers: [this.buildMapLayer(), this.airspaceLayer],
       view: new View({
         center: [0, 0],
         zoom: 0,
+      }),
+    });
+  }
+
+  private buildAirspaceLayer() {
+    return new TileLayer({
+      visible: false,
+      preload: Infinity,
+      source: new TileImage({
+        url:
+          "https://{1-2}.tile.maps.openaip.net/geowebcache/service/tms/1.0.0/openaip_basemap@EPSG%3A900913@png/{z}/{x}/{-y}.png",
+        projection: "EPSG:900913",
+      }),
+      opacity: 0.5,
+      minZoom: 8,
+      maxZoom: 14,
+    });
+  }
+
+  private buildMapLayer() {
+    return new TileLayer({
+      preload: Infinity,
+      source: new OSM({
+        url:
+          "https://api.mapbox.com/styles/v1/mapbox/outdoors-v11/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1IjoiZWlkZ2UiLCJhIjoiNjVmYTRkMWY0NzM0NDdhZThmYmY4MzI2ZjU2Njg5NTIifQ.7IevRmRnToydZ2fJMGLZRQ",
       }),
     });
   }

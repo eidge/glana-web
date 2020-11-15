@@ -1,13 +1,11 @@
 import { synchronizationMethods } from "glana/src/analysis/flight_group";
 import SynchronizationMethod from "glana/src/analysis/synchronization/method";
 import { feet, meters } from "glana/src/units/length";
-import { QuantityFactory } from "glana/src/units/quantity_factory";
 import {
   kilometersPerHour,
   knots,
   metersPerSecond,
 } from "glana/src/units/speed";
-import Unit from "glana/src/units/unit";
 import { Component } from "react";
 
 const synchronizationOptions = [
@@ -105,6 +103,7 @@ export interface SettingsModel {
   followFlight: boolean;
   playbackSpeed: number;
   units: UnitOption;
+  showAirspace: boolean;
 }
 
 interface Props {
@@ -134,9 +133,10 @@ export default class Settings extends Component<Props, State> {
           <div className="mt-2">{this.playbackSpeedInput()}</div>
         </div>
         <div className="mt-4">
-          <span className="text-gray-700">Flight track</span>
+          <span className="text-gray-700">Map</span>
           <div className="mt-2">{this.renderFullTracksInput()}</div>
           <div className="mt-2">{this.renderFollowFlightInput()}</div>
+          <div className="mt-2">{this.showAirspaceInput()}</div>
         </div>
       </div>
     );
@@ -253,6 +253,25 @@ export default class Settings extends Component<Props, State> {
         <span className="ml-2">
           Re-center map when flight leaves the screen
         </span>
+      </label>
+    );
+  }
+
+  private showAirspaceInput() {
+    return (
+      <label className="inline-flex items-center mr-6">
+        <input
+          type="checkbox"
+          name="followFlight"
+          checked={this.props.settings.showAirspace}
+          onChange={(event) =>
+            this.props.onChange({
+              ...this.props.settings,
+              showAirspace: event.target.checked,
+            })
+          }
+        />
+        <span className="ml-2">Show airspace</span>
       </label>
     );
   }

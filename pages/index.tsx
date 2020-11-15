@@ -96,6 +96,7 @@ class Home extends Component<Props, State> {
       followFlight: true,
       playbackSpeed: 250,
       units: "imperial",
+      showAirspace: false,
     };
   }
 

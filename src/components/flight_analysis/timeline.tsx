@@ -65,8 +65,8 @@ export default class Timeline extends Component<Props, State> {
       (timestamp.getTime() - this.earliestDatum().getTime()) /
       (this.latestDatum().getTime() - this.earliestDatum().getTime());
 
-    if (relativeValue < 0) return 0;
-    if (relativeValue > 1) return 1;
+    if (relativeValue < 0) relativeValue = 0;
+    if (relativeValue > 1) relativeValue = 1;
 
     return relativeValue * 100;
   }

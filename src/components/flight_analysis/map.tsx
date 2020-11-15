@@ -44,18 +44,20 @@ export default class Map extends Component<Props, State> {
   }
 
   componentDidMount() {
-    this.renderMap();
+    this.setupMap();
     this.taskRenderer = new TaskRenderer(this.mapRenderer);
     this.renderNewFlightGroup();
   }
 
-  private renderMap() {
+  private setupMap() {
     if (!this.el) return;
     this.mapRenderer = new MapRenderer(this.el);
-    this.mapRenderer.render();
+    this.mapRenderer.render(this.props.settings.showAirspace);
   }
 
   componentDidUpdate(previousProps: Props) {
+    this.mapRenderer.render(this.props.settings.showAirspace);
+
     if (this.shouldUpdateCurrentFlightGroup(previousProps)) {
       this.maybeRenderTask();
       this.updateFlightMarkers();

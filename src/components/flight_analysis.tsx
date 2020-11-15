@@ -9,6 +9,7 @@ import Task from "glana/src/flight_computer/tasks/task";
 import Button from "./ui/button";
 import Modal from "./ui/modal";
 import SavedFlight from "glana/src/saved_flight";
+import BGALadder from "../bga_ladder/api";
 
 interface Props {
   flightGroup: FlightGroup | null;
@@ -27,6 +28,7 @@ interface State {
 
 export default class FlightAnalysis extends Component<Props, State> {
   private ticker: any = null;
+  private bgaLadder: BGALadder;
 
   constructor(props: Props) {
     super(props);
@@ -37,6 +39,7 @@ export default class FlightAnalysis extends Component<Props, State> {
       isPlaying: false,
       ...this.followFlightAndTask(props),
     };
+    this.bgaLadder = new BGALadder();
   }
 
   private followFlightAndTask(props: Props) {
@@ -48,6 +51,9 @@ export default class FlightAnalysis extends Component<Props, State> {
   }
 
   componentDidMount() {
+    this.bgaLadder.onTimestampChange((timestamp) =>
+      this.setActiveTimestamp(timestamp, false)
+    );
     this.maybeSetActiveTimestamp();
   }
 
@@ -79,8 +85,10 @@ export default class FlightAnalysis extends Component<Props, State> {
     return timestamps[timestamps.length - 1];
   }
 
-  private setActiveTimestamp(timestamp: Date): void {
-    this.setState({ activeTimestamp: new Date(timestamp) });
+  private setActiveTimestamp(timestamp: Date, notify: boolean = true): void {
+    this.setState({ activeTimestamp: new Date(timestamp) }, () => {
+      notify && this.bgaLadder.setTimestamp(timestamp);
+    });
   }
 
   render() {

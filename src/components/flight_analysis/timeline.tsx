@@ -31,8 +31,9 @@ export default class Timeline extends Component<Props, State> {
           <AltitudeChart flightGroup={this.props.flightGroup} />
         </div>
 
-        {this.props.flightGroup.flights.map((f) => (
+        {this.props.flightGroup.flights.map((f, index) => (
           <TaskTimeline
+            key={index}
             flight={f}
             relativeLeftPositionAt={(d) => this.relativeLeftPosition(d)}
           />

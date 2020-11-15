@@ -1,3 +1,4 @@
+import Task, { TaskTurnpoint } from "glana/src/flight_computer/tasks/task";
 import SavedFlight from "glana/src/saved_flight";
 import { Component } from "react";
 import { COLORS } from "../../maps/flight_renderer";
@@ -15,21 +16,9 @@ export default class TaskTimeline extends Component<Props, State> {
     if (!task) return null;
 
     const flight = this.props.flight;
-    const turnpointMarkers = task.turnpoints.map((tp, index) => {
-      const crossedAt = flight.getTurnpointReachedAt(tp);
-      const nextCrossedAt = flight.getTurnpointReachedAt(
-        task.turnpoints[index + 1]
-      );
-
-      if (!crossedAt || !nextCrossedAt) return null;
-
-      return (
-        <div
-          className="absolute font-bold h-full"
-          style={this.style(crossedAt, nextCrossedAt, index)}
-        ></div>
-      );
-    });
+    const turnpointMarkers = task.turnpoints.map((tp, index) =>
+      this.renderTaskLeg(flight, task, tp, index)
+    );
 
     return (
       <div
@@ -41,7 +30,29 @@ export default class TaskTimeline extends Component<Props, State> {
     );
   }
 
-  private style(crossedAt: Date, nextCrossedAt: Date, index: number) {
+  private renderTaskLeg(
+    flight: SavedFlight,
+    task: Task,
+    tp: TaskTurnpoint,
+    index: number
+  ) {
+    const crossedAt = flight.getTurnpointReachedAt(tp);
+    const nextCrossedAt = flight.getTurnpointReachedAt(
+      task.turnpoints[index + 1]
+    );
+
+    if (!crossedAt || !nextCrossedAt) return null;
+
+    return (
+      <div
+        key={index}
+        className="absolute font-bold h-full"
+        style={this.taskLegStyle(crossedAt, nextCrossedAt, index)}
+      ></div>
+    );
+  }
+
+  private taskLegStyle(crossedAt: Date, nextCrossedAt: Date, index: number) {
     const left = this.props.relativeLeftPositionAt(crossedAt);
     const nextLeft = this.props.relativeLeftPositionAt(nextCrossedAt);
     const width = nextLeft - left;

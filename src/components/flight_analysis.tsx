@@ -10,6 +10,7 @@ import Button from "./ui/button";
 import Modal, { ModalBody, ModalHeader } from "./ui/modal";
 import SavedFlight from "glana/src/saved_flight";
 import BGALadder from "../bga_ladder/api";
+import AnimationTicker from "../animation_ticker";
 
 interface Props {
   flightGroup: FlightGroup | null;
@@ -27,8 +28,8 @@ interface State {
 }
 
 export default class FlightAnalysis extends Component<Props, State> {
-  private ticker: any = null;
   private bgaLadder: BGALadder;
+  private animationTicker: AnimationTicker;
 
   constructor(props: Props) {
     super(props);
@@ -40,6 +41,9 @@ export default class FlightAnalysis extends Component<Props, State> {
       ...this.followFlightAndTask(props),
     };
     this.bgaLadder = new BGALadder();
+    this.animationTicker = new AnimationTicker((elapsedTime: number) =>
+      this.tick(elapsedTime)
+    );
   }
 
   private followFlightAndTask(props: Props) {
@@ -63,7 +67,7 @@ export default class FlightAnalysis extends Component<Props, State> {
       // flightGroup, followFlight && task atomically.
       //
       // This is required to zoom to fit correctly only when the flight group is
-      // changed, but not when a task changes without changing task group.
+      // changed, but not when a task changes without changing flight group.
       this.setState({
         flightGroup: this.props.flightGroup,
         ...this.followFlightAndTask(this.props),
@@ -119,8 +123,9 @@ export default class FlightAnalysis extends Component<Props, State> {
       !this.props.flightGroup ||
       !this.state.followFlight ||
       !this.state.activeTimestamp
-    )
+    ) {
       return null;
+    }
 
     return (
       <Timeline
@@ -187,16 +192,30 @@ export default class FlightAnalysis extends Component<Props, State> {
 
   private togglePlaying() {
     if (this.state.isPlaying) {
-      this.setState({ isPlaying: false });
+      this.setState({ isPlaying: false }, () => {
+        this.animationTicker.stop();
+      });
     } else {
-      const fps = 20;
-      this.ticker = setInterval(() => {
-        this.tick((1000 / fps) * this.props.settings.playbackSpeed);
-      }, 1000 / fps);
       const timestamp = this.shouldRewind()
         ? this.newestTimestamp()
         : this.state.activeTimestamp;
-      this.setState({ isPlaying: true, activeTimestamp: timestamp });
+      this.setState({ isPlaying: true, activeTimestamp: timestamp }, () => {
+        this.animationTicker.start();
+      });
+    }
+  }
+
+  private tick(elapsedTime: number) {
+    if (!this.state.activeTimestamp) return;
+
+    let step = elapsedTime * this.props.settings.playbackSpeed;
+    let timestamp = new Date(this.state.activeTimestamp.getTime() + step);
+    this.setActiveTimestamp(timestamp);
+
+    if (this.playbackIsDone()) {
+      this.setState({ isPlaying: false }, () => {
+        this.animationTicker.stop();
+      });
     }
   }
 
@@ -216,28 +235,6 @@ export default class FlightAnalysis extends Component<Props, State> {
       .map((f) => f.getRecordingStartedAt())
       .sort();
     return timestamps[0];
-  }
-
-  private tick(incrementInMillis: number) {
-    if (!this.state.isPlaying) {
-      this.ticker && clearInterval(this.ticker);
-      this.ticker = null;
-      return;
-    }
-
-    if (this.playbackIsDone()) {
-      this.setState({ isPlaying: false });
-    }
-
-    this.setState((state) => {
-      if (!state.activeTimestamp) return state;
-      return {
-        ...state,
-        activeTimestamp: new Date(
-          state.activeTimestamp?.getTime() + incrementInMillis
-        ),
-      };
-    });
   }
 
   private playbackIsDone() {

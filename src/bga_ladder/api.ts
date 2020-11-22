@@ -8,14 +8,6 @@ export default class API {
     });
   }
 
-  setTimestamp(timestamp: Date) {
-    if (!this.isInIFrame()) return;
-    window.parent.postMessage(
-      { FixTime: new Date(timestamp.getTime() - 3600000) },
-      "*"
-    );
-  }
-
   private isInIFrame() {
     try {
       return window.self !== window.parent;

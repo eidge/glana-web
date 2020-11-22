@@ -56,7 +56,7 @@ export default class FlightAnalysis extends Component<Props, State> {
 
   componentDidMount() {
     this.bgaLadder.onTimestampChange((timestamp) =>
-      this.setActiveTimestamp(timestamp, false)
+      this.setActiveTimestamp(timestamp)
     );
     this.maybeSetActiveTimestamp();
   }
@@ -89,10 +89,8 @@ export default class FlightAnalysis extends Component<Props, State> {
     return timestamps[timestamps.length - 1];
   }
 
-  private setActiveTimestamp(timestamp: Date, notify: boolean = true): void {
-    this.setState({ activeTimestamp: new Date(timestamp) }, () => {
-      notify && this.bgaLadder.setTimestamp(timestamp);
-    });
+  private setActiveTimestamp(timestamp: Date): void {
+    this.setState({ activeTimestamp: new Date(timestamp) });
   }
 
   render() {

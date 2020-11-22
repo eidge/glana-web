@@ -136,6 +136,7 @@ export default class Timeline extends Component<Props, State> {
           altitude: datum?.position.altitude || null,
           vario:
             (datum?.calculatedValues["averageVario"] as Quantity<Speed>) ||
+            datum?.vario ||
             null,
           timestampOffset: f.getTimeOffsetInMilliseconds(),
           isActive: this.props.followFlight === f,

@@ -16,6 +16,7 @@ interface Props {
   flightGroup: FlightGroup | null;
   settings: SettingsModel;
   updateSettings: (settings: SettingsModel) => void;
+  bgaLadder: BGALadder;
 }
 
 interface State {
@@ -28,7 +29,6 @@ interface State {
 }
 
 export default class FlightAnalysis extends Component<Props, State> {
-  private bgaLadder: BGALadder;
   private animationTicker: AnimationTicker;
 
   constructor(props: Props) {
@@ -40,7 +40,6 @@ export default class FlightAnalysis extends Component<Props, State> {
       isPlaying: false,
       ...this.followFlightAndTask(props),
     };
-    this.bgaLadder = new BGALadder();
     this.animationTicker = new AnimationTicker((elapsedTime: number) =>
       this.tick(elapsedTime)
     );
@@ -55,10 +54,14 @@ export default class FlightAnalysis extends Component<Props, State> {
   }
 
   componentDidMount() {
-    this.bgaLadder.onTimestampChange((timestamp) =>
+    this.maybeListenToBGAMessages();
+    this.maybeSetActiveTimestamp();
+  }
+
+  private maybeListenToBGAMessages() {
+    this.props.bgaLadder.onTimestampChange((timestamp) =>
       this.setActiveTimestamp(timestamp)
     );
-    this.maybeSetActiveTimestamp();
   }
 
   componentDidUpdate(previousProps: Props) {

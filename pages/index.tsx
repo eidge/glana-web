@@ -12,6 +12,16 @@ import { SettingsModel } from "../src/components/flight_analysis/settings";
 import Modal, { ModalBody } from "../src/components/ui/modal";
 import Head from "next/head";
 import { Router, withRouter } from "next/router";
+import BGALadder from "../src/bga_ladder/api";
+import BGAFlightLoader from "../src/bga_ladder/flight_loader";
+import URLIGCLoader from "../src/url_igc_loader";
+
+export interface URLFlightLoader {
+  canHandle(): boolean;
+  loadFlightGroup(): Promise<FlightGroup>;
+}
+
+const URL_LOADERS = [BGAFlightLoader, URLIGCLoader];
 
 interface Props {
   router: Router;
@@ -24,8 +34,11 @@ interface State {
 }
 
 class Home extends Component<Props, State> {
+  private bgaLadder: BGALadder;
+
   constructor(props: Props) {
     super(props);
+    this.bgaLadder = new BGALadder();
     this.state = {
       flightGroup: null,
       settings: this.buildSettings(),
@@ -34,59 +47,38 @@ class Home extends Component<Props, State> {
   }
 
   componentDidMount() {
-    this.maybeLoadIGCFromUrl();
+    this.maybeLoadFlightsFromURL();
   }
 
   componentDidUpdate() {
-    this.maybeLoadIGCFromUrl();
+    this.maybeLoadFlightsFromURL();
   }
 
-  private async maybeLoadIGCFromUrl() {
-    let igcUrl = this.props.router.query.igcUrl || this.igcUrlFromBGAIds();
-    if (!igcUrl || this.state.flightGroup || this.state.isLoading) return;
+  private async maybeLoadFlightsFromURL() {
+    if (this.state.flightGroup || this.state.isLoading) return;
+
+    const loaders = URL_LOADERS.map(
+      (Loader) => new Loader(this.props.router.query)
+    );
+
+    const loader = loaders.find((loader) => loader.canHandle());
+    if (!loader) return;
 
     this.setState({ isLoading: true }, async () => {
       try {
-        await this.loadIGCFromUrl(igcUrl as string | string[]);
-      } catch {
+        let flightGroup = await loader.loadFlightGroup();
+        this.loadFlightGroup(flightGroup);
+      } catch (e) {
         await this.props.router.push("/");
         this.setState({ isLoading: false });
       }
     });
   }
 
-  private igcUrlFromBGAIds() {
-    const bgaId = this.props.router.query.bgaID;
-    if (!bgaId) return null;
-    if (bgaId instanceof Array) {
-      return this.parseBgaId(bgaId.join(","));
-    } else {
-      return this.parseBgaId(bgaId);
-    }
-  }
-
-  private parseBgaId(bgaIdAttr: string) {
-    return bgaIdAttr
-      .split(",")
-      .map((id) => `https://www.bgaladder.net/FlightIGC/${id}`);
-  }
-
-  private async loadIGCFromUrl(igcUrl: string | string[]) {
-    if (igcUrl instanceof Array) {
-      let responses = igcUrl.map((url) => {
-        return this.fetchText(url);
-      });
-      let igcContents = await Promise.all(responses);
-      this.parseIGCs(igcContents);
-    } else {
-      let igcContent = await this.fetchText(igcUrl);
-      this.parseIGCs([igcContent]);
-    }
-  }
-
-  private async fetchText(url: string) {
-    let response = await fetch(url);
-    return await response.text();
+  private loadFlightGroup(flightGroup: FlightGroup) {
+    flightGroup.flights.forEach((f) => f.analise(this.flightComputer()));
+    flightGroup.synchronize(this.state.settings.synchronizationMethod);
+    this.setState({ flightGroup, isLoading: false });
   }
 
   private buildSettings(): SettingsModel {
@@ -117,6 +109,7 @@ class Home extends Component<Props, State> {
           onDrop={(event) => this.handleDroppedFiles(event)}
         >
           <FlightAnalysis
+            bgaLadder={this.bgaLadder}
             settings={this.state.settings}
             updateSettings={(settings: SettingsModel) =>
               this.updateSettings(settings)
@@ -206,14 +199,14 @@ class Home extends Component<Props, State> {
   }
 
   private parseIGCs(fileContents: string[]) {
-    let savedFlights = fileContents.map((contents) =>
-      this.analyseFlight(contents)
-    );
+    let savedFlights = fileContents.map((contents) => {
+      let parser = new IGCParser();
+      const flight = parser.parse(contents);
+      return flight;
+    });
 
     let flightGroup = new FlightGroup(savedFlights);
-    flightGroup.synchronize(this.state.settings.synchronizationMethod);
-
-    this.setState({ flightGroup, isLoading: false });
+    this.loadFlightGroup(flightGroup);
   }
 
   private readFiles(blobs: Blob[]) {
@@ -229,12 +222,6 @@ class Home extends Component<Props, State> {
       reader.onerror = (error) => reject(error);
       reader.readAsText(file);
     });
-  }
-
-  private analyseFlight(contents: string) {
-    let parser = new IGCParser();
-    const flight = parser.parse(contents).analise(this.flightComputer());
-    return flight;
   }
 
   private flightComputer() {

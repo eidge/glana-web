@@ -4592,10 +4592,10 @@ github-from-package@0.0.0:
   resolved "https://registry.yarnpkg.com/github-from-package/-/github-from-package-0.0.0.tgz#97fb5d96bfde8973313f20e8288ef9a167fa64ce"
   integrity sha1-l/tdlr/eiXMxPyDoKI75oWf6ZM4=
 
-glana@^0.2.8:
-  version "0.2.8"
-  resolved "https://registry.yarnpkg.com/glana/-/glana-0.2.8.tgz#ab13112f963e55b51ad04fda3ac7f70b6a963b00"
-  integrity sha512-Erkw7q4cADxMjF7ntnts+/gO7x02MMshTB16WQARCOcjXl+ps3GME8YozRpbfo+MFa+AVTXV/ubKZIITc1HrAQ==
+glana@^0.2.9:
+  version "0.2.9"
+  resolved "https://registry.yarnpkg.com/glana/-/glana-0.2.9.tgz#ee216e7ded7376ab3710c2b048b01d1522179d77"
+  integrity sha512-rSHC2cjU//vcy35861IQSR4QqSMznjxW0mLk/TstH4nEWK7NnuvDoKRp40fUDPHfhLHKiWLx7UY05pAKfeiRVQ==
   dependencies:
     "@turf/turf" "^5.1.6"
     igc-parser "^0.5.0"

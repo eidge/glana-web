@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import IGCParser from "glana/src/igc/parser";
 import FlightComputer from "glana/src/flight_computer/computer";
 import AverageVario from "glana/src/flight_computer/calculators/average_vario";
+import EngineInUse from "glana/src/flight_computer/calculators/engine_in_use";
 import { seconds } from "glana/src/units/duration";
 import FlightAnalysis from "../src/components/flight_analysis";
 import FlightGroup, {
@@ -15,6 +16,7 @@ import { Router, withRouter } from "next/router";
 import BGALadder from "../src/bga_ladder/api";
 import BGAFlightLoader from "../src/bga_ladder/flight_loader";
 import URLIGCLoader from "../src/bga_ladder/flight_loader";
+import Calculator from "glana/src/flight_computer/calculators/calculator";
 
 export interface URLFlightLoader {
   canHandle(): boolean;
@@ -226,7 +228,10 @@ class Home extends Component<Props, State> {
 
   private flightComputer() {
     return new FlightComputer(
-      new Map([["averageVario", new AverageVario(seconds(30))]])
+      new Map([
+        ["averageVario", new AverageVario(seconds(30)) as Calculator],
+        ["engineOn", new EngineInUse(0.5) as Calculator],
+      ])
     );
   }
 

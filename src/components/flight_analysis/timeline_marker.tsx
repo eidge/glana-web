@@ -12,6 +12,7 @@ interface TimestampDetails {
   vario: Quantity<Speed> | null;
   timestampOffset: Quantity<Duration>;
   isActive: boolean;
+  engineIsOn: boolean;
   onClick: () => void;
 }
 
@@ -134,13 +135,25 @@ export default class TimelineMarker extends Component<Props, State> {
 
   private maybeRenderVario(details: TimestampDetails) {
     if (this.props.isCompact || !details.vario) return null;
-    let color = details.vario.equalOrGreaterThan(knots(0)) ? "green" : "red";
+    let color: string;
+    let displayValue: string;
+
+    if (details.engineIsOn) {
+      displayValue = "engine on";
+      color = "red";
+    } else {
+      color = details.vario.equalOrGreaterThan(knots(0)) ? "green" : "red";
+      displayValue = details.vario
+        .convertTo(this.unitConfig().vario)
+        .toString();
+    }
+
     return (
       <div
         className="text-xs leading-none font-mono font-hairline"
         style={{ color: color }}
       >
-        {details.vario.convertTo(this.unitConfig().vario).toString()}
+        {displayValue}
       </div>
     );
   }

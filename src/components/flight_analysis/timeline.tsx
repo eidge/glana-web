@@ -140,6 +140,7 @@ export default class Timeline extends Component<Props, State> {
             null,
           timestampOffset: f.getTimeOffsetInMilliseconds(),
           isActive: this.props.followFlight === f,
+          engineIsOn: datum?.calculatedValues["engineOn"]?.value === 1,
           onClick: () => {
             this.props.setFollowFlight(f);
           },

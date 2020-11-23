@@ -67,8 +67,6 @@ export default class AltitudeChart extends Component<Props, State> {
   }
 
   render() {
-    // Nivo slows down when the console is open. Since we're not using anything
-    // interactive, we should consider using some static canvas renderer.
     return (
       <Line
         data={this.state.chartData}

@@ -22,10 +22,12 @@ export default class FlightRenderer {
   private flightTrackFeature: any;
   private positionMarkerFeature: any;
   private renderFullTrack: boolean;
+  private flightPositions: number[][];
 
   constructor(map: Map, flight: SavedFlight, options: Options = {}) {
     this.map = map;
     this.flight = flight;
+    this.flightPositions = flight.getDatums().map((d) => this.fixToPoint(d));
     this.renderFullTrack = options.renderFullTrack || false;
   }
 
@@ -60,12 +62,11 @@ export default class FlightRenderer {
   }
 
   private drawFlightTrackUntil(timestamp: Date) {
-    let datums = this.flight
-      .getDatums()
-      .filter((d) => d.timestamp <= timestamp);
-    this.flightTrackFeature
-      .getGeometry()
-      .setCoordinates(datums.map((d) => this.fixToPoint(d)));
+    let currentDatumIndex = this.flight.datumIndexAt(timestamp);
+    if (currentDatumIndex === null) return;
+
+    const positions = this.flightPositions.slice(0, currentDatumIndex + 1);
+    this.flightTrackFeature.getGeometry().setCoordinates(positions);
   }
 
   private updateMarkerPosition(datum: Datum) {

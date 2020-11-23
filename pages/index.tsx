@@ -14,7 +14,7 @@ import Head from "next/head";
 import { Router, withRouter } from "next/router";
 import BGALadder from "../src/bga_ladder/api";
 import BGAFlightLoader from "../src/bga_ladder/flight_loader";
-import URLIGCLoader from "../src/url_igc_loader";
+import URLIGCLoader from "../src/bga_ladder/flight_loader";
 
 export interface URLFlightLoader {
   canHandle(): boolean;

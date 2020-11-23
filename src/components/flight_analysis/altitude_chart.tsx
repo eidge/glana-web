@@ -27,6 +27,13 @@ export default class AltitudeChart extends Component<Props, State> {
     }
   }
 
+  shouldComponentUpdate(nextProps: Props, nextState: State) {
+    return (
+      this.props.flightGroup !== nextProps.flightGroup ||
+      this.state.chartData !== nextState.chartData
+    );
+  }
+
   private buildChartData(flightGroup: FlightGroup) {
     return flightGroup.flights.map((flight, index) => {
       let datums = this.limitNumberOfPoints(flight, MAX_POINTS);

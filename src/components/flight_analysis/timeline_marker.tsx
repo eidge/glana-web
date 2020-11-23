@@ -112,7 +112,7 @@ export default class TimelineMarker extends Component<Props, State> {
             }
 
             .gl-marker-details-label {
-              @apply flex flex-row items-center text-base w-16 font-semibold leading-none overflow-hidden mr-3;
+              @apply flex flex-row items-center text-base w-20 font-semibold leading-none overflow-hidden mr-3;
             }
 
             .gl-marker-details-label-compact {

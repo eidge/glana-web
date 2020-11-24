@@ -4,6 +4,7 @@ import { ResponsiveLineCanvas as Line } from "@nivo/line";
 import FlightGroup from "glana/src/analysis/flight_group";
 import { Datum } from "glana/src/flight_computer/computer";
 import { COLORS } from "../../maps/flight_renderer";
+import SavedFlight from "glana/src/saved_flight";
 
 const MAX_POINTS = 500;
 
@@ -12,7 +13,7 @@ interface Props {
 }
 
 interface State {
-  chartData: { id: string; data: { x: number; y: number }[] }[];
+  chartData: { id: string; data: { x: number; y: number }[]; color: string }[];
 }
 
 export default class AltitudeChart extends Component<Props, State> {
@@ -35,22 +36,73 @@ export default class AltitudeChart extends Component<Props, State> {
   }
 
   private buildChartData(flightGroup: FlightGroup) {
-    return flightGroup.flights.map((flight, index) => {
-      let datums = this.limitNumberOfPoints(flight, MAX_POINTS);
-      return {
-        id: `altitude-${index}`,
-        data: datums.map((datum: Datum) => {
-          return {
-            x: datum.timestamp.getTime(),
-            y: datum.position.altitude.value,
-          };
-        }),
-      };
-    });
+    return flightGroup.flights.flatMap((flight) => this.flightData(flight));
   }
 
-  private limitNumberOfPoints(flight: any, maxPoints: number) {
-    let datums = flight.datums;
+  private flightData(flight: SavedFlight) {
+    let datums = this.limitNumberOfPoints(flight, MAX_POINTS);
+    return this.splitFlightByEngineSegments(flight, datums);
+  }
+
+  private splitFlightByEngineSegments(flight: SavedFlight, datums: Datum[]) {
+    let stages = [];
+    let currentState: any = [];
+    let engineWasOn = this.isEngineOn(datums[0]);
+    datums.forEach((datum) => {
+      let engineIsOn = this.isEngineOn(datum);
+
+      if (engineIsOn === engineWasOn) {
+        currentState.push({
+          x: datum.timestamp.getTime(),
+          y: datum.position.altitude.value,
+        });
+      } else {
+        const currentPoint = {
+          x: datum.timestamp.getTime(),
+          y: datum.position.altitude.value,
+        };
+        currentState.push(currentPoint);
+        const data = this.buildFlightDataSegment(
+          flight,
+          currentState,
+          engineWasOn
+        );
+        stages.push(data);
+        engineWasOn = this.isEngineOn(datum);
+        currentState = [currentPoint];
+      }
+    });
+
+    if (currentState.length > 0) {
+      const data = this.buildFlightDataSegment(
+        flight,
+        currentState,
+        engineWasOn
+      );
+      stages.push(data);
+    }
+
+    return stages;
+  }
+
+  private buildFlightDataSegment(
+    flight: SavedFlight,
+    data: any[],
+    engineWasOn: boolean
+  ) {
+    return {
+      id: `altitude-${data[0].x}-${data[data.length - 1].x}`,
+      data: data,
+      color: engineWasOn ? "red" : COLORS.getColorFor(flight),
+    };
+  }
+
+  private isEngineOn(datum: Datum) {
+    return datum.calculatedValues.engineOn?.value === 1;
+  }
+
+  private limitNumberOfPoints(flight: SavedFlight, maxPoints: number) {
+    let datums = flight.getDatums();
 
     if (datums.length > maxPoints) {
       let numberOfSamples = Math.round(datums.length / maxPoints);
@@ -85,6 +137,6 @@ export default class AltitudeChart extends Component<Props, State> {
   }
 
   private flightTrackColors() {
-    return this.props.flightGroup.flights.map((f) => COLORS.getColorFor(f));
+    return this.state.chartData.map((data) => data.color);
   }
 }

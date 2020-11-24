@@ -84,10 +84,10 @@ export default class Map {
     if (renderedExtent[0] === Infinity) return;
     this.olMap.getView().fit(renderedExtent, {
       padding: [
-        DEFAULT_PADDING,
-        DEFAULT_PADDING,
-        TIMELINE_SIZE,
-        DEFAULT_PADDING,
+        DEFAULT_PADDING + 5,
+        DEFAULT_PADDING + 5,
+        TIMELINE_SIZE + 5,
+        DEFAULT_PADDING + 5,
       ],
       duration: ANIMATION_DURATION,
     });

@@ -10,6 +10,8 @@ import { Speed } from "glana/src/units/speed";
 import { SettingsModel } from "./settings";
 import TaskTimeline from "./task_timeline";
 
+export const TIMELINE_HEIGHT = 91 + 56;
+
 interface Props {
   flightGroup: FlightGroup;
   followFlight: SavedFlight;

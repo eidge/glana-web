@@ -45,16 +45,16 @@ export default class TimelineMarker extends Component<Props, State> {
         </div>
 
         <style jsx>{`
-          .marker-details {
+          .gl-marker-details {
             left: -2px;
           }
 
-          .marker-details-right {
+          .gl-marker-details-right {
             left: -2px;
             right: auto;
           }
 
-          .marker-details-left {
+          .gl-marker-details-left {
             left: auto;
             right: 0;
           }
@@ -65,12 +65,12 @@ export default class TimelineMarker extends Component<Props, State> {
 
   private markerDetailsClassNames() {
     let classes = [
-      "absolute bottom-full marker-details bg-white px-3 rounded shadow divide-y",
+      "absolute bottom-full gl-marker-details bg-white px-3 rounded shadow divide-y",
     ];
     if (this.props.relativeLeftPosition > 50) {
-      classes.push("marker-details-left");
+      classes.push("gl-marker-details-left");
     } else {
-      classes.push("marker-details-right");
+      classes.push("gl-marker-details-right");
     }
     return classes.join(" ");
   }

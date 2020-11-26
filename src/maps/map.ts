@@ -1,26 +1,44 @@
 import { createEmpty, extend } from "ol/extent";
+import OlMap from "ol/Map";
 import TileLayer from "ol/layer/Tile";
 import OSM from "ol/source/OSM";
 import { positionToOlPoint } from "./utils";
 import { defaults as interactionDefaults } from "ol/interaction";
 import Position from "glana/src/flight_computer/position";
 import TileImage from "ol/source/XYZ";
+import { TIMELINE_HEIGHT } from "../components/flight_analysis/timeline";
+import { Coordinate } from "ol/coordinate";
 
 const ANIMATION_DURATION = 400;
-const DEFAULT_PADDING = 50;
-const TIMELINE_SIZE = 110;
 
 export default class Map {
   private domElement: HTMLElement;
   private isInitialized = false;
   private airspaceLayer!: TileLayer;
+  private padding: { top: number; bottom: number; left: number; right: number };
+  private mapClientRect: DOMRect;
 
-  olMap: any;
   ol = require("ol");
+  olMap: OlMap;
 
   constructor(domElement: HTMLElement) {
     this.domElement = domElement;
+    this.mapClientRect = domElement.getBoundingClientRect();
+    this.padding = this.calculatePadding(this.mapClientRect);
     this.olMap = this.buildMap();
+  }
+
+  private calculatePadding(clientRect: DOMRect) {
+    const aspectRatio = clientRect.width / clientRect.height;
+    const paddingX = Math.floor(0.05 * aspectRatio * clientRect.width);
+    const paddingY = Math.floor((0.05 / aspectRatio) * clientRect.height);
+
+    return {
+      top: paddingY,
+      right: paddingX,
+      bottom: paddingY + TIMELINE_HEIGHT,
+      left: paddingX,
+    };
   }
 
   render(showAirspace: boolean) {
@@ -38,30 +56,52 @@ export default class Map {
     });
   }
 
-  isVisible(position: Position, paddingInPixels: number = DEFAULT_PADDING) {
+  isVisible(position: Position) {
     let coordinate = positionToOlPoint(position);
     let positionXY = this.olMap.getPixelFromCoordinate(coordinate);
     if (!positionXY) return true;
 
-    let mapClientRect = this.domElement.getBoundingClientRect();
     return (
-      positionXY[0] >= paddingInPixels &&
-      positionXY[1] >= paddingInPixels &&
-      positionXY[0] < mapClientRect.right - paddingInPixels &&
-      positionXY[1] < mapClientRect.bottom - paddingInPixels
+      positionXY[0] >= this.mapClientRect.left + this.padding.left &&
+      positionXY[1] >= this.mapClientRect.top + this.padding.top &&
+      positionXY[0] <= this.mapClientRect.right - this.padding.right &&
+      positionXY[1] <= this.mapClientRect.bottom - this.padding.bottom
     );
   }
 
   centerOn(position: Position) {
-    let coordinate = positionToOlPoint(position);
-    this.olMap
-      .getView()
-      .animate({ center: coordinate, duration: ANIMATION_DURATION });
+    const coordinate = positionToOlPoint(position);
+    const offsetCoordinate = this.offsetCenterToAccountForTimelineSize(
+      coordinate
+    );
+
+    this.olMap.getView().animate({
+      center: offsetCoordinate,
+      duration: ANIMATION_DURATION,
+    });
+  }
+
+  private offsetCenterToAccountForTimelineSize(coordinate: Coordinate) {
+    const coordinateAtTopOfTimeline = this.olMap.getCoordinateFromPixel([
+      0,
+      this.mapClientRect.bottom - TIMELINE_HEIGHT,
+    ]);
+    const coordinateAtBottom = this.olMap.getCoordinateFromPixel([
+      0,
+      this.mapClientRect.bottom,
+    ]);
+
+    const x = coordinate[0];
+    const y =
+      coordinate[1] +
+      (coordinateAtBottom[1] - coordinateAtTopOfTimeline[1]) / 2;
+
+    return [x, y];
   }
 
   zoomIn(position?: Position) {
     let options = {
-      zoom: this.olMap.getView().getZoom() + 1,
+      zoom: this.olMap.getView().getZoom()! + 1,
       duration: ANIMATION_DURATION,
     } as any;
 
@@ -74,7 +114,7 @@ export default class Map {
 
   zoomOut() {
     this.olMap.getView().animate({
-      zoom: this.olMap.getView().getZoom() - 1,
+      zoom: this.olMap.getView().getZoom()! - 1,
       duration: ANIMATION_DURATION,
     });
   }
@@ -84,10 +124,10 @@ export default class Map {
     if (renderedExtent[0] === Infinity) return;
     this.olMap.getView().fit(renderedExtent, {
       padding: [
-        DEFAULT_PADDING + 5,
-        DEFAULT_PADDING + 5,
-        TIMELINE_SIZE + 5,
-        DEFAULT_PADDING + 5,
+        this.padding.top + 5,
+        this.padding.right + 5,
+        this.padding.bottom + 5,
+        this.padding.left + 5,
       ],
       duration: ANIMATION_DURATION,
     });
@@ -112,7 +152,7 @@ export default class Map {
   }
 
   private buildMap() {
-    const { Map, View } = this.ol;
+    const { View } = this.ol;
     const interactions = interactionDefaults({
       altShiftDragRotate: false,
       pinchRotate: false,
@@ -120,7 +160,7 @@ export default class Map {
 
     this.airspaceLayer = this.buildAirspaceLayer();
 
-    return new Map({
+    return new OlMap({
       controls: [],
       interactions: interactions,
       layers: [this.buildMapLayer(), this.airspaceLayer],

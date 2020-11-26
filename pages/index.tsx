@@ -71,6 +71,7 @@ class Home extends Component<Props, State> {
         let flightGroup = await loader.loadFlightGroup();
         this.loadFlightGroup(flightGroup);
       } catch (e) {
+        console.error(e);
         await this.props.router.push("/");
         this.setState({ isLoading: false });
       }

@@ -5,6 +5,7 @@ import FlightGroup from "glana/src/analysis/flight_group";
 import { Datum } from "glana/src/flight_computer/computer";
 import { COLORS } from "../../maps/flight_renderer";
 import SavedFlight from "glana/src/saved_flight";
+import { splitWhen } from "../../utils/arrays";
 
 const MAX_POINTS = 500;
 
@@ -45,56 +46,24 @@ export default class AltitudeChart extends Component<Props, State> {
   }
 
   private splitFlightByEngineSegments(flight: SavedFlight, datums: Datum[]) {
-    let stages = [];
-    let currentState: any = [];
-    let engineWasOn = this.isEngineOn(datums[0]);
-    datums.forEach((datum) => {
-      let engineIsOn = this.isEngineOn(datum);
+    const groups = splitWhen(datums, (datum) => this.isEngineOn(datum), {
+      includeLastValueInBothGroups: true,
+    });
 
-      if (engineIsOn === engineWasOn) {
-        currentState.push({
-          x: datum.timestamp.getTime(),
-          y: datum.position.altitude.value,
-        });
-      } else {
-        const currentPoint = {
+    return groups.map((group) => {
+      const data = group.map((datum) => {
+        return {
           x: datum.timestamp.getTime(),
           y: datum.position.altitude.value,
         };
-        currentState.push(currentPoint);
-        const data = this.buildFlightDataSegment(
-          flight,
-          currentState,
-          engineWasOn
-        );
-        stages.push(data);
-        engineWasOn = this.isEngineOn(datum);
-        currentState = [currentPoint];
-      }
+      });
+
+      return {
+        id: `altitude-${data[0].x}-${data[data.length - 1].x}`,
+        data: data,
+        color: this.isEngineOn(group[0]) ? "red" : COLORS.getColorFor(flight),
+      };
     });
-
-    if (currentState.length > 0) {
-      const data = this.buildFlightDataSegment(
-        flight,
-        currentState,
-        engineWasOn
-      );
-      stages.push(data);
-    }
-
-    return stages;
-  }
-
-  private buildFlightDataSegment(
-    flight: SavedFlight,
-    data: any[],
-    engineWasOn: boolean
-  ) {
-    return {
-      id: `altitude-${data[0].x}-${data[data.length - 1].x}`,
-      data: data,
-      color: engineWasOn ? "red" : COLORS.getColorFor(flight),
-    };
   }
 
   private isEngineOn(datum: Datum) {

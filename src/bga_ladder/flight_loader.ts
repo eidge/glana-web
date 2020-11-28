@@ -53,6 +53,9 @@ export default class FlightLoader implements URLFlightLoader {
     const savedFlights = flightDetailsResponses.map((response) =>
       this.parseFlightDetails(response)
     );
+    if (savedFlights.length < 1) {
+      throw new Error("No flights available");
+    }
     return new FlightGroup(savedFlights);
   }
 

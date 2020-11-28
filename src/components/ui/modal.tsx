@@ -21,8 +21,7 @@ const Modal = (props: ModalProps) => {
       {props.children}
       <style global jsx>{`
         .gl-modal {
-          @apply bg-white shadow-xl rounded-lg outline-none;
-          @apply overflow-hidden overflow-y-scroll;
+          @apply bg-white shadow-xl rounded-lg outline-none overflow-hidden flex flex-col;
           max-height: ${height ? `${height}px` : "100vh"};
         }
 
@@ -31,6 +30,14 @@ const Modal = (props: ModalProps) => {
           @apply fixed w-screen top-0 left-0;
           @apply bg-gray-500 bg-opacity-25;
           height: ${height ? `${height}px` : "100vh"};
+        }
+
+        .gl-modal-header {
+          @apply bg-teal-600 px-4 h-16 flex flex-row justify-between items-center flex-shrink-0;
+        }
+
+        .gl-modal-body {
+          @apply p-4 h-full overflow-hidden overflow-y-scroll;
         }
       `}</style>
     </ReactModal>
@@ -46,7 +53,7 @@ interface ModalHeaderProps {
 
 export const ModalHeader = (props: ModalHeaderProps) => {
   return (
-    <div className="bg-teal-600 p-4 pb-6 flex flex-row justify-between items-center">
+    <div className="gl-modal-header">
       {props.title && (
         <h1 className="text-xl text-white font-semibold">{props.title}</h1>
       )}
@@ -67,5 +74,5 @@ interface ModalBodyProps {
 }
 
 export const ModalBody = (props: ModalBodyProps) => {
-  return <div className="p-4">{props.children}</div>;
+  return <div className="gl-modal-body">{props.children}</div>;
 };

@@ -13,7 +13,6 @@ import { SettingsModel } from "../src/components/flight_analysis/settings";
 import Modal, { ModalBody } from "../src/components/ui/modal";
 import Head from "next/head";
 import { Router, withRouter } from "next/router";
-import BGALadder from "../src/bga_ladder/api";
 import BGAFlightLoader from "../src/bga_ladder/flight_loader";
 import URLIGCLoader from "../src/url_igc_loader";
 import Calculator from "glana/src/flight_computer/calculators/calculator";
@@ -36,11 +35,8 @@ interface State {
 }
 
 class Home extends Component<Props, State> {
-  private bgaLadder: BGALadder;
-
   constructor(props: Props) {
     super(props);
-    this.bgaLadder = new BGALadder();
     this.state = {
       flightGroup: null,
       settings: this.buildSettings(),
@@ -112,7 +108,6 @@ class Home extends Component<Props, State> {
           onDrop={(event) => this.handleDroppedFiles(event)}
         >
           <FlightAnalysis
-            bgaLadder={this.bgaLadder}
             settings={this.state.settings}
             updateSettings={(settings: SettingsModel) =>
               this.updateSettings(settings)

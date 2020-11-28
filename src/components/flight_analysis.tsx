@@ -9,14 +9,12 @@ import Task from "glana/src/flight_computer/tasks/task";
 import Button from "./ui/button";
 import Modal, { ModalBody, ModalHeader } from "./ui/modal";
 import SavedFlight from "glana/src/saved_flight";
-import BGALadder from "../bga_ladder/api";
 import AnimationTicker from "../animation_ticker";
 
 interface Props {
   flightGroup: FlightGroup | null;
   settings: SettingsModel;
   updateSettings: (settings: SettingsModel) => void;
-  bgaLadder: BGALadder;
 }
 
 interface State {
@@ -54,14 +52,7 @@ export default class FlightAnalysis extends Component<Props, State> {
   }
 
   componentDidMount() {
-    this.maybeListenToBGAMessages();
     this.maybeSetActiveTimestamp();
-  }
-
-  private maybeListenToBGAMessages() {
-    this.props.bgaLadder.onTimestampChange((timestamp) =>
-      this.setActiveTimestamp(timestamp)
-    );
   }
 
   componentDidUpdate(previousProps: Props) {

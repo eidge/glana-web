@@ -13,27 +13,35 @@ import { kilometers } from "glana/src/units/length";
 import { ParsedUrlQuery } from "querystring";
 import { URLFlightLoader } from "../../pages";
 
+const DEFAULT_BGA_BASE_URL = new URL("https://bgaladder.net");
+
 export default class FlightLoader implements URLFlightLoader {
   private flightURLs: string[];
 
   constructor(query: ParsedUrlQuery) {
-    this.flightURLs = this.parseQueryString(query);
+    const baseURL = this.parseBaseURL(query);
+    this.flightURLs = this.parseFlightURLs(baseURL, query);
   }
 
-  private parseQueryString(query: ParsedUrlQuery) {
+  private parseBaseURL(query: ParsedUrlQuery) {
+    if (!query.bgaBaseUrl || query.bgaBaseUrl instanceof Array) {
+      return DEFAULT_BGA_BASE_URL.origin;
+    }
+    return new URL(query.bgaBaseUrl).origin;
+  }
+
+  private parseFlightURLs(baseURL: string, query: ParsedUrlQuery) {
     const bgaId = query.bgaID;
     if (!bgaId) return [];
     if (bgaId instanceof Array) {
-      return this.buildFlightURL(bgaId.join(","));
+      return this.buildFlightURL(baseURL, bgaId.join(","));
     } else {
-      return this.buildFlightURL(bgaId);
+      return this.buildFlightURL(baseURL, bgaId);
     }
   }
 
-  private buildFlightURL(bgaIdAttr: string) {
-    return bgaIdAttr
-      .split(",")
-      .map((id) => `https://staging.bgaladder.net/api/flightinfo/${id}`);
+  private buildFlightURL(baseURL: string, bgaIdAttr: string) {
+    return bgaIdAttr.split(",").map((id) => `${baseURL}/api/flightinfo/${id}`);
   }
 
   canHandle() {

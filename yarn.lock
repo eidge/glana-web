@@ -4592,13 +4592,20 @@ github-from-package@0.0.0:
   resolved "https://registry.yarnpkg.com/github-from-package/-/github-from-package-0.0.0.tgz#97fb5d96bfde8973313f20e8288ef9a167fa64ce"
   integrity sha1-l/tdlr/eiXMxPyDoKI75oWf6ZM4=
 
-glana@^0.2.11:
-  version "0.2.11"
-  resolved "https://registry.yarnpkg.com/glana/-/glana-0.2.11.tgz#ea1eb1a60d2e316b86db476f73217d54aec75c21"
-  integrity sha512-hsVMOLDhxfAoUxZVx0fdN3oTY2HN9DMllUT25aNfX6h5WlhdhVYMh/jL46lddmHqMF89e3NyiWzoxXMM1JnwjQ==
+glana-igc-parser@^0.5.1:
+  version "0.5.1"
+  resolved "https://registry.yarnpkg.com/glana-igc-parser/-/glana-igc-parser-0.5.1.tgz#3c7acde25587f126914cd00ab3974139227a1212"
+  integrity sha512-tT5xPm11htYSWOwSOOb7zEo2SSK/5CmDZu72hLy8MyEYIRuCBOARJL6XBrBXwCdSrDAZ+1yeOffL/KUATrk8FA==
+  dependencies:
+    flight-recorder-manufacturers "^1.0.1"
+
+glana@^0.2.12:
+  version "0.2.12"
+  resolved "https://registry.yarnpkg.com/glana/-/glana-0.2.12.tgz#7e31982531ef61c1b3e99aed08be148d3dade87d"
+  integrity sha512-8lffCPEuEv5f12EV2y7wQESB6dduySoo2UQmoCDDJggsaEzA4P0ow8pUExoYITQJLDgxziceXlY8SvOHL6F+SA==
   dependencies:
     "@turf/turf" "^5.1.6"
-    igc-parser "^0.5.0"
+    glana-igc-parser "^0.5.1"
 
 glob-parent@^3.1.0:
   version "3.1.0"
@@ -4795,13 +4802,6 @@ iferr@^0.1.5:
   version "0.1.5"
   resolved "https://registry.yarnpkg.com/iferr/-/iferr-0.1.5.tgz#c60eed69e6d8fdb6b3104a1fcbca1c192dc5b501"
   integrity sha1-xg7taebY/bazEEofy8ocGS3FtQE=
-
-igc-parser@^0.5.0:
-  version "0.5.0"
-  resolved "https://registry.yarnpkg.com/igc-parser/-/igc-parser-0.5.0.tgz#57d3e8781cd2984cc5a357dc7cdeb9389a447232"
-  integrity sha512-XpuPcl7MTu3H+FPjOpH21AQhZWOeaqFpk/T5M5r63ROxRpLF9idgb6SS7/NyQHXOe1L1pdgDKIErKfkxqp90OA==
-  dependencies:
-    flight-recorder-manufacturers "^1.0.1"
 
 imurmurhash@^0.1.4:
   version "0.1.4"

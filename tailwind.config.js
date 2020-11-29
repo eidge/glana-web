@@ -1,34 +1,28 @@
+const colors = require("tailwindcss/colors");
+
 module.exports = {
-  future: {
-    // removeDeprecatedGapUtilities: true,
-    purgeLayersByDefault: true,
-  },
   purge: [
     "./src/**/*.css",
     "./src/**/*.jsx",
     "./src/**/*.tsx",
     "./pages/**/*.tsx",
   ],
+  darkMode: false,
   theme: {
-    inset: {
-      "0": 0,
-      auto: "auto",
-      full: "100%",
+    colors: {
+      gray: colors.blueGray,
+      white: colors.white,
+      black: colors.black,
+      primary: { ...colors.teal, DEFAULT: colors.teal["500"] },
     },
-    cursor: {
-      auto: "auto",
-      default: "default",
-      pointer: "pointer",
-      wait: "wait",
-      text: "text",
-      move: "move",
-      "not-allowed": "not-allowed",
-      crosshair: "crosshair",
-      "zoom-in": "zoom-in",
-      crosshair: "crosshair",
+    extend: {
+      cursor: {
+        crosshair: "crosshair",
+      },
     },
+  },
+  variants: {
     extend: {},
   },
-  variants: {},
   plugins: [],
 };

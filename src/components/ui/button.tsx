@@ -89,11 +89,11 @@ const Button = (p: ButtonProps) => {
         }
 
         .btn--primary {
-          @apply bg-teal-600 text-white border-teal-700;
+          @apply bg-primary text-white border-primary-600;
         }
 
         .btn--primary:hover {
-          @apply bg-teal-700;
+          @apply bg-primary-600;
         }
 
         .btn--secondary {

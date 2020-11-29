@@ -33,7 +33,7 @@ const Modal = (props: ModalProps) => {
         }
 
         .gl-modal-header {
-          @apply bg-teal-600 px-4 h-16 flex flex-row justify-between items-center flex-shrink-0;
+          @apply bg-primary px-4 h-16 flex flex-row justify-between items-center flex-shrink-0;
         }
 
         .gl-modal-body {

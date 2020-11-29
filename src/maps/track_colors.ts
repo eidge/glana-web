@@ -1,13 +1,13 @@
 import SavedFlight from "glana/src/saved_flight";
+// @ts-ignore
+import colors from "tailwindcss/colors";
 
 export class TrackColors {
   private COLORS: string[] = [
-    // "#E53E3E", // red-600
-    "#3182CE", // blue-600
-    "#ED64A6", // pink-500
-    "#319795", // teal-600
-    "#D69E2E", // yellow-600
-    "#48BB78", // green-500
+    colors.blue["600"],
+    colors.orange["600"],
+    colors.pink["500"],
+    colors.green["800"],
   ];
   private index: number;
   private colorMap: WeakMap<SavedFlight, string>;

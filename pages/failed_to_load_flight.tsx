@@ -13,7 +13,7 @@ export default function FailedToLoadFlight() {
             <div className="mt-4">
               <span className="text-gray-700">
                 You can manually upload a flight{" "}
-                <a href="/" className="text-teal-600">
+                <a href="/" className="text-primary">
                   here
                 </a>
                 .

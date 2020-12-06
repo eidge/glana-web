@@ -37,7 +37,7 @@ export default class AltitudeChart extends Component<Props, State> {
   }
 
   private buildChartData(flightGroup: FlightGroup) {
-    return flightGroup.flights.flatMap((flight) => this.flightData(flight));
+    return flightGroup.flights.flatMap(flight => this.flightData(flight));
   }
 
   private flightData(flight: SavedFlight) {
@@ -46,22 +46,22 @@ export default class AltitudeChart extends Component<Props, State> {
   }
 
   private splitFlightByEngineSegments(flight: SavedFlight, datums: Datum[]) {
-    const groups = splitWhen(datums, (datum) => this.isEngineOn(datum), {
-      includeLastValueInBothGroups: true,
+    const groups = splitWhen(datums, datum => this.isEngineOn(datum), {
+      includeLastValueInBothGroups: true
     });
 
-    return groups.map((group) => {
-      const data = group.map((datum) => {
+    return groups.map(group => {
+      const data = group.map(datum => {
         return {
           x: datum.timestamp.getTime(),
-          y: datum.position.altitude.value,
+          y: datum.position.altitude.value
         };
       });
 
       return {
         id: `altitude-${data[0].x}-${data[data.length - 1].x}`,
         data: data,
-        color: this.isEngineOn(group[0]) ? "red" : COLORS.getColorFor(flight),
+        color: this.isEngineOn(group[0]) ? "red" : COLORS.getColorFor(flight)
       };
     });
   }
@@ -71,7 +71,7 @@ export default class AltitudeChart extends Component<Props, State> {
   }
 
   private limitNumberOfPoints(flight: SavedFlight, maxPoints: number) {
-    let datums = flight.getDatums();
+    let datums = flight.datums;
 
     if (datums.length > maxPoints) {
       let numberOfSamples = Math.round(datums.length / maxPoints);
@@ -106,6 +106,6 @@ export default class AltitudeChart extends Component<Props, State> {
   }
 
   private flightTrackColors() {
-    return this.state.chartData.map((data) => data.color);
+    return this.state.chartData.map(data => data.color);
   }
 }

@@ -21,7 +21,7 @@ export function splitWhen<T>(
   let currentGroup: T[] = [];
   let lastPredicate = predicateFn(array[0]);
 
-  array.forEach((value) => {
+  array.forEach(value => {
     const currentPredicate = predicateFn(value);
 
     if (lastPredicate === currentPredicate) {

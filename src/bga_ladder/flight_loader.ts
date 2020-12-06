@@ -4,7 +4,7 @@ import Task from "glana/src/flight_computer/tasks/task";
 import Line from "glana/src/flight_computer/tasks/turnpoints/segments/line";
 import Sector from "glana/src/flight_computer/tasks/turnpoints/segments/sector";
 import Turnpoint, {
-  TurnpointSegment,
+  TurnpointSegment
 } from "glana/src/flight_computer/tasks/turnpoints/turnpoint";
 import IGCParser from "glana/src/igc/parser";
 import SavedFlight from "glana/src/saved_flight";
@@ -41,7 +41,7 @@ export default class FlightLoader implements URLFlightLoader {
   }
 
   private buildFlightURL(baseURL: string, bgaIdAttr: string) {
-    return bgaIdAttr.split(",").map((id) => `${baseURL}/api/flightinfo/${id}`);
+    return bgaIdAttr.split(",").map(id => `${baseURL}/api/flightinfo/${id}`);
   }
 
   canHandle() {
@@ -50,7 +50,7 @@ export default class FlightLoader implements URLFlightLoader {
 
   async loadFlightGroup() {
     const flightDetailsResponses = await this.loadFlightDetails();
-    const savedFlights = flightDetailsResponses.map((response) =>
+    const savedFlights = flightDetailsResponses.map(response =>
       this.parseFlightDetails(response)
     );
     if (savedFlights.length < 1) {
@@ -60,11 +60,11 @@ export default class FlightLoader implements URLFlightLoader {
   }
 
   private async loadFlightDetails() {
-    let promises = this.flightURLs.map((url) => fetch(url));
+    let promises = this.flightURLs.map(url => fetch(url));
     let responses = await Promise.all(promises);
     let jsonResponses = responses
-      .filter((response) => response.status === 200)
-      .map((response) => response.json());
+      .filter(response => response.status === 200)
+      .map(response => response.json());
     return Promise.all(jsonResponses);
   }
 

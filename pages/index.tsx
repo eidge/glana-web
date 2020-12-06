@@ -6,7 +6,7 @@ import EngineInUse from "glana/src/flight_computer/calculators/engine_in_use";
 import { seconds } from "glana/src/units/duration";
 import FlightAnalysis from "../src/components/flight_analysis";
 import FlightGroup, {
-  synchronizationMethods,
+  synchronizationMethods
 } from "glana/src/analysis/flight_group";
 import SynchronizationMethod from "glana/src/analysis/synchronization/method";
 import { SettingsModel } from "../src/components/flight_analysis/settings";
@@ -42,7 +42,7 @@ class Home extends Component<Props, State> {
     this.state = {
       flightGroup: null,
       settings: this.buildSettings(),
-      isLoading: false,
+      isLoading: false
     };
   }
 
@@ -58,10 +58,10 @@ class Home extends Component<Props, State> {
     if (this.state.flightGroup || this.state.isLoading) return;
 
     const loaders = URL_LOADERS.map(
-      (Loader) => new Loader(this.props.router.query)
+      Loader => new Loader(this.props.router.query)
     );
 
-    const loader = loaders.find((loader) => loader.canHandle());
+    const loader = loaders.find(loader => loader.canHandle());
     if (!loader) return;
 
     this.setState({ isLoading: true }, async () => {
@@ -76,7 +76,7 @@ class Home extends Component<Props, State> {
   }
 
   private loadFlightGroup(flightGroup: FlightGroup) {
-    flightGroup.flights.forEach((f) => f.analise(this.flightComputer()));
+    flightGroup.flights.forEach(f => f.analise(this.flightComputer()));
     flightGroup.synchronize(this.state.settings.synchronizationMethod);
     this.setState({ flightGroup, isLoading: false });
   }
@@ -88,7 +88,7 @@ class Home extends Component<Props, State> {
       followFlight: true,
       playbackSpeed: 250,
       units: "imperial",
-      showAirspace: false,
+      showAirspace: false
     };
   }
 
@@ -103,9 +103,9 @@ class Home extends Component<Props, State> {
         </Head>
 
         <div
-          onDragEnter={(event) => event.preventDefault()}
-          onDragOver={(event) => event.preventDefault()}
-          onDrop={(event) => this.handleDroppedFiles(event)}
+          onDragEnter={event => event.preventDefault()}
+          onDragOver={event => event.preventDefault()}
+          onDrop={event => this.handleDroppedFiles(event)}
         >
           <DebugContext.Provider
             value={{ enabled: !!this.props.router.query.debug }}
@@ -149,7 +149,7 @@ class Home extends Component<Props, State> {
                 className="invisible w-0"
                 type="file"
                 multiple={true}
-                onChange={(e) => this.handleFileInput(e)}
+                onChange={e => this.handleFileInput(e)}
               />
             </label>
           </div>
@@ -201,7 +201,7 @@ class Home extends Component<Props, State> {
   }
 
   private parseIGCs(fileContents: string[]) {
-    let savedFlights = fileContents.map((contents) => {
+    let savedFlights = fileContents.map(contents => {
       let parser = new IGCParser();
       const flight = parser.parse(contents);
       return flight;
@@ -212,16 +212,16 @@ class Home extends Component<Props, State> {
   }
 
   private readFiles(blobs: Blob[]) {
-    let fileContentPromises = blobs.map((file) => this.readFile(file as Blob));
+    let fileContentPromises = blobs.map(file => this.readFile(file as Blob));
     return Promise.all(fileContentPromises);
   }
 
   private readFile(file: Blob): Promise<string> {
     return new Promise((resolve, reject) => {
       let reader = new FileReader();
-      reader.onload = (fileContents) =>
+      reader.onload = fileContents =>
         resolve(fileContents.target?.result as string);
-      reader.onerror = (error) => reject(error);
+      reader.onerror = error => reject(error);
       reader.readAsText(file);
     });
   }
@@ -230,7 +230,7 @@ class Home extends Component<Props, State> {
     return new FlightComputer(
       new Map([
         ["averageVario", new AverageVario(seconds(30)) as Calculator],
-        ["engineOn", new EngineInUse(0.5) as Calculator],
+        ["engineOn", new EngineInUse(0.5) as Calculator]
       ])
     );
   }
@@ -239,7 +239,7 @@ class Home extends Component<Props, State> {
     if (!this.state.flightGroup) return;
     this.state.flightGroup.synchronize(method);
     this.setState({
-      flightGroup: Object.create(this.state.flightGroup),
+      flightGroup: Object.create(this.state.flightGroup)
     });
   }
 }

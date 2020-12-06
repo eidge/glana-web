@@ -4,10 +4,11 @@ import Quantity from "glana/src/units/quantity";
 import { knots, Speed } from "glana/src/units/speed";
 import { Component } from "react";
 import { SettingsModel, units } from "./settings";
+import FlightLabel from "../ui/flight_label";
+import SavedFlight from "glana/src/saved_flight";
 
 interface TimestampDetails {
-  color: string;
-  label: string;
+  flight: SavedFlight;
   altitude: Quantity<Length> | null;
   vario: Quantity<Speed> | null;
   timestampOffset: Quantity<Duration>;
@@ -37,11 +38,11 @@ export default class TimelineMarker extends Component<Props, State> {
           {this.props.isCompact && (
             <div className="text-xs leading-none font-mono font-hairline text-center py-1">
               {this.offsetTimestamp(
-                this.props.timestampDetails.find((td) => td.isActive)!
+                this.props.timestampDetails.find(td => td.isActive)!
               ).toLocaleTimeString()}
             </div>
           )}
-          {this.props.timestampDetails.map((d) => this.markerDetails(d))}
+          {this.props.timestampDetails.map(d => this.markerDetails(d))}
         </div>
 
         <style jsx>{`
@@ -65,7 +66,7 @@ export default class TimelineMarker extends Component<Props, State> {
 
   private markerDetailsClassNames() {
     let classes = [
-      "absolute bottom-full gl-marker-details bg-white px-3 rounded shadow divide-y",
+      "absolute bottom-full gl-marker-details bg-white px-3 rounded shadow divide-y"
     ];
     if (this.props.relativeLeftPosition > 50) {
       classes.push("gl-marker-details-left");
@@ -77,25 +78,14 @@ export default class TimelineMarker extends Component<Props, State> {
 
   private markerDetails(details: TimestampDetails) {
     return (
-      <div className="py-2" key={details.label}>
+      <div className="py-2" key={details.flight.id}>
         <div className="gl-marker-details-clickable" onClick={details.onClick}>
-          <div
-            className={
-              this.props.isCompact
-                ? "gl-marker-details-label gl-marker-details-label-compact"
-                : "gl-marker-details-label"
-            }
-          >
-            <div
-              className="gl-marker-details-dot"
-              style={{
-                backgroundColor: details.isActive
-                  ? details.color
-                  : "transparent",
-                borderColor: details.color,
-              }}
-            ></div>
-            <div className="overflow-hidden">{details.label}</div>
+          <div className="gl-marker-details-label">
+            <FlightLabel
+              flight={details.flight}
+              isActive={details.isActive}
+              isCompact={this.props.isCompact}
+            />
           </div>
           <div className="gl-marker-details-values">
             {this.maybeRenderVario(details)}
@@ -113,15 +103,7 @@ export default class TimelineMarker extends Component<Props, State> {
             }
 
             .gl-marker-details-label {
-              @apply flex flex-row items-center text-base w-20 font-semibold leading-none overflow-hidden mr-3;
-            }
-
-            .gl-marker-details-label-compact {
-              @apply text-sm;
-            }
-
-            .gl-marker-details-dot {
-              @apply w-2 h-2 rounded-full mr-2 flex-shrink-0 border-2;
+              @apply w-20 overflow-hidden mr-3;
             }
 
             .gl-marker-details-values {

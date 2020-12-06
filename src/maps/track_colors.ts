@@ -7,7 +7,7 @@ export class TrackColors {
     colors.blue["600"],
     colors.orange["600"],
     colors.pink["500"],
-    colors.green["800"],
+    colors.green["800"]
   ];
   private index: number;
   private colorMap: WeakMap<SavedFlight, string>;

@@ -26,7 +26,7 @@ export default class TaskRenderer {
       source,
       style,
       updateWhileAnimating: true,
-      updateWhileInteracting: true,
+      updateWhileInteracting: true
     });
 
     this.layer = layer;
@@ -46,21 +46,19 @@ export default class TaskRenderer {
   }
 
   private buildTurnpoints(task: Task) {
-    return task.turnpoints.flatMap((tp) => this.buildFeature(tp));
+    return task.turnpoints.flatMap(tp => this.buildFeature(tp));
   }
 
   private buildFeature(turnpoint: TaskTurnpoint) {
     let format = new GeoJSON();
     let features = format.readFeatures(turnpoint.toGeoJSON());
-    features.forEach((f) =>
-      f.getGeometry()?.transform("EPSG:4326", "EPSG:3857")
-    );
+    features.forEach(f => f.getGeometry()?.transform("EPSG:4326", "EPSG:3857"));
     return features;
   }
 
   private buildTrack(task: Task) {
     const { Feature } = this.map.ol;
-    let points = task.turnpoints.map((tp) => positionToOlPoint(tp.center));
+    let points = task.turnpoints.map(tp => positionToOlPoint(tp.center));
     let track = new LineString(points);
     return [new Feature({ geometry: track })];
   }
@@ -70,12 +68,12 @@ export default class TaskRenderer {
       new Style({
         stroke: new Stroke({
           color: "rgba(0, 0, 0, 0.4)",
-          width: 2,
+          width: 2
         }),
         fill: new Fill({
-          color: "rgba(0, 0, 0, 0.1)",
-        }),
-      }),
+          color: "rgba(0, 0, 0, 0.1)"
+        })
+      })
     ];
   }
 }

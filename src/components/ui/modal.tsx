@@ -26,7 +26,7 @@ const Modal = (props: ModalProps) => {
         }
 
         .gl-modal-overlay {
-          @apply flex flex-row items-center justify-center;
+          @apply flex flex-row items-center justify-center z-20;
           @apply fixed w-screen top-0 left-0;
           @apply bg-gray-500 bg-opacity-25;
           height: ${height ? `${height}px` : "100vh"};

@@ -42,15 +42,15 @@ export default class FlightRenderer {
 
   private buildTrackSegments(flight: SavedFlight) {
     const datumSlices = splitWhen(
-      flight.getDatums(),
-      (datum) => this.isEngineOn(datum),
+      flight.datums,
+      datum => this.isEngineOn(datum),
       {
-        includeLastValueInBothGroups: true,
+        includeLastValueInBothGroups: true
       }
     );
 
     let startIndex = 0;
-    return datumSlices.map((datums) => {
+    return datumSlices.map(datums => {
       const isEngineOn = this.isEngineOn(datums[0]);
       const positions = datums.map((datum: Datum) => this.fixToPoint(datum));
       const endIndex = startIndex + positions.length - 1;
@@ -58,7 +58,7 @@ export default class FlightRenderer {
         startIndex: startIndex,
         endIndex: endIndex,
         positions: positions,
-        isEngineOn: isEngineOn,
+        isEngineOn: isEngineOn
       };
 
       startIndex = endIndex;
@@ -77,7 +77,7 @@ export default class FlightRenderer {
     let source = new VectorSource({
       features: this.trackSegmentFeatures.concat(
         this.positionMarkerFeature as any
-      ),
+      )
     });
 
     let color = COLORS.getColorFor(this.flight);
@@ -85,7 +85,7 @@ export default class FlightRenderer {
       source,
       style: () => this.olStyle(color),
       updateWhileAnimating: true,
-      updateWhileInteracting: true,
+      updateWhileInteracting: true
     });
     layer.setZIndex(1);
     this.map.olMap.addLayer(layer);
@@ -94,7 +94,7 @@ export default class FlightRenderer {
   setActiveTimestamp(timestamp: Date) {
     let datum = this.flight.datumAt(timestamp);
     if (!datum) {
-      datum = this.flight.getDatums()[0];
+      datum = this.flight.datums[0];
     }
 
     if (!this.renderFullTrack) {
@@ -138,7 +138,7 @@ export default class FlightRenderer {
   }
 
   private buildTrackSegmentFeatures() {
-    return this.trackSegments.map((segment) => {
+    return this.trackSegments.map(segment => {
       const isEngineOn = segment.isEngineOn;
       const line = new LineString(segment.positions);
       const feature = new Feature<LineString>({ geometry: line });
@@ -153,15 +153,15 @@ export default class FlightRenderer {
       new Style({
         stroke: new Stroke({
           color: "#FF0000",
-          width: 2,
-        }),
-      }),
+          width: 2
+        })
+      })
     ];
   }
 
   private buildPositionMarkerFeature() {
     return new Feature<Point>({
-      geometry: new Point(this.fixToPoint(this.flight.getDatums()[0])),
+      geometry: new Point(this.fixToPoint(this.flight.datums[0]))
     });
   }
 
@@ -174,15 +174,15 @@ export default class FlightRenderer {
       new Style({
         stroke: new Stroke({
           color: color,
-          width: 2,
+          width: 2
         }),
         image: new CircleStyle({
           radius: 5,
           fill: new Fill({
-            color: color,
-          }),
-        }),
-      }),
+            color: color
+          })
+        })
+      })
     ];
   }
 }

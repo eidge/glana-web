@@ -15,17 +15,35 @@ export default class Map {
   private domElement: HTMLElement;
   private isInitialized = false;
   private airspaceLayer!: TileLayer;
-  private padding: { top: number; bottom: number; left: number; right: number };
-  private mapClientRect: DOMRect;
+  private mapClientRect!: DOMRect;
+  private padding!: {
+    top: number;
+    right: number;
+    bottom: number;
+    left: number;
+  };
 
-  ol = require("ol");
-  olMap: OlMap;
+  usableClientRect!: DOMRect;
+
+  readonly ol = require("ol");
+  readonly olMap: OlMap;
+
+  private resizeCallback = () => {
+    console.log("here", this);
+    this.calculateDimensions(this.domElement);
+  };
 
   constructor(domElement: HTMLElement) {
     this.domElement = domElement;
+    this.calculateDimensions(domElement);
+    this.olMap = this.buildMap();
+    window.addEventListener("resize", this.resizeCallback);
+  }
+
+  private calculateDimensions(domElement: HTMLElement) {
     this.mapClientRect = domElement.getBoundingClientRect();
     this.padding = this.calculatePadding(this.mapClientRect);
-    this.olMap = this.buildMap();
+    this.usableClientRect = this.calculateUsableClientRect(this.mapClientRect);
   }
 
   private calculatePadding(clientRect: DOMRect) {
@@ -39,6 +57,19 @@ export default class Map {
       bottom: paddingY + TIMELINE_HEIGHT,
       left: paddingX,
     };
+  }
+
+  private calculateUsableClientRect(mapClientRect: DOMRect) {
+    return new DOMRect(
+      mapClientRect.x + this.padding.left,
+      mapClientRect.y + this.padding.top,
+      mapClientRect.width - this.padding.left - this.padding.right,
+      mapClientRect.height - this.padding.bottom - this.padding.top
+    );
+  }
+
+  destroy() {
+    window.removeEventListener("resize", this.resizeCallback);
   }
 
   render(showAirspace: boolean) {
@@ -62,10 +93,10 @@ export default class Map {
     if (!positionXY) return true;
 
     return (
-      positionXY[0] >= this.mapClientRect.left + this.padding.left &&
-      positionXY[1] >= this.mapClientRect.top + this.padding.top &&
-      positionXY[0] <= this.mapClientRect.right - this.padding.right &&
-      positionXY[1] <= this.mapClientRect.bottom - this.padding.bottom
+      positionXY[0] >= this.usableClientRect.left &&
+      positionXY[1] >= this.usableClientRect.top &&
+      positionXY[0] <= this.usableClientRect.right &&
+      positionXY[1] <= this.usableClientRect.bottom
     );
   }
 
@@ -82,21 +113,27 @@ export default class Map {
   }
 
   private offsetCenterToAccountForTimelineSize(coordinate: Coordinate) {
-    const coordinateAtTopOfTimeline = this.olMap.getCoordinateFromPixel([
-      0,
-      this.mapClientRect.bottom - TIMELINE_HEIGHT,
-    ]);
-    const coordinateAtBottom = this.olMap.getCoordinateFromPixel([
-      0,
-      this.mapClientRect.bottom,
-    ]);
+    const coordinateAtCenter = this.olMap.getCoordinateFromPixel(
+      this.centerXY(this.mapClientRect)
+    );
+    const coordinateAtUsableCenter = this.olMap.getCoordinateFromPixel(
+      this.centerXY(this.usableClientRect)
+    );
+    const offsetXY = [
+      coordinateAtCenter[0] - coordinateAtUsableCenter[0],
+      coordinateAtCenter[1] - coordinateAtUsableCenter[1],
+    ];
 
-    const x = coordinate[0];
-    const y =
-      coordinate[1] +
-      (coordinateAtBottom[1] - coordinateAtTopOfTimeline[1]) / 2;
+    const x = coordinate[0] + offsetXY[0];
+    const y = coordinate[1] + offsetXY[1];
 
     return [x, y];
+  }
+
+  private centerXY(clientRect: DOMRect) {
+    const centerX = clientRect.x + clientRect.width / 2;
+    const centerY = clientRect.y + clientRect.height / 2;
+    return [centerX, centerY];
   }
 
   zoomIn(position?: Position) {

@@ -97,7 +97,7 @@ export default class AltitudeChart extends Component<Props, State> {
         enableArea={true}
         enableSlices={false}
         enablePoints={false}
-        margin={{ top: 10 }}
+        margin={{ top: 5 }}
         xScale={{ type: "linear", min: "auto", max: "auto" }}
         curve="monotoneX"
         colors={this.flightTrackColors()}

@@ -8,6 +8,7 @@ import SavedFlight from "glana/src/saved_flight";
 import { SettingsModel } from "./settings";
 import { ButtonProps, IconKey } from "../ui/button";
 import ButtonGroup from "../ui/button_group";
+import { DebugContext } from "../../../pages";
 
 interface Props {
   flightGroup: FlightGroup | null;
@@ -21,7 +22,7 @@ interface State {}
 
 export default class Map extends Component<Props, State> {
   private el: HTMLDivElement | null = null;
-  private mapRenderer!: MapRenderer;
+  private mapRenderer?: MapRenderer;
   private flightRenderers: FlightRenderer[] = [];
   private taskRenderer!: TaskRenderer;
 
@@ -29,33 +30,26 @@ export default class Map extends Component<Props, State> {
     super(props);
   }
 
-  render() {
-    return (
-      <div className="w-full h-full">
-        <div className="w-full h-full" ref={(el) => (this.el = el)}></div>
-        <div className="absolute left-0 top-0 ml-2 mt-2">
-          <ButtonGroup
-            direction="vertical"
-            buttons={this.mapControlButtons()}
-          ></ButtonGroup>
-        </div>
-      </div>
-    );
-  }
-
   componentDidMount() {
-    this.setupMap();
-    this.taskRenderer = new TaskRenderer(this.mapRenderer);
+    if (!this.el) return;
+    const map = this.setupMap(this.el);
+    this.taskRenderer = new TaskRenderer(map);
     this.renderNewFlightGroup();
   }
 
-  private setupMap() {
-    if (!this.el) return;
-    this.mapRenderer = new MapRenderer(this.el);
+  private setupMap(mapElement: HTMLElement) {
+    this.mapRenderer = new MapRenderer(mapElement);
     this.mapRenderer.render(this.props.settings.showAirspace);
+    return this.mapRenderer;
+  }
+
+  componentWillUnmount() {
+    if (!this.mapRenderer) return;
+    this.mapRenderer.destroy();
   }
 
   componentDidUpdate(previousProps: Props) {
+    if (!this.mapRenderer) return;
     this.mapRenderer.render(this.props.settings.showAirspace);
 
     if (this.shouldUpdateCurrentFlightGroup(previousProps)) {
@@ -68,6 +62,45 @@ export default class Map extends Component<Props, State> {
     this.renderNewFlightGroup();
   }
 
+  render() {
+    return (
+      <div className="w-full h-full">
+        <div className="w-full h-full" ref={(el) => (this.el = el)}></div>
+        {this.maybeRenderDebugUsableRect()}
+        <div className="absolute left-0 top-0 ml-2 mt-2">
+          <ButtonGroup
+            direction="vertical"
+            buttons={this.mapControlButtons()}
+          ></ButtonGroup>
+        </div>
+      </div>
+    );
+  }
+
+  private maybeRenderDebugUsableRect() {
+    if (!this.mapRenderer) return null;
+    const debugRect = this.mapRenderer.usableClientRect;
+    return (
+      <DebugContext.Consumer>
+        {(debug) =>
+          debug.enabled && (
+            <div
+              style={{
+                top: debugRect.top,
+                left: debugRect.left,
+                width: debugRect.width,
+                height: debugRect.height,
+              }}
+              className="absolute bg-primary-100 bg-opacity-50 flex items-center justify-center"
+            >
+              <div className="bg-white bg-opacity-90 h-2 w-2"></div>
+            </div>
+          )
+        }
+      </DebugContext.Consumer>
+    );
+  }
+
   private shouldUpdateCurrentFlightGroup(previousProps: Props) {
     return (
       this.props.flightGroup === previousProps?.flightGroup &&
@@ -76,7 +109,7 @@ export default class Map extends Component<Props, State> {
   }
 
   private maybeCenterFlight(flight: SavedFlight | null) {
-    if (!flight || !this.shouldFollowFlight()) return;
+    if (!flight || !this.shouldFollowFlight() || !this.mapRenderer) return;
     let currentDatum = flight.datumAt(this.props.activeTimestamp!);
     if (currentDatum && !this.mapRenderer.isVisible(currentDatum.position)) {
       this.mapRenderer.centerOn(currentDatum.position);
@@ -103,6 +136,7 @@ export default class Map extends Component<Props, State> {
   }
 
   private reset() {
+    if (!this.mapRenderer) return;
     this.mapRenderer.reset();
     this.taskRenderer = new TaskRenderer(this.mapRenderer);
     this.flightRenderers = [];
@@ -118,9 +152,9 @@ export default class Map extends Component<Props, State> {
   }
 
   private renderFlights() {
-    if (!this.props.flightGroup) return;
+    if (!this.props.flightGroup || !this.mapRenderer) return;
     this.flightRenderers = this.props.flightGroup.flights.map((flight) => {
-      return new FlightRenderer(this.mapRenderer, flight, {
+      return new FlightRenderer(this.mapRenderer!, flight, {
         renderFullTrack: this.props.settings.renderFullTracks,
       });
     });
@@ -150,6 +184,7 @@ export default class Map extends Component<Props, State> {
   }
 
   private zoomIn() {
+    if (!this.mapRenderer) return;
     this.mapRenderer.zoomIn(this.zoomFocalPoint());
   }
 
@@ -165,10 +200,12 @@ export default class Map extends Component<Props, State> {
   }
 
   private zoomOut() {
+    if (!this.mapRenderer) return;
     this.mapRenderer.zoomOut();
   }
 
   private zoomToFit() {
+    if (!this.mapRenderer) return;
     this.mapRenderer.zoomToFit();
   }
 }

@@ -24,6 +24,8 @@ export interface URLFlightLoader {
 
 const URL_LOADERS = [BGAFlightLoader, URLIGCLoader];
 
+export const DebugContext = React.createContext({ enabled: true });
+
 interface Props {
   router: Router;
 }
@@ -106,13 +108,17 @@ class Home extends Component<Props, State> {
           onDragOver={(event) => event.preventDefault()}
           onDrop={(event) => this.handleDroppedFiles(event)}
         >
-          <FlightAnalysis
-            settings={this.state.settings}
-            updateSettings={(settings: SettingsModel) =>
-              this.updateSettings(settings)
-            }
-            flightGroup={this.state.flightGroup}
-          />
+          <DebugContext.Provider
+            value={{ enabled: !!this.props.router.query.debug }}
+          >
+            <FlightAnalysis
+              settings={this.state.settings}
+              updateSettings={(settings: SettingsModel) =>
+                this.updateSettings(settings)
+              }
+              flightGroup={this.state.flightGroup}
+            />
+          </DebugContext.Provider>
 
           <Modal
             isOpen={!this.state.flightGroup || this.state.isLoading}

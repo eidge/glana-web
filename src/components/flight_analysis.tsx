@@ -24,6 +24,7 @@ interface State {
   followFlight: SavedFlight | null;
   task: Task | null;
   isPlaying: boolean;
+  analysisIsOpen: boolean;
 }
 
 export default class FlightAnalysis extends Component<Props, State> {
@@ -36,6 +37,7 @@ export default class FlightAnalysis extends Component<Props, State> {
       isSettingsOpen: false,
       activeTimestamp: null,
       isPlaying: false,
+      analysisIsOpen: false,
       ...this.followFlightAndTask(props),
     };
     this.animationTicker = new AnimationTicker((elapsedTime: number) =>
@@ -89,8 +91,8 @@ export default class FlightAnalysis extends Component<Props, State> {
 
   render() {
     return (
-      <div className="w-screen relative">
-        <Div100vh>
+      <Div100vh className="flex flex-row">
+        <div className="relative flex-grow">
           <Map
             flightGroup={this.state.flightGroup}
             followFlight={this.state.followFlight}
@@ -101,8 +103,10 @@ export default class FlightAnalysis extends Component<Props, State> {
 
           {this.maybeRenderSettingsModalAndButton()}
           {this.maybeRenderTimeline()}
-        </Div100vh>
-      </div>
+        </div>
+
+        {this.state.analysisIsOpen && <div className="w-1/2 bg-primary"></div>}
+      </Div100vh>
     );
   }
 
@@ -156,6 +160,20 @@ export default class FlightAnalysis extends Component<Props, State> {
             size="lg"
             color="white"
             onClick={() => this.togglePlaying()}
+          />
+        </div>
+
+        <div className="mt-2">
+          <Button
+            icon={this.state.isPlaying ? "pause" : "play"}
+            size="lg"
+            color="white"
+            onClick={() =>
+              this.setState((s) => ({
+                ...s,
+                analysisIsOpen: !s.analysisIsOpen,
+              }))
+            }
           />
         </div>
 

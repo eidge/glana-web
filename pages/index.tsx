@@ -103,7 +103,6 @@ class Home extends Component<Props, State> {
         </Head>
 
         <div
-          className="w-screen"
           onDragEnter={(event) => event.preventDefault()}
           onDragOver={(event) => event.preventDefault()}
           onDrop={(event) => this.handleDroppedFiles(event)}

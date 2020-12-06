@@ -29,15 +29,17 @@ export default class Map {
   readonly olMap: OlMap;
 
   private resizeCallback = () => {
-    console.log("here", this);
     this.calculateDimensions(this.domElement);
+    this.olMap.updateSize();
   };
+  private resizeObserver: ResizeObserver;
 
   constructor(domElement: HTMLElement) {
     this.domElement = domElement;
     this.calculateDimensions(domElement);
     this.olMap = this.buildMap();
-    window.addEventListener("resize", this.resizeCallback);
+    this.resizeObserver = new ResizeObserver(this.resizeCallback);
+    this.resizeObserver.observe(domElement);
   }
 
   private calculateDimensions(domElement: HTMLElement) {
@@ -69,7 +71,7 @@ export default class Map {
   }
 
   destroy() {
-    window.removeEventListener("resize", this.resizeCallback);
+    this.resizeObserver.unobserve();
   }
 
   render(showAirspace: boolean) {

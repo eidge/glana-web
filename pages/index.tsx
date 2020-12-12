@@ -195,7 +195,8 @@ class Home extends Component<Props, State> {
       try {
         let fileContents = await this.readFiles(files);
         this.parseIGCs(fileContents);
-      } catch {
+      } catch (e) {
+        console.error(e);
         this.setState({ isLoading: false });
       }
     });

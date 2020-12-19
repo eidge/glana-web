@@ -9,9 +9,9 @@
   },
   "dependencies": {
     "@nivo/line": "^0.64.0",
-    "glana": "^0.2.16",
     "@types/ol": "^6.3.1",
     "autoprefixer": "^9",
+    "glana": "^0.2.17",
     "global": "^4.4.0",
     "next": "^10.0.1",
     "ol": "^6.3.1",

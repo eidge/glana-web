@@ -1,5 +1,4 @@
 import { Component } from "react";
-import Div100vh from "react-div-100vh";
 
 import FlightGroup from "glana/src/analysis/flight_group";
 import Map from "./flight_analysis/map";
@@ -8,6 +7,7 @@ import Timeline from "./flight_analysis/timeline";
 import Stats from "./flight_analysis/stats";
 import Task from "glana/src/flight_computer/tasks/task";
 import Button from "./ui/button";
+import ToggleableSplitScreen from "./ui/layout/toggleable_split_screen";
 import ButtonGroup from "./ui/button_group";
 import Modal, { ModalBody, ModalHeader } from "./ui/modal";
 import SavedFlight from "glana/src/saved_flight";
@@ -93,35 +93,43 @@ export default class FlightAnalysis extends Component<Props, State> {
 
   render() {
     return (
-      <Div100vh className="flex flex-row">
-        <div className="relative flex-grow">
-          <Map
-            flightGroup={this.state.flightGroup}
-            followFlight={this.state.followFlight}
-            task={this.state.task}
-            activeTimestamp={this.state.activeTimestamp}
-            settings={this.props.settings}
-          />
+      <ToggleableSplitScreen
+        headerComponent="Stats"
+        mainComponent={this.mapComponent()}
+        secondaryComponent={this.statsComponent()}
+        isDrawerOpen={this.state.isAnalysisOpen}
+        onClose={this.toggleStats}
+      />
+    );
+  }
 
-          {this.maybeRenderSettingsModalAndButton()}
-          {this.maybeRenderTimeline()}
-        </div>
+  private mapComponent() {
+    return (
+      <>
+        <Map
+          flightGroup={this.state.flightGroup}
+          followFlight={this.state.followFlight}
+          task={this.state.task}
+          activeTimestamp={this.state.activeTimestamp}
+          settings={this.props.settings}
+        />
 
-        {this.state.isAnalysisOpen && this.state.followFlight && (
-          <div className="w-full sm:w-1/2 md:max-w-screen-sm z-10 text-white bg-gray-800 overflow-y-scroll px-6 sm:border-l-2 border-gray-900">
-            {this.state.flightGroup && (
-              <Stats
-                onClose={this.toggleStats}
-                settings={this.props.settings}
-                followFlight={this.state.followFlight}
-                flightGroup={this.state.flightGroup}
-                setFollowFlight={this.setFollowFlight}
-                onTimestampChange={this.setActiveTimestamp}
-              ></Stats>
-            )}
-          </div>
-        )}
-      </Div100vh>
+        {this.maybeRenderSettingsModalAndButton()}
+        {this.maybeRenderTimeline()}
+      </>
+    );
+  }
+
+  private statsComponent() {
+    if (!this.state.followFlight || !this.state.flightGroup) return null;
+    return (
+      <Stats
+        settings={this.props.settings}
+        followFlight={this.state.followFlight}
+        flightGroup={this.state.flightGroup}
+        setFollowFlight={this.setFollowFlight}
+        onTimestampChange={this.setActiveTimestamp}
+      ></Stats>
     );
   }
 

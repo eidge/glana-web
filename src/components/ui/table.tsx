@@ -12,7 +12,7 @@ function tableGlobalCSS() {
     <style global jsx>
       {`
         .gl-table {
-          width: 100%;
+          @apply border-collapse table-auto w-full bg-white relative rounded;
         }
 
         .gl-table tr:first-child td:first-child,
@@ -23,11 +23,6 @@ function tableGlobalCSS() {
         .gl-table tr:last-child td:last-child,
         .gl-table tr:last-child th:last-child {
           @apply rounded-tr;
-        }
-
-        .gl-table th {
-          position: sticky;
-          top: -4px; /* Hide rounded corners when clipping top */
         }
       `}
     </style>
@@ -41,12 +36,7 @@ function withPropsClass(props: SharedProps, extraClasses: string) {
 
 export function Table(props: SharedProps) {
   return (
-    <table
-      className={withPropsClass(
-        props,
-        "gl-table border-collapse table-auto w-full bg-white table-striped relative rounded"
-      )}
-    >
+    <table className={withPropsClass(props, "gl-table")}>
       {props.children}
       {tableGlobalCSS()}
     </table>

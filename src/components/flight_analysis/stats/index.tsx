@@ -2,7 +2,7 @@ import Phase from "glana/src/analysis/phases/phase";
 import SavedFlight from "glana/src/saved_flight";
 import Phases from "./phases";
 import FlightSummary from "./flight_summary";
-import Button, { ButtonProps } from "../../ui/button";
+import { ButtonProps } from "../../ui/button";
 import FlightLabel from "../../ui/flight_label";
 import FlightGroup from "glana/src/analysis/flight_group";
 import { useCallback, useState } from "react";
@@ -17,10 +17,9 @@ interface Props {
   settings: SettingsModel;
   onTimestampChange: (timestamp: Date) => void;
   setFollowFlight: (flight: SavedFlight) => void;
-  onClose: () => void;
 }
 
-type Tab = "Summary" | "Task" | "Phases" | "Thermals";
+type Tab = "Summary" | "Phases" | "More";
 
 const tabLink = (
   tab: Tab,
@@ -78,7 +77,7 @@ function flightButtons(
 }
 
 function Stats(props: Props) {
-  const { onTimestampChange, setFollowFlight, onClose, followFlight } = props;
+  const { onTimestampChange, setFollowFlight, followFlight } = props;
   const [tab, setTab] = useState<Tab>("Summary");
   const setTimestampFromPhase = useCallback(
     (phase: Phase) => {
@@ -108,11 +107,7 @@ function Stats(props: Props) {
       <div className="mb-9 space-x-6 w-full">
         {tabLink("Summary", tab, setTab)}
         {tabLink("Phases", tab, setTab)}
-        {tabLink("Thermals", tab, setTab, true)}
-        {tabLink("Task", tab, setTab, true)}
-        <div className="float-right">
-          <Button icon="close" color="white" onClick={onClose} size="sm" />
-        </div>
+        {tabLink("More", tab, setTab, true)}
       </div>
 
       <div className="space-y-6">
@@ -172,12 +167,6 @@ function Stats(props: Props) {
               onHoverPhase={setTimestampFromPhase}
             />
           </>
-        )}
-
-        {(tab === "Task" || tab === "Thermals") && (
-          <div className="text-center">
-            <span className="text-primary">Coming soon</span>
-          </div>
         )}
       </div>
     </div>

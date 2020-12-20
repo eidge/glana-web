@@ -29,6 +29,18 @@ const globalCSS = () => {
         @apply shadow-inner;
       }
 
+      .btn.btn--inverted {
+        @apply shadow-none bg-opacity-0;
+      }
+
+      .btn.btn--inverted:hover {
+        @apply bg-opacity-10;
+      }
+
+      .btn.btn--inverted.btn--active {
+        @apply bg-opacity-20;
+      }
+
       .btn--sm {
         @apply p-1;
       }
@@ -45,6 +57,10 @@ const globalCSS = () => {
         @apply bg-primary text-white;
       }
 
+      .btn--primary.btn--inverted {
+        @apply bg-opacity-0 text-primary;
+      }
+
       .btn--primary:hover {
         @apply bg-primary-600;
       }
@@ -57,6 +73,10 @@ const globalCSS = () => {
         @apply bg-gray-200 text-black;
       }
 
+      .btn--secondary.btn--inverted {
+        @apply bg-opacity-0 text-gray-200;
+      }
+
       .btn--secondary:hover {
         @apply bg-gray-300;
       }
@@ -67,6 +87,10 @@ const globalCSS = () => {
 
       .btn--white {
         @apply bg-white text-black;
+      }
+
+      .btn--white.btn--inverted {
+        @apply bg-opacity-0 text-white;
       }
 
       .btn--white:hover {
@@ -91,6 +115,7 @@ export interface ButtonProps {
   onClick?: () => void;
   children?: ReactNode;
   isActive?: boolean;
+  isInverted?: boolean;
 }
 
 const NoOpFn = () => {};
@@ -105,7 +130,8 @@ const addDefaultProps = (props: ButtonProps) => {
       props.inButtonGroup === undefined ? false : props.inButtonGroup,
     children: props.children || null,
     onClick: props.onClick || NoOpFn,
-    isActive: props.isActive || false
+    isActive: props.isActive || false,
+    isInverted: props.isInverted || false
   };
 };
 
@@ -132,6 +158,10 @@ function buttonClasses(props: Required<ButtonProps>) {
 
   if (props.isActive) {
     classes.push("btn--active");
+  }
+
+  if (props.isInverted) {
+    classes.push("btn--inverted");
   }
 
   return classes.join(" ");

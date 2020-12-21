@@ -5,11 +5,12 @@ import FlightSummary from "./flight_summary";
 import { ButtonProps } from "../../ui/button";
 import FlightLabel from "../../ui/flight_label";
 import FlightGroup from "glana/src/analysis/flight_group";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { SettingsModel } from "../settings";
 import React from "react";
 import ButtonGroup from "../../ui/button_group";
 import { GliderState } from "glana/src/flight_computer/state_machine";
+import analytics from "../../../analytics";
 
 interface Props {
   followFlight: SavedFlight;
@@ -96,6 +97,8 @@ function Stats(props: Props) {
     phase => () => setPhaseFilter(phase),
     []
   );
+
+  useEffect(() => analytics.trackEvent("viewed_stats"), []);
 
   let phases = followFlight.phases;
   if (phaseFilter) {

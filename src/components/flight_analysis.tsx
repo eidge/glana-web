@@ -13,6 +13,7 @@ import Modal, { ModalBody, ModalHeader } from "./ui/modal";
 import SavedFlight from "glana/src/saved_flight";
 import AnimationTicker from "../animation_ticker";
 import { isInIFrame } from "../utils/environment";
+import analytics from "../analytics";
 
 interface Props {
   flightGroup: FlightGroup | null;
@@ -224,6 +225,7 @@ export default class FlightAnalysis extends Component<Props, State> {
   }
 
   togglePlaying = () => {
+    analytics.trackEvent("play_flight", { state: !this.state.isPlaying });
     if (this.state.isPlaying) {
       this.setState({ isPlaying: false }, () => {
         this.animationTicker.stop();
@@ -239,6 +241,8 @@ export default class FlightAnalysis extends Component<Props, State> {
   };
 
   toggleStats = () => {
+    analytics.trackEvent("open_stats", { state: !this.state.isAnalysisOpen });
+
     if (isInIFrame()) {
       const url = `${window.location.origin}${window.location.search}&openStats=true`;
       window.open(url);

@@ -10,6 +10,7 @@ import { ButtonProps } from "../ui/button";
 import ButtonGroup from "../ui/button_group";
 import { DebugContext } from "../../../pages";
 import { IconKey } from "../ui/icon";
+import analytics from "../../analytics";
 
 interface Props {
   flightGroup: FlightGroup | null;
@@ -182,6 +183,7 @@ export default class Map extends Component<Props, State> {
 
   private zoomIn() {
     if (!this.mapRenderer) return;
+    analytics.trackEvent("mapZoomedIn");
     this.mapRenderer.zoomIn(this.zoomFocalPoint());
   }
 
@@ -198,11 +200,13 @@ export default class Map extends Component<Props, State> {
 
   private zoomOut() {
     if (!this.mapRenderer) return;
+    analytics.trackEvent("mapZoomedOut");
     this.mapRenderer.zoomOut();
   }
 
   private zoomToFit() {
     if (!this.mapRenderer) return;
+    analytics.trackEvent("mapZoomedToFit");
     this.mapRenderer.zoomToFit();
   }
 }

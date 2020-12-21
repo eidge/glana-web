@@ -14,7 +14,8 @@ import {
 } from "../../ui/table";
 import { SettingsModel, units } from "../settings";
 import Stop from "glana/src/analysis/phases/stop";
-import React from "react";
+import React, { useEffect } from "react";
+import analytics from "../../../analytics";
 
 interface Props {
   phases: Phase[];
@@ -83,6 +84,8 @@ function phaseStats(phase: Phase, unitConfig: any) {
 function Phases(props: Props) {
   const unitConfig = units[props.settings.units];
   let { phases } = props;
+
+  useEffect(() => analytics.trackEvent("viewed_stats_phases"), []);
 
   return (
     <Table>

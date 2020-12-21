@@ -7,6 +7,7 @@ import {
   metersPerSecond
 } from "glana/src/units/speed";
 import { Component } from "react";
+import analytics from "../../analytics";
 
 const synchronizationOptions = [
   {
@@ -118,6 +119,10 @@ interface State {
 }
 
 export default class Settings extends Component<Props, State> {
+  componentDidMount() {
+    analytics.trackEvent("settings_opened");
+  }
+
   render() {
     return (
       <div>
@@ -156,8 +161,7 @@ export default class Settings extends Component<Props, State> {
             value={option.stringValue}
             checked={this.props.settings.units === option.value}
             onChange={() =>
-              this.props.onChange({
-                ...this.props.settings,
+              this.onChange({
                 units: option.value
               })
             }
@@ -165,6 +169,19 @@ export default class Settings extends Component<Props, State> {
           <span className="ml-2">{option.label}</span>
         </label>
       );
+    });
+  }
+
+  private onChange(changes: Partial<SettingsModel>) {
+    const attribute = Object.keys(changes)[0];
+    const value = Object.values(changes)[0];
+    analytics.trackEvent("settings_changed", {
+      attribute,
+      value
+    });
+    this.props.onChange({
+      ...this.props.settings,
+      ...changes
     });
   }
 
@@ -181,8 +198,7 @@ export default class Settings extends Component<Props, State> {
             value={option.stringValue}
             checked={this.props.settings.synchronizationMethod === option.value}
             onChange={() =>
-              this.props.onChange({
-                ...this.props.settings,
+              this.onChange({
                 synchronizationMethod: option.value
               })
             }
@@ -206,8 +222,7 @@ export default class Settings extends Component<Props, State> {
             value={option.stringValue}
             checked={this.props.settings.playbackSpeed === option.value}
             onChange={() =>
-              this.props.onChange({
-                ...this.props.settings,
+              this.onChange({
                 playbackSpeed: option.value
               })
             }
@@ -226,8 +241,7 @@ export default class Settings extends Component<Props, State> {
           name="renderFullTracks"
           checked={this.props.settings.renderFullTracks}
           onChange={event =>
-            this.props.onChange({
-              ...this.props.settings,
+            this.onChange({
               renderFullTracks: event.target.checked
             })
           }
@@ -245,8 +259,7 @@ export default class Settings extends Component<Props, State> {
           name="followFlight"
           checked={this.props.settings.followFlight}
           onChange={event =>
-            this.props.onChange({
-              ...this.props.settings,
+            this.onChange({
               followFlight: event.target.checked
             })
           }
@@ -266,8 +279,7 @@ export default class Settings extends Component<Props, State> {
           name="followFlight"
           checked={this.props.settings.showAirspace}
           onChange={event =>
-            this.props.onChange({
-              ...this.props.settings,
+            this.onChange({
               showAirspace: event.target.checked
             })
           }

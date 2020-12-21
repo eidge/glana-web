@@ -11,15 +11,17 @@ import FlightGroup, {
 import SynchronizationMethod from "glana/src/analysis/synchronization/method";
 import { SettingsModel } from "../src/components/flight_analysis/settings";
 import Modal, { ModalBody } from "../src/components/ui/modal";
-import Head from "next/head";
 import { Router, withRouter } from "next/router";
 import BGAFlightLoader from "../src/bga_ladder/flight_loader";
 import URLIGCLoader from "../src/url_igc_loader";
 import Calculator from "glana/src/flight_computer/calculators/calculator";
+import analytics from "../src/analytics";
 
 const FlightAnalysis = dynamic(
   () => import("../src/components/flight_analysis"),
-  { ssr: false }
+  {
+    ssr: false
+  }
 );
 
 export interface URLFlightLoader {
@@ -81,6 +83,9 @@ class Home extends Component<Props, State> {
   }
 
   private loadFlightGroup(flightGroup: FlightGroup) {
+    analytics.trackEvent("loaded_flights", {
+      count: flightGroup.flights.length
+    });
     flightGroup.flights.forEach(f => f.analise(this.flightComputer()));
     flightGroup.synchronize(this.state.settings.synchronizationMethod);
     this.setState({ flightGroup, isLoading: false });
@@ -100,13 +105,6 @@ class Home extends Component<Props, State> {
   render() {
     return (
       <>
-        <Head>
-          <meta
-            name="viewport"
-            content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
-          />
-        </Head>
-
         <div
           onDragEnter={event => event.preventDefault()}
           onDragOver={event => event.preventDefault()}
@@ -144,7 +142,9 @@ class Home extends Component<Props, State> {
     // router.query.openStats is undefined on first render, so we need
     // to access the lower level blocks to decide whether or not the param was
     // originally passed in.
-    const queryParams = new URLSearchParams(this.props.router.asPath);
+    const path = this.props.router.asPath;
+    const queryString = path.split("/").reverse()[0];
+    const queryParams = new URLSearchParams(queryString);
     return queryParams.get("openStats") === "true";
   }
 

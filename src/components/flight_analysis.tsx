@@ -18,6 +18,7 @@ interface Props {
   flightGroup: FlightGroup | null;
   settings: SettingsModel;
   updateSettings: (settings: SettingsModel) => void;
+  openStats?: boolean;
 }
 
 interface State {
@@ -40,7 +41,7 @@ export default class FlightAnalysis extends Component<Props, State> {
       isSettingsOpen: false,
       activeTimestamp: null,
       isPlaying: false,
-      isAnalysisOpen: false,
+      isAnalysisOpen: props.openStats || false,
       ...this.followFlightAndTask(props)
     };
     this.animationTicker = new AnimationTicker((elapsedTime: number) =>
@@ -239,7 +240,8 @@ export default class FlightAnalysis extends Component<Props, State> {
 
   toggleStats = () => {
     if (isInIFrame()) {
-      window.open(window.location.href);
+      const url = `${window.location.origin}${window.location.search}&openStats=true`;
+      window.open(url);
       return;
     }
 

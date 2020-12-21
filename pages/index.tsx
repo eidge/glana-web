@@ -1,10 +1,10 @@
 import React, { Component } from "react";
+import dynamic from "next/dynamic";
 import IGCParser from "glana/src/igc/parser";
 import FlightComputer from "glana/src/flight_computer/computer";
 import AverageVario from "glana/src/flight_computer/calculators/average_vario";
 import EngineInUse from "glana/src/flight_computer/calculators/engine_in_use";
 import { seconds } from "glana/src/units/duration";
-import FlightAnalysis from "../src/components/flight_analysis";
 import FlightGroup, {
   synchronizationMethods
 } from "glana/src/analysis/flight_group";
@@ -16,6 +16,11 @@ import { Router, withRouter } from "next/router";
 import BGAFlightLoader from "../src/bga_ladder/flight_loader";
 import URLIGCLoader from "../src/url_igc_loader";
 import Calculator from "glana/src/flight_computer/calculators/calculator";
+
+const FlightAnalysis = dynamic(
+  () => import("../src/components/flight_analysis"),
+  { ssr: false }
+);
 
 export interface URLFlightLoader {
   canHandle(): boolean;
@@ -111,6 +116,7 @@ class Home extends Component<Props, State> {
             value={{ enabled: !!this.props.router.query.debug }}
           >
             <FlightAnalysis
+              openStats={this.shouldOpenStats()}
               settings={this.state.settings}
               updateSettings={(settings: SettingsModel) =>
                 this.updateSettings(settings)
@@ -132,6 +138,14 @@ class Home extends Component<Props, State> {
         </div>
       </>
     );
+  }
+
+  private shouldOpenStats() {
+    // router.query.openStats is undefined on first render, so we need
+    // to access the lower level blocks to decide whether or not the param was
+    // originally passed in.
+    const queryParams = new URLSearchParams(this.props.router.asPath);
+    return queryParams.get("openStats") === "true";
   }
 
   private flightUploadModal() {

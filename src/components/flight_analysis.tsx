@@ -12,6 +12,7 @@ import ButtonGroup from "./ui/button_group";
 import Modal, { ModalBody, ModalHeader } from "./ui/modal";
 import SavedFlight from "glana/src/saved_flight";
 import AnimationTicker from "../animation_ticker";
+import { isInIFrame } from "../utils/environment";
 
 interface Props {
   flightGroup: FlightGroup | null;
@@ -237,6 +238,11 @@ export default class FlightAnalysis extends Component<Props, State> {
   };
 
   toggleStats = () => {
+    if (isInIFrame()) {
+      window.open(window.location.href);
+      return;
+    }
+
     this.setState(s => ({
       ...s,
       isAnalysisOpen: !s.isAnalysisOpen

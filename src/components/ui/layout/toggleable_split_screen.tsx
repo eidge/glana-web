@@ -30,13 +30,24 @@ function Drawer(props: Props) {
     <>
       <div className={classNames.join(" ")}>
         <div className="sticky w-full top-0 left-0 z-20 flex flex-row items-center py-3 px-6 bg-gray-800 border-b border-gray-600 leading-none text-xl">
-          <Button
-            icon="chevronLeft"
-            isInverted={true}
-            color="white"
-            size="lg"
-            onClick={props.onClose}
-          />
+          <div className="hidden sm:block">
+            <Button
+              icon="close"
+              isInverted={true}
+              color="white"
+              size="lg"
+              onClick={props.onClose}
+            />
+          </div>
+          <div className="sm:hidden">
+            <Button
+              icon="chevronLeft"
+              isInverted={true}
+              color="white"
+              size="lg"
+              onClick={props.onClose}
+            />
+          </div>
           <div className="pl-3">{wasOpened && props.headerComponent}</div>
         </div>
         <div className="px-6">{wasOpened && props.secondaryComponent}</div>

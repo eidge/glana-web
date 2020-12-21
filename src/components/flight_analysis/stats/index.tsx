@@ -27,7 +27,7 @@ const tabLink = (
   onClick: (tab: Tab) => void,
   isComing: boolean = false
 ) => {
-  const classNames = ["p-1 relative"];
+  const classNames = ["p-1 relative text-lg"];
   if (tab === activeTab) classNames.push("border-b-2 border-primary font-bold");
   if (isComing) classNames.push("cursor-not-allowed");
 
@@ -104,21 +104,24 @@ function Stats(props: Props) {
 
   return (
     <div className="my-6">
-      <div className="mb-9 space-x-6 w-full">
+      <div className="mb-6 space-x-6 w-full">
         {tabLink("Summary", tab, setTab)}
         {tabLink("Phases", tab, setTab)}
         {tabLink("More", tab, setTab, true)}
       </div>
 
       <div className="space-y-6">
-        {tab === "Summary" &&
-          props.flightGroup.flights.map(flight => (
-            <FlightSummary
-              key={flight.id}
-              flight={flight}
-              isActive={flight === props.followFlight}
-            />
-          ))}
+        {tab === "Summary" && (
+          <div className="pt-3 space-y-6">
+            {props.flightGroup.flights.map(flight => (
+              <FlightSummary
+                key={flight.id}
+                flight={flight}
+                isActive={flight === props.followFlight}
+              />
+            ))}
+          </div>
+        )}
 
         {tab === "Phases" && (
           <>

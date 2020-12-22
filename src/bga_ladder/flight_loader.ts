@@ -11,7 +11,7 @@ import SavedFlight from "glana/src/saved_flight";
 import { degrees } from "glana/src/units/angle";
 import { kilometers } from "glana/src/units/length";
 import { ParsedUrlQuery } from "querystring";
-import { URLFlightLoader } from "../../pages";
+import { URLFlightLoader } from "../../pages/old";
 
 const DEFAULT_BGA_BASE_URL = new URL("https://bgaladder.net");
 

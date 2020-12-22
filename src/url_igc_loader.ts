@@ -1,4 +1,4 @@
-import { URLFlightLoader } from "../pages";
+import { URLFlightLoader } from "../pages/old";
 import { ParsedUrlQuery } from "querystring";
 import FlightGroup from "glana/src/analysis/flight_group";
 import IGCParser from "glana/src/igc/parser";

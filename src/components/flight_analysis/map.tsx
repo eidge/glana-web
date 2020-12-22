@@ -8,7 +8,7 @@ import SavedFlight from "glana/src/saved_flight";
 import { SettingsModel } from "./settings";
 import { ButtonProps } from "../ui/button";
 import ButtonGroup from "../ui/button_group";
-import { DebugContext } from "../../../pages";
+import { DebugContext } from "../../../pages/old";
 import { IconKey } from "../ui/icon";
 import analytics from "../../analytics";
 

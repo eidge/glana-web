@@ -60,7 +60,7 @@ export default class TaskTimeline extends Component<Props, State> {
     const style: any = {
       left: `${left}%`,
       width: `${width}%`,
-      backgroundColor: color,
+      backgroundColor: color
     };
 
     if (index % 2 === 0) {

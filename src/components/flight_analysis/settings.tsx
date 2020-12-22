@@ -1,72 +1,73 @@
 import { synchronizationMethods } from "glana/src/analysis/flight_group";
 import SynchronizationMethod from "glana/src/analysis/synchronization/method";
-import { feet, meters } from "glana/src/units/length";
+import { feet, kilometers, meters } from "glana/src/units/length";
 import {
   kilometersPerHour,
   knots,
-  metersPerSecond,
+  metersPerSecond
 } from "glana/src/units/speed";
 import { Component } from "react";
+import analytics from "../../analytics";
 
 const synchronizationOptions = [
   {
     label: "Real-time",
     value: synchronizationMethods.realTime,
-    stringValue: "realTime",
+    stringValue: "realTime"
   },
   {
     label: "Recording started",
     value: synchronizationMethods.recordingStarted,
-    stringValue: "recordingStarted",
+    stringValue: "recordingStarted"
   },
   {
     label: "Takeoff time",
     value: synchronizationMethods.takeOff,
-    stringValue: "takeoffTime",
+    stringValue: "takeoffTime"
   },
   {
     label: "Task started",
     value: synchronizationMethods.taskStarted,
-    stringValue: "taskStarted",
-  },
+    stringValue: "taskStarted"
+  }
 ];
 
 const playbackSpeedOptions = [
   {
     label: "10x",
     value: 10,
-    stringValue: "10",
+    stringValue: "10"
   },
   {
     label: "25x",
     value: 25,
-    stringValue: "25",
+    stringValue: "25"
   },
   {
     label: "50x",
     value: 50,
-    stringValue: "50",
+    stringValue: "50"
   },
   {
     label: "100x",
     value: 100,
-    stringValue: "100",
+    stringValue: "100"
   },
   {
     label: "250x",
     value: 250,
-    stringValue: "250",
+    stringValue: "250"
   },
   {
     label: "500x",
     value: 500,
-    stringValue: "500",
+    stringValue: "500"
   },
   {
     label: "1000x",
     value: 1000,
-    stringValue: "1000",
-  },
+    stringValue: "1000"
+  }
 ];
 
 type UnitOption = "metric" | "imperial";
@@ -75,13 +76,13 @@ const unitOptions = [
   {
     label: "Imperial",
     value: "imperial" as UnitOption,
-    stringValue: "imperial",
+    stringValue: "imperial"
   },
   {
     label: "Metric",
     value: "metric" as UnitOption,
-    stringValue: "metric",
-  },
+    stringValue: "metric"
+  }
 ];
 
 export const units = {
@@ -89,12 +90,14 @@ export const units = {
     vario: metersPerSecond,
     altitude: meters,
     speed: kilometersPerHour,
+    distance: kilometers
   },
   imperial: {
     vario: knots,
     altitude: feet,
     speed: knots,
-  },
+    distance: kilometers
+  }
 };
 
 export interface SettingsModel {
@@ -116,6 +119,10 @@ interface State {
 }
 
 export default class Settings extends Component<Props, State> {
+  componentDidMount() {
+    analytics.trackEvent("settings_opened");
+  }
+
   render() {
     return (
       <div>
@@ -142,7 +149,7 @@ export default class Settings extends Component<Props, State> {
   }
 
   private unitInput() {
-    return unitOptions.map((option) => {
+    return unitOptions.map(option => {
       return (
         <label
           className="inline-flex items-center mr-6"
@@ -154,9 +161,8 @@ export default class Settings extends Component<Props, State> {
             value={option.stringValue}
             checked={this.props.settings.units === option.value}
             onChange={() =>
-              this.props.onChange({
-                ...this.props.settings,
-                units: option.value,
+              this.onChange({
+                units: option.value
               })
             }
           />
@@ -166,8 +172,21 @@ export default class Settings extends Component<Props, State> {
     });
   }
 
+  private onChange(changes: Partial<SettingsModel>) {
+    const attribute = Object.keys(changes)[0];
+    const value = Object.values(changes)[0];
+    analytics.trackEvent("settings_changed", {
+      attribute,
+      value
+    });
+    this.props.onChange({
+      ...this.props.settings,
+      ...changes
+    });
+  }
+
   private synchronizationMethodInput() {
-    return synchronizationOptions.map((option) => {
+    return synchronizationOptions.map(option => {
       return (
         <label
           className="inline-flex items-center mr-6"
@@ -179,9 +198,8 @@ export default class Settings extends Component<Props, State> {
             value={option.stringValue}
             checked={this.props.settings.synchronizationMethod === option.value}
             onChange={() =>
-              this.props.onChange({
-                ...this.props.settings,
-                synchronizationMethod: option.value,
+              this.onChange({
+                synchronizationMethod: option.value
               })
             }
           />
@@ -192,7 +210,7 @@ export default class Settings extends Component<Props, State> {
   }
 
   playbackSpeedInput() {
-    return playbackSpeedOptions.map((option) => {
+    return playbackSpeedOptions.map(option => {
       return (
         <label
           className="inline-flex items-center mr-6"
@@ -204,9 +222,8 @@ export default class Settings extends Component<Props, State> {
             value={option.stringValue}
             checked={this.props.settings.playbackSpeed === option.value}
             onChange={() =>
-              this.props.onChange({
-                ...this.props.settings,
-                playbackSpeed: option.value,
+              this.onChange({
+                playbackSpeed: option.value
               })
             }
           />
@@ -223,10 +240,9 @@ export default class Settings extends Component<Props, State> {
           type="checkbox"
           name="renderFullTracks"
           checked={this.props.settings.renderFullTracks}
-          onChange={(event) =>
-            this.props.onChange({
-              ...this.props.settings,
-              renderFullTracks: event.target.checked,
+          onChange={event =>
+            this.onChange({
+              renderFullTracks: event.target.checked
             })
           }
         />
@@ -242,10 +258,9 @@ export default class Settings extends Component<Props, State> {
           type="checkbox"
           name="followFlight"
           checked={this.props.settings.followFlight}
-          onChange={(event) =>
-            this.props.onChange({
-              ...this.props.settings,
-              followFlight: event.target.checked,
+          onChange={event =>
+            this.onChange({
+              followFlight: event.target.checked
             })
           }
         />
@@ -263,10 +278,9 @@ export default class Settings extends Component<Props, State> {
           type="checkbox"
           name="followFlight"
           checked={this.props.settings.showAirspace}
-          onChange={(event) =>
-            this.props.onChange({
-              ...this.props.settings,
-              showAirspace: event.target.checked,
+          onChange={event =>
+            this.onChange({
+              showAirspace: event.target.checked
             })
           }
         />

@@ -3,7 +3,6 @@ import React, { Component } from "react";
 import FlightGroup from "glana/src/analysis/flight_group";
 import AltitudeChart from "./altitude_chart";
 import TimelineMarker from "./timeline_marker";
-import { COLORS } from "../../maps/flight_renderer";
 import SavedFlight from "glana/src/saved_flight";
 import Quantity from "glana/src/units/quantity";
 import { Speed } from "glana/src/units/speed";
@@ -29,7 +28,10 @@ export default class Timeline extends Component<Props, State> {
   render() {
     const flights = this.props.flightGroup.flights;
     return (
-      <div className="w-full absolute bottom-0 cursor-default select-none">
+      <div
+        className="w-full absolute bottom-0 cursor-default select-none"
+        style={{ touchAction: "none" }}
+      >
         <div className="h-24">
           <AltitudeChart flightGroup={this.props.flightGroup} />
         </div>
@@ -38,7 +40,7 @@ export default class Timeline extends Component<Props, State> {
           <TaskTimeline
             key={index}
             flight={f}
-            relativeLeftPositionAt={(d) => this.relativeLeftPosition(d)}
+            relativeLeftPositionAt={d => this.relativeLeftPosition(d)}
           />
         ))}
 
@@ -52,9 +54,9 @@ export default class Timeline extends Component<Props, State> {
 
         <div
           className="w-full h-full absolute bottom-0 left-0 cursor-crosshair"
-          ref={(el) => (this.containerEl = el)}
-          onMouseMove={(e) => this.onMouseMove(e)}
-          onTouchMove={(e) => this.onTouchMove(e)}
+          ref={el => (this.containerEl = el)}
+          onMouseMove={e => this.onMouseMove(e)}
+          onTouchMove={e => this.onTouchMove(e)}
         ></div>
       </div>
     );
@@ -76,14 +78,10 @@ export default class Timeline extends Component<Props, State> {
   }
 
   private onMouseMove(event: React.MouseEvent<HTMLDivElement, MouseEvent>) {
-    event.preventDefault();
-    event.stopPropagation();
     this.updateCurrentTimestamp(event.clientX);
   }
 
   private onTouchMove(event: React.TouchEvent<HTMLDivElement>) {
-    event.preventDefault();
-    event.stopPropagation();
     const lastTouch = event.touches[event.touches.length - 1];
     this.updateCurrentTimestamp(lastTouch.clientX);
   }
@@ -117,38 +115,35 @@ export default class Timeline extends Component<Props, State> {
 
   private earliestDatum() {
     return this.props.flightGroup.flights
-      .map((f) => f.getRecordingStartedAt())
+      .map(f => f.getRecordingStartedAt())
       .sort()[0];
   }
 
   private latestDatum() {
     let flights = this.props.flightGroup.flights;
-    return flights.map((f) => f.getRecordingStoppedAt()).sort()[
+    return flights.map(f => f.getRecordingStoppedAt()).sort()[
       flights.length - 1
     ];
   }
 
   private timestampDetails() {
-    return this.flightsSortedByEarliestStart().map(
-      (f: SavedFlight, index: number) => {
-        let datum = f.datumAt(this.props.activeTimestamp);
-        return {
-          color: COLORS.getColorFor(f),
-          label: f.metadata.callsign || f.metadata.registration || `#${index}`,
-          altitude: datum?.position.altitude || null,
-          vario:
-            (datum?.calculatedValues["averageVario"] as Quantity<Speed>) ||
-            datum?.vario ||
-            null,
-          timestampOffset: f.getTimeOffsetInMilliseconds(),
-          isActive: this.props.followFlight === f,
-          engineIsOn: datum?.calculatedValues["engineOn"]?.value === 1,
-          onClick: () => {
-            this.props.setFollowFlight(f);
-          },
-        };
-      }
-    );
+    return this.flightsSortedByEarliestStart().map((f: SavedFlight) => {
+      let datum = f.datumAt(this.props.activeTimestamp);
+      return {
+        flight: f,
+        altitude: datum?.position.altitude || null,
+        vario:
+          (datum?.calculatedValues["averageVario"] as Quantity<Speed>) ||
+          datum?.vario ||
+          null,
+        timestampOffset: f.offsetInMilliseconds,
+        isActive: this.props.followFlight === f,
+        engineIsOn: datum?.calculatedValues["engineOn"]?.value === 1,
+        onClick: () => {
+          this.props.setFollowFlight(f);
+        }
+      };
+    });
   }
 
   private flightsSortedByEarliestStart() {

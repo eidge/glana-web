@@ -14,7 +14,7 @@ export default class URLIGCLoader implements URLFlightLoader {
     if (!query.igcUrl) {
       return [];
     } else if (query.igcUrl instanceof Array) {
-      return query.igcUrl.flatMap((url) => url.split(","));
+      return query.igcUrl.flatMap(url => url.split(","));
     } else {
       return query.igcUrl.split(",");
     }
@@ -31,7 +31,7 @@ export default class URLIGCLoader implements URLFlightLoader {
   }
 
   private loadIGCs() {
-    let responsePromises = this.urls.map((url) => this.fetchText(url));
+    let responsePromises = this.urls.map(url => this.fetchText(url));
     return Promise.all(responsePromises);
   }
 
@@ -41,7 +41,7 @@ export default class URLIGCLoader implements URLFlightLoader {
   }
 
   private parseIGCs(fileContents: string[]) {
-    return fileContents.map((contents) => {
+    return fileContents.map(contents => {
       let parser = new IGCParser();
       return parser.parse(contents);
     });

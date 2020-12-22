@@ -1,7 +1,110 @@
-import * as icons from "./icons";
+import { ReactNode } from "react";
+import Icon, { IconKey } from "./icon";
 
-export type IconKey = keyof typeof icons;
-export type SizeOptions = "md" | "lg";
+const globalCSS = () => {
+  return (
+    <style global jsx>{`
+      .btn {
+        @apply bg-gray-600 leading-none cursor-pointer;
+      }
+
+      .btn:focus {
+        @apply outline-none;
+      }
+
+      .btn:not(.btn--grouped),
+      .btn-group {
+        @apply rounded shadow align-middle inline-block;
+      }
+
+      .btn-group {
+        @apply overflow-hidden inline-flex;
+      }
+
+      .btn:hover {
+        @apply bg-gray-700 shadow-inner;
+      }
+
+      .btn.btn--active {
+        @apply shadow-inner;
+      }
+
+      .btn.btn--inverted {
+        @apply shadow-none bg-opacity-0;
+      }
+
+      .btn.btn--inverted:hover {
+        @apply bg-opacity-10;
+      }
+
+      .btn.btn--inverted.btn--active {
+        @apply bg-opacity-20;
+      }
+
+      .btn--sm {
+        @apply p-1;
+      }
+
+      .btn--md {
+        @apply p-2;
+      }
+
+      .btn--lg {
+        @apply p-2;
+      }
+
+      .btn--primary {
+        @apply bg-primary text-white;
+      }
+
+      .btn--primary.btn--inverted {
+        @apply bg-opacity-0 text-primary;
+      }
+
+      .btn--primary:hover {
+        @apply bg-primary-600;
+      }
+
+      .btn--primary.btn--active {
+        @apply bg-primary-800;
+      }
+
+      .btn--secondary {
+        @apply bg-gray-200 text-black;
+      }
+
+      .btn--secondary.btn--inverted {
+        @apply bg-opacity-0 text-gray-200;
+      }
+
+      .btn--secondary:hover {
+        @apply bg-gray-300;
+      }
+
+      .btn--secondary.btn--active {
+        @apply bg-primary-500;
+      }
+
+      .btn--white {
+        @apply bg-white text-black;
+      }
+
+      .btn--white.btn--inverted {
+        @apply bg-opacity-0 text-white;
+      }
+
+      .btn--white:hover {
+        @apply bg-gray-100;
+      }
+
+      .btn--white.btn--active {
+        @apply bg-gray-300;
+      }
+    `}</style>
+  );
+};
+
+export type SizeOptions = "sm" | "md" | "lg";
 export type ColorOptions = "primary" | "secondary" | "white";
 
 export interface ButtonProps {
@@ -9,10 +112,15 @@ export interface ButtonProps {
   size?: SizeOptions;
   color?: ColorOptions;
   inButtonGroup?: boolean;
-  onClick: () => void;
+  onClick?: () => void;
+  children?: ReactNode;
+  isActive?: boolean;
+  isInverted?: boolean;
 }
 
-function addDefaultProps(props: ButtonProps) {
+const NoOpFn = () => {};
+
+const addDefaultProps = (props: ButtonProps) => {
   return {
     ...props,
     size: props.size || "md",
@@ -20,37 +128,26 @@ function addDefaultProps(props: ButtonProps) {
     color: props.color || "secondary",
     inButtonGroup:
       props.inButtonGroup === undefined ? false : props.inButtonGroup,
+    children: props.children || null,
+    onClick: props.onClick || NoOpFn,
+    isActive: props.isActive || false,
+    isInverted: props.isInverted || false
   };
-}
-
-const iconSizeClasses: { [key in SizeOptions]: string } = {
-  md: "w-6 h-6",
-  lg: "w-8 h-8",
-};
-
-const iconComponent = (props: Required<ButtonProps>) => {
-  if (!props.icon) return null;
-  let IconComponent = icons[props.icon];
-  return (
-    <div className={iconSizeClasses[props.size]}>
-      <IconComponent />
-    </div>
-  );
 };
 
 const sizeClasses: { [key in SizeOptions]: string } = {
+  sm: "btn--sm",
   md: "btn--md",
-  lg: "btn--lg",
+  lg: "btn--lg"
 };
 
 const colorClasses: { [key in ColorOptions]: string } = {
   primary: "btn--primary",
   secondary: "btn--secondary",
-  white: "btn--white",
+  white: "btn--white"
 };
 
-const Button = (p: ButtonProps) => {
-  const props = addDefaultProps(p);
+function buttonClasses(props: Required<ButtonProps>) {
   const classes = ["btn"];
   classes.push(sizeClasses[props.size]);
   classes.push(colorClasses[props.color]);
@@ -59,61 +156,36 @@ const Button = (p: ButtonProps) => {
     classes.push("btn--grouped");
   }
 
+  if (props.isActive) {
+    classes.push("btn--active");
+  }
+
+  if (props.isInverted) {
+    classes.push("btn--inverted");
+  }
+
+  return classes.join(" ");
+}
+
+function iconClasses(props: Required<ButtonProps>) {
+  if (!props.children) return "align-middle";
+  return "align-middle mr-2";
+}
+
+export default function Button(p: ButtonProps) {
+  const props = addDefaultProps(p);
+
   return (
-    <a href="#" className={classes.join(" ")} onClick={props.onClick}>
-      {iconComponent(props)}
-      <style global jsx>{`
-        .btn {
-          @apply bg-gray-600 leading-none cursor-pointer inline-block;
-        }
-
-        .btn:not(.btn--grouped),
-        .btn-group {
-          @apply rounded shadow-md border border-solid;
-        }
-
-        .btn-group {
-          @apply overflow-hidden flex;
-        }
-
-        .btn:hover {
-          @apply bg-gray-700 shadow-inner;
-        }
-
-        .btn--md {
-          @apply p-2;
-        }
-
-        .btn--lg {
-          @apply p-2;
-        }
-
-        .btn--primary {
-          @apply bg-primary text-white border-primary-600;
-        }
-
-        .btn--primary:hover {
-          @apply bg-primary-600;
-        }
-
-        .btn--secondary {
-          @apply bg-gray-200 text-black border-gray-500;
-        }
-
-        .btn--secondary:hover {
-          @apply bg-gray-300;
-        }
-
-        .btn--white {
-          @apply bg-white text-black border-gray-200;
-        }
-
-        .btn--white:hover {
-          @apply bg-gray-100;
-        }
-      `}</style>
-    </a>
+    <button className={buttonClasses(props)} onClick={props.onClick}>
+      {props.icon && (
+        <Icon
+          icon={props.icon}
+          size={props.size}
+          className={iconClasses(props)}
+        />
+      )}
+      {props.children}
+      {globalCSS()}
+    </button>
   );
-};
-
-export default Button;
+}

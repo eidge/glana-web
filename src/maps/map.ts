@@ -29,15 +29,17 @@ export default class Map {
   readonly olMap: OlMap;
 
   private resizeCallback = () => {
-    console.log("here", this);
     this.calculateDimensions(this.domElement);
+    this.olMap.updateSize();
   };
+  private resizeObserver: ResizeObserver;
 
   constructor(domElement: HTMLElement) {
     this.domElement = domElement;
     this.calculateDimensions(domElement);
     this.olMap = this.buildMap();
-    window.addEventListener("resize", this.resizeCallback);
+    this.resizeObserver = new ResizeObserver(this.resizeCallback);
+    this.resizeObserver.observe(domElement);
   }
 
   private calculateDimensions(domElement: HTMLElement) {
@@ -55,7 +57,7 @@ export default class Map {
       top: paddingY,
       right: paddingX,
       bottom: paddingY + TIMELINE_HEIGHT,
-      left: paddingX,
+      left: paddingX
     };
   }
 
@@ -69,7 +71,7 @@ export default class Map {
   }
 
   destroy() {
-    window.removeEventListener("resize", this.resizeCallback);
+    this.resizeObserver.unobserve(this.domElement);
   }
 
   render(showAirspace: boolean) {
@@ -108,7 +110,7 @@ export default class Map {
 
     this.olMap.getView().animate({
       center: offsetCoordinate,
-      duration: ANIMATION_DURATION,
+      duration: ANIMATION_DURATION
     });
   }
 
@@ -121,7 +123,7 @@ export default class Map {
     );
     const offsetXY = [
       coordinateAtCenter[0] - coordinateAtUsableCenter[0],
-      coordinateAtCenter[1] - coordinateAtUsableCenter[1],
+      coordinateAtCenter[1] - coordinateAtUsableCenter[1]
     ];
 
     const x = coordinate[0] + offsetXY[0];
@@ -139,7 +141,7 @@ export default class Map {
   zoomIn(position?: Position) {
     let options = {
       zoom: this.olMap.getView().getZoom()! + 1,
-      duration: ANIMATION_DURATION,
+      duration: ANIMATION_DURATION
     } as any;
 
     if (position) {
@@ -152,7 +154,7 @@ export default class Map {
   zoomOut() {
     this.olMap.getView().animate({
       zoom: this.olMap.getView().getZoom()! - 1,
-      duration: ANIMATION_DURATION,
+      duration: ANIMATION_DURATION
     });
   }
 
@@ -164,9 +166,9 @@ export default class Map {
         this.padding.top + 5,
         this.padding.right + 5,
         this.padding.bottom + 5,
-        this.padding.left + 5,
+        this.padding.left + 5
       ],
-      duration: ANIMATION_DURATION,
+      duration: ANIMATION_DURATION
     });
   }
 
@@ -192,7 +194,7 @@ export default class Map {
     const { View } = this.ol;
     const interactions = interactionDefaults({
       altShiftDragRotate: false,
-      pinchRotate: false,
+      pinchRotate: false
     });
 
     this.airspaceLayer = this.buildAirspaceLayer();
@@ -203,8 +205,8 @@ export default class Map {
       layers: [this.buildMapLayer(), this.airspaceLayer],
       view: new View({
         center: [0, 0],
-        zoom: 0,
-      }),
+        zoom: 0
+      })
     });
   }
 
@@ -215,11 +217,11 @@ export default class Map {
       source: new TileImage({
         url:
           "https://{1-2}.tile.maps.openaip.net/geowebcache/service/tms/1.0.0/openaip_basemap@EPSG%3A900913@png/{z}/{x}/{-y}.png",
-        projection: "EPSG:900913",
+        projection: "EPSG:900913"
       }),
       opacity: 0.5,
       minZoom: 8,
-      maxZoom: 14,
+      maxZoom: 14
     });
   }
 
@@ -228,8 +230,8 @@ export default class Map {
       preload: Infinity,
       source: new OSM({
         url:
-          "https://api.mapbox.com/styles/v1/mapbox/outdoors-v11/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1IjoiZWlkZ2UiLCJhIjoiNjVmYTRkMWY0NzM0NDdhZThmYmY4MzI2ZjU2Njg5NTIifQ.7IevRmRnToydZ2fJMGLZRQ",
-      }),
+          "https://api.mapbox.com/styles/v1/mapbox/outdoors-v11/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1IjoiZWlkZ2UiLCJhIjoiNjVmYTRkMWY0NzM0NDdhZThmYmY4MzI2ZjU2Njg5NTIifQ.7IevRmRnToydZ2fJMGLZRQ"
+      })
     });
   }
 }

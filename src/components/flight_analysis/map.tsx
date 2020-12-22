@@ -6,9 +6,11 @@ import TaskRenderer from "../../maps/task_renderer";
 import Task from "glana/src/flight_computer/tasks/task";
 import SavedFlight from "glana/src/saved_flight";
 import { SettingsModel } from "./settings";
-import { ButtonProps, IconKey } from "../ui/button";
+import { ButtonProps } from "../ui/button";
 import ButtonGroup from "../ui/button_group";
 import { DebugContext } from "../../../pages";
+import { IconKey } from "../ui/icon";
+import analytics from "../../analytics";
 
 interface Props {
   flightGroup: FlightGroup | null;
@@ -25,10 +27,6 @@ export default class Map extends Component<Props, State> {
   private mapRenderer?: MapRenderer;
   private flightRenderers: FlightRenderer[] = [];
   private taskRenderer!: TaskRenderer;
-
-  constructor(props: Props) {
-    super(props);
-  }
 
   componentDidMount() {
     if (!this.el) return;
@@ -65,9 +63,9 @@ export default class Map extends Component<Props, State> {
   render() {
     return (
       <div className="w-full h-full">
-        <div className="w-full h-full" ref={(el) => (this.el = el)}></div>
+        <div className="w-full h-full" ref={el => (this.el = el)}></div>
         {this.maybeRenderDebugUsableRect()}
-        <div className="absolute left-0 top-0 ml-2 mt-2">
+        <div className="absolute hidden sm:block left-0 top-0 ml-2 mt-2">
           <ButtonGroup
             direction="vertical"
             buttons={this.mapControlButtons()}
@@ -82,14 +80,14 @@ export default class Map extends Component<Props, State> {
     const debugRect = this.mapRenderer.usableClientRect;
     return (
       <DebugContext.Consumer>
-        {(debug) =>
+        {debug =>
           debug.enabled && (
             <div
               style={{
                 top: debugRect.top,
                 left: debugRect.left,
                 width: debugRect.width,
-                height: debugRect.height,
+                height: debugRect.height
               }}
               className="absolute bg-primary-100 bg-opacity-50 flex items-center justify-center"
             >
@@ -121,7 +119,7 @@ export default class Map extends Component<Props, State> {
   }
 
   private updateFlightMarkers() {
-    this.flightRenderers.forEach((fr) =>
+    this.flightRenderers.forEach(fr =>
       fr.setActiveTimestamp(this.props.activeTimestamp!)
     );
   }
@@ -153,12 +151,12 @@ export default class Map extends Component<Props, State> {
 
   private renderFlights() {
     if (!this.props.flightGroup || !this.mapRenderer) return;
-    this.flightRenderers = this.props.flightGroup.flights.map((flight) => {
+    this.flightRenderers = this.props.flightGroup.flights.map(flight => {
       return new FlightRenderer(this.mapRenderer!, flight, {
-        renderFullTrack: this.props.settings.renderFullTracks,
+        renderFullTrack: this.props.settings.renderFullTracks
       });
     });
-    this.flightRenderers.forEach((fr) => {
+    this.flightRenderers.forEach(fr => {
       fr.render();
       if (this.props.activeTimestamp) {
         fr.setActiveTimestamp(this.props.activeTimestamp);
@@ -170,7 +168,7 @@ export default class Map extends Component<Props, State> {
     return [
       this.makeButton("zoomIn", () => this.zoomIn()),
       this.makeButton("search", () => this.zoomToFit()),
-      this.makeButton("zoomOut", () => this.zoomOut()),
+      this.makeButton("zoomOut", () => this.zoomOut())
     ];
   }
 
@@ -179,12 +177,13 @@ export default class Map extends Component<Props, State> {
       icon,
       onClick,
       color: "white",
-      size: "lg",
+      size: "lg"
     };
   }
 
   private zoomIn() {
     if (!this.mapRenderer) return;
+    analytics.trackEvent("mapZoomedIn");
     this.mapRenderer.zoomIn(this.zoomFocalPoint());
   }
 
@@ -195,17 +194,19 @@ export default class Map extends Component<Props, State> {
       return this.props.followFlight.datumAt(this.props.activeTimestamp)
         ?.position;
     } else {
-      return this.props.followFlight.getDatums()[0].position;
+      return this.props.followFlight.datums[0].position;
     }
   }
 
   private zoomOut() {
     if (!this.mapRenderer) return;
+    analytics.trackEvent("mapZoomedOut");
     this.mapRenderer.zoomOut();
   }
 
   private zoomToFit() {
     if (!this.mapRenderer) return;
+    analytics.trackEvent("mapZoomedToFit");
     this.mapRenderer.zoomToFit();
   }
 }

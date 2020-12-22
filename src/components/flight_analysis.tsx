@@ -1,20 +1,25 @@
 import { Component } from "react";
-import Div100vh from "react-div-100vh";
 
 import FlightGroup from "glana/src/analysis/flight_group";
 import Map from "./flight_analysis/map";
 import Settings, { SettingsModel } from "./flight_analysis/settings";
 import Timeline from "./flight_analysis/timeline";
+import Stats from "./flight_analysis/stats";
 import Task from "glana/src/flight_computer/tasks/task";
 import Button from "./ui/button";
+import ToggleableSplitScreen from "./ui/layout/toggleable_split_screen";
+import ButtonGroup from "./ui/button_group";
 import Modal, { ModalBody, ModalHeader } from "./ui/modal";
 import SavedFlight from "glana/src/saved_flight";
 import AnimationTicker from "../animation_ticker";
+import { isInIFrame } from "../utils/environment";
+import analytics from "../analytics";
 
 interface Props {
   flightGroup: FlightGroup | null;
   settings: SettingsModel;
   updateSettings: (settings: SettingsModel) => void;
+  openStats?: boolean;
 }
 
 interface State {
@@ -24,6 +29,7 @@ interface State {
   followFlight: SavedFlight | null;
   task: Task | null;
   isPlaying: boolean;
+  isAnalysisOpen: boolean;
 }
 
 export default class FlightAnalysis extends Component<Props, State> {
@@ -36,7 +42,8 @@ export default class FlightAnalysis extends Component<Props, State> {
       isSettingsOpen: false,
       activeTimestamp: null,
       isPlaying: false,
-      ...this.followFlightAndTask(props),
+      isAnalysisOpen: props.openStats || false,
+      ...this.followFlightAndTask(props)
     };
     this.animationTicker = new AnimationTicker((elapsedTime: number) =>
       this.tick(elapsedTime)
@@ -47,7 +54,7 @@ export default class FlightAnalysis extends Component<Props, State> {
     const followFlight = props.flightGroup?.flights[0] || null;
     return {
       followFlight: followFlight,
-      task: followFlight?.task || null,
+      task: followFlight?.task || null
     };
   }
 
@@ -64,7 +71,7 @@ export default class FlightAnalysis extends Component<Props, State> {
       // changed, but not when a task changes without changing flight group.
       this.setState({
         flightGroup: this.props.flightGroup,
-        ...this.followFlightAndTask(this.props),
+        ...this.followFlightAndTask(this.props)
       });
     }
     this.maybeSetActiveTimestamp();
@@ -78,31 +85,54 @@ export default class FlightAnalysis extends Component<Props, State> {
   private oldestTimestamp() {
     if (!this.props.flightGroup) return new Date();
     const timestamps = this.props.flightGroup.flights
-      .map((f) => f.getRecordingStoppedAt())
+      .map(f => f.getRecordingStoppedAt())
       .sort();
     return timestamps[timestamps.length - 1];
   }
 
-  private setActiveTimestamp(timestamp: Date): void {
+  setActiveTimestamp = (timestamp: Date) => {
     this.setState({ activeTimestamp: new Date(timestamp) });
-  }
+  };
 
   render() {
     return (
-      <div className="w-screen relative">
-        <Div100vh>
-          <Map
-            flightGroup={this.state.flightGroup}
-            followFlight={this.state.followFlight}
-            task={this.state.task}
-            activeTimestamp={this.state.activeTimestamp}
-            settings={this.props.settings}
-          />
+      <ToggleableSplitScreen
+        headerComponent="Stats"
+        mainComponent={this.mapComponent()}
+        secondaryComponent={this.statsComponent()}
+        isDrawerOpen={this.state.isAnalysisOpen}
+        onClose={this.toggleStats}
+      />
+    );
+  }
 
-          {this.maybeRenderSettingsModalAndButton()}
-          {this.maybeRenderTimeline()}
-        </Div100vh>
-      </div>
+  private mapComponent() {
+    return (
+      <>
+        <Map
+          flightGroup={this.state.flightGroup}
+          followFlight={this.state.followFlight}
+          task={this.state.task}
+          activeTimestamp={this.state.activeTimestamp}
+          settings={this.props.settings}
+        />
+
+        {this.maybeRenderSettingsModalAndButton()}
+        {this.maybeRenderTimeline()}
+      </>
+    );
+  }
+
+  private statsComponent() {
+    if (!this.state.followFlight || !this.state.flightGroup) return null;
+    return (
+      <Stats
+        settings={this.props.settings}
+        followFlight={this.state.followFlight}
+        flightGroup={this.state.flightGroup}
+        setFollowFlight={this.setFollowFlight}
+        onTimestampChange={this.setActiveTimestamp}
+      ></Stats>
     );
   }
 
@@ -122,21 +152,21 @@ export default class FlightAnalysis extends Component<Props, State> {
     return (
       <Timeline
         followFlight={this.state.followFlight}
-        setFollowFlight={(f: SavedFlight) => this.setFollowFlight(f)}
+        setFollowFlight={this.setFollowFlight}
         flightGroup={this.props.flightGroup}
         activeTimestamp={this.state.activeTimestamp}
-        onTimestampChange={(timestamp) => this.setActiveTimestamp(timestamp)}
+        onTimestampChange={this.setActiveTimestamp}
         settings={this.props.settings}
       />
     );
   }
 
-  private setFollowFlight(f: SavedFlight) {
+  setFollowFlight = (f: SavedFlight) => {
     this.setState({
       followFlight: f,
-      task: f.task,
+      task: f.task
     });
-  }
+  };
 
   private maybeRenderSettingsModalAndButton() {
     if (!this.props.flightGroup || !this.state.activeTimestamp) return null;
@@ -151,11 +181,23 @@ export default class FlightAnalysis extends Component<Props, State> {
         />
 
         <div className="mt-2">
-          <Button
-            icon={this.state.isPlaying ? "pause" : "play"}
-            size="lg"
-            color="white"
-            onClick={() => this.togglePlaying()}
+          <ButtonGroup
+            direction="vertical"
+            buttons={[
+              {
+                icon: this.state.isPlaying ? "pause" : "play",
+                onClick: this.togglePlaying,
+                color: "white",
+                size: "lg"
+              },
+              {
+                icon: "chartLine",
+                onClick: this.toggleStats,
+                isActive: this.state.isAnalysisOpen,
+                color: "white",
+                size: "lg"
+              }
+            ]}
           />
         </div>
 
@@ -182,7 +224,8 @@ export default class FlightAnalysis extends Component<Props, State> {
     this.setState(Object.assign(this.state, { isSettingsOpen: true }));
   }
 
-  private togglePlaying() {
+  togglePlaying = () => {
+    analytics.trackEvent("play_flight", { state: !this.state.isPlaying });
     if (this.state.isPlaying) {
       this.setState({ isPlaying: false }, () => {
         this.animationTicker.stop();
@@ -195,7 +238,22 @@ export default class FlightAnalysis extends Component<Props, State> {
         this.animationTicker.start();
       });
     }
-  }
+  };
+
+  toggleStats = () => {
+    analytics.trackEvent("open_stats", { state: !this.state.isAnalysisOpen });
+
+    if (isInIFrame()) {
+      const url = `${window.location.origin}${window.location.search}&openStats=true`;
+      window.open(url);
+      return;
+    }
+
+    this.setState(s => ({
+      ...s,
+      isAnalysisOpen: !s.isAnalysisOpen
+    }));
+  };
 
   private tick(elapsedTime: number) {
     if (!this.state.activeTimestamp) return;
@@ -224,7 +282,7 @@ export default class FlightAnalysis extends Component<Props, State> {
   private newestTimestamp() {
     if (!this.props.flightGroup) return new Date();
     const timestamps = this.props.flightGroup.flights
-      .map((f) => f.getRecordingStartedAt())
+      .map(f => f.getRecordingStartedAt())
       .sort();
     return timestamps[0];
   }

@@ -12,12 +12,12 @@ interface Props {
 }
 
 const animationDuration = 200;
-const smallestSplitScreenSize = "sm";
-const drawerSizes = `w-full h-full ${smallestSplitScreenSize}:w-1/2 md:max-w-screen-sm`;
+const animationDurationClass = "duration-200";
+const drawerSizes = `w-full h-full sm:w-1/2 md:max-w-screen-sm`;
 const drawerPaddingX = "px-6";
-const drawerBackgroundColor = "gray-900";
-const innerDrawerBorderColor = "gray-600";
-const outerDrawerBorderColor = "black";
+const drawerBackgroundColor = "bg-gray-900";
+const innerDrawerBorderColor = "border-gray-600";
+const outerDrawerBorderColor = "border-black";
 
 export default function FullScreenWithDrawer(props: Props) {
   usePreventWindowScroll();
@@ -29,7 +29,7 @@ export default function FullScreenWithDrawer(props: Props) {
     <div className={containerClasses()} style={{ height }}>
       <div className={mainClasses()}>{props.main}</div>
       {shouldPushMainLeft && <div className={drawerSizes}></div>}
-      <div className={drawerClasses(isDrawerOpen)}>
+      <div className={drawerClasses(isDrawerOpen)} style={{ height }}>
         <div className={drawerHeaderClasses()}>
           <CloseButton {...props} />
           {drawerHeader && <div className="pl-3">{drawerHeader}</div>}
@@ -60,7 +60,7 @@ function useShouldPushMainLeft(isDrawerOpen: boolean) {
 }
 
 function containerClasses() {
-  return "flex flex-row fixed h-full w-full overflow-hidden";
+  return "flex flex-row fixed h-full w-full overflow-hidden gl-prevent-overscroll";
 }
 
 function mainClasses() {
@@ -71,9 +71,9 @@ function drawerClasses(isOpen: boolean) {
   const translateClass = isOpen ? "translate-x-0" : "translate-x-full";
   return [
     "fixed right-0",
-    "z-10 overflow-y-scroll overflow-x-hidden",
-    `transform transition ease-in-out duration-${animationDuration}`,
-    `shadow border-l border-${outerDrawerBorderColor} text-white bg-${drawerBackgroundColor}`,
+    "z-10 overflow-y-scroll overflow-x-hidden gl-prevent-overscroll",
+    `transform transition ease-in-out ${animationDurationClass}`,
+    `shadow border-l ${outerDrawerBorderColor} text-white ${drawerBackgroundColor}`,
     drawerSizes,
     translateClass
   ].join(" ");
@@ -82,7 +82,7 @@ function drawerClasses(isOpen: boolean) {
 function drawerHeaderClasses() {
   return [
     "flex flex-row sticky top-0 items-center",
-    `border-b border-${innerDrawerBorderColor} bg-${drawerBackgroundColor}`,
+    `shadow-lg border-b ${innerDrawerBorderColor} ${drawerBackgroundColor}`,
     "py-3",
     drawerPaddingX
   ].join(" ");
@@ -92,14 +92,14 @@ function CloseButton(props: Props) {
   return (
     <>
       <Button
-        className={`inline-block ${smallestSplitScreenSize}:hidden`}
+        className={`inline-block sm:hidden`}
         icon="chevronLeft"
         size="lg"
         color="white"
         onClick={props.onClose}
       />
       <Button
-        className={`hidden ${smallestSplitScreenSize}:inline-block`}
+        className={`hidden sm:inline-block`}
         icon="close"
         size="lg"
         color="white"

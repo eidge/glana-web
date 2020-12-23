@@ -11,5 +11,9 @@ body, html {
   overscroll-behavior-y: none;
 }
 
+.gl-prevent-overscroll {
+  overscroll-behavior-y: none;
+}
+
 /* purgecss end ignore */
 @tailwind utilities;

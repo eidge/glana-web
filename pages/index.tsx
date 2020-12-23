@@ -1,5 +1,5 @@
-import Main from "../src/flight_analysis/components/main";
+import FlightAnalysis from "../src/flight_analysis/components";
 
 export default function Index() {
-  return <Main />;
+  return <FlightAnalysis />;
 }

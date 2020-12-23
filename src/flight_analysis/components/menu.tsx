@@ -76,11 +76,11 @@ function MenuItem(props: ButtonProps) {
 function menuItemClasses(props: ButtonProps) {
   const classes = [
     "flex flex-col items-center justify-center w-20 p-2",
-    "text-white leading-none focus:outline-none hover:bg-gray-900"
+    "text-gray-400 leading-none focus:outline-none hover:bg-gray-900"
   ];
 
   if (props.isActive) {
-    classes.push("text-primary");
+    classes.push("text-white");
   }
 
   return classes.join(" ");

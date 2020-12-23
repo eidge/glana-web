@@ -71,6 +71,7 @@ export default class Map {
   }
 
   destroy() {
+    this.olMap.dispose();
     this.resizeObserver.unobserve(this.domElement);
   }
 

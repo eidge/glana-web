@@ -6,8 +6,9 @@ html {
   font-size: 14px;
 }
 
-body {
+body, html {
   overflow: hidden;
+  overscroll-behavior-y: none;
 }
 
 /* purgecss end ignore */

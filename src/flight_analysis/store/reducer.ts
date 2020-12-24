@@ -1,15 +1,25 @@
 import FlightGroup from "glana/src/analysis/flight_group";
+import SavedFlight from "glana/src/saved_flight";
+import { Colors } from "../colors";
 import { defaultSettings, flightComputer, Settings } from "../settings";
 import { ActionType, Action } from "./actions";
 
 export type DrawerView = "settings" | "stats" | null;
+
+export type FlightDatum = {
+  flight: SavedFlight;
+  color: string;
+};
+
+export type FlightsById = { [key: string]: FlightDatum };
 
 export interface State {
   isLoading: boolean;
   sideDrawer: {
     view: DrawerView;
   };
-  flightGroup?: FlightGroup;
+  flightGroup: FlightGroup | null;
+  flightsById: FlightsById;
   settings: Settings;
 }
 
@@ -19,6 +29,8 @@ export function initialState(): State {
     sideDrawer: {
       view: null
     },
+    flightGroup: null,
+    flightsById: {},
     settings: defaultSettings()
   };
 }
@@ -30,12 +42,20 @@ export function reducer(state: State, action: Action): State {
 
   switch (action.type) {
     case ActionType.SetFlightGroup:
+      const colors = new Colors();
       const flightGroup = action.payload;
+      const flightsById = flightGroup.flights.reduce(
+        (byId: FlightsById, flight) => {
+          byId[flight.id] = { flight: flight, color: colors.nextColor() };
+          return byId;
+        },
+        {}
+      );
       // FIXME: There shouldn't be any side-effects here. Will need to use
       // something like a thunk!
       flightGroup.flights.forEach(f => f.analise(flightComputer));
       flightGroup.synchronize(state.settings.synchronizationMethod);
-      return { ...state, isLoading: false, flightGroup: flightGroup };
+      return { ...state, isLoading: false, flightGroup, flightsById };
     case ActionType.SetActiveTimestamp:
       return state;
     case ActionType.ToggleStats:

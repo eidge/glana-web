@@ -34,7 +34,7 @@ export default function FullScreenWithDrawer(props: Props) {
           <CloseButton {...props} />
           {drawerHeader && <div className="pl-3">{drawerHeader}</div>}
         </div>
-        {isDrawerOpen && props.drawer}
+        {isDrawerOpen && <div className="p-6">{props.drawer}</div>}
       </div>
     </div>
   );

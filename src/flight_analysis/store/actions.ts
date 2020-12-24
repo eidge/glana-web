@@ -3,20 +3,18 @@ import FlightGroup from "glana/src/analysis/flight_group";
 export enum ActionType {
   SetFlightGroup = "SET_FLIGHT_GROUP",
   SetActiveTimestamp = "SET_ACTIVE_TIMESTAMP",
-  ToggleStats = "TOGGLE_STATS"
+  ToggleStats = "TOGGLE_STATS",
+  ToggleSettings = "TOGGLE_SETTINGS",
+  CloseDrawer = "CLOSE_DRAWER"
 }
 
 export const actions = {
-  toggleStats,
   setFlightGroup,
-  setActiveTimestamp
+  setActiveTimestamp,
+  toggleStats,
+  toggleSettings,
+  closeDrawer
 };
-
-function toggleStats() {
-  return {
-    type: ActionType.ToggleStats as ActionType.ToggleStats
-  };
-}
 
 function setFlightGroup(flightGroup: FlightGroup) {
   return {
@@ -29,6 +27,24 @@ function setActiveTimestamp(timestamp: Date) {
   return {
     type: ActionType.SetActiveTimestamp as ActionType.SetActiveTimestamp,
     payload: timestamp
+  };
+}
+
+function toggleStats() {
+  return {
+    type: ActionType.ToggleStats as ActionType.ToggleStats
+  };
+}
+
+function toggleSettings() {
+  return {
+    type: ActionType.ToggleSettings as ActionType.ToggleSettings
+  };
+}
+
+function closeDrawer() {
+  return {
+    type: ActionType.CloseDrawer as ActionType.CloseDrawer
   };
 }
 

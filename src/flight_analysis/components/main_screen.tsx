@@ -4,17 +4,15 @@ import { actions } from "../store/actions";
 import Menu from "./menu";
 import Timeline from "./timeline";
 import Map from "./map";
+import Settings from "./settings";
 
 export default function MainScreen() {
-  const { stats } = useFlightAnalysisState();
+  const { sideDrawer } = useFlightAnalysisState();
   const dispatch = useFlightAnalysisDispatch();
-  const toggleStats = () => {
-    dispatch(actions.toggleStats());
-  };
 
-  const mainPanel = (
-    <MainPanel isStatsOpen={stats.isOpen} toggleStats={toggleStats} />
-  );
+  const closeDrawer = () => dispatch(actions.closeDrawer());
+
+  const mainPanel = <MainPanel />;
   const drawer = <Drawer />;
   const drawerHeader = <DrawerHeader />;
   return (
@@ -22,19 +20,23 @@ export default function MainScreen() {
       main={mainPanel}
       drawer={drawer}
       drawerHeader={drawerHeader}
-      isDrawerOpen={stats.isOpen}
-      onClose={toggleStats}
+      isDrawerOpen={!!sideDrawer.view}
+      onClose={closeDrawer}
     />
   );
 }
 
-interface MainPanelProps {
-  toggleStats: () => void;
-  isStatsOpen: boolean;
-}
+interface MainPanelProps {}
 
-function MainPanel(props: MainPanelProps) {
-  const { toggleStats, isStatsOpen } = props;
+function MainPanel(_props: MainPanelProps) {
+  const { sideDrawer } = useFlightAnalysisState();
+  const dispatch = useFlightAnalysisDispatch();
+  const toggleStats = () => {
+    dispatch(actions.toggleStats());
+  };
+  const toggleSettings = () => {
+    dispatch(actions.toggleSettings());
+  };
 
   return (
     <div className="flex flex-col relative w-full h-full">
@@ -44,32 +46,46 @@ function MainPanel(props: MainPanelProps) {
           <Timeline />
         </div>
         <Menu
-          isStatsOpen={isStatsOpen}
+          isStatsOpen={sideDrawer.view === "stats"}
           isPlaying={false}
-          isSettingsOpen={false}
+          isSettingsOpen={sideDrawer.view === "settings"}
           toggleStats={toggleStats}
           togglePlay={toggleStats}
-          toggleSettings={toggleStats}
+          toggleSettings={toggleSettings}
         />
       </div>
     </div>
   );
 }
 
-function Drawer() {
-  const x = [];
-  for (let i = 0; i < 40; ++i) x.push(i);
-  return (
-    <>
-      {x.map(i => (
-        <div key={i} className="m-6 bg-failure-200">
-          Drawer
-        </div>
-      ))}
-    </>
-  );
+function DrawerHeader(): JSX.Element {
+  const { sideDrawer } = useFlightAnalysisState();
+  switch (sideDrawer.view) {
+    case "stats":
+      return <span className="font-medium text-2xl">Stats</span>;
+    case "settings":
+      return <span className="font-medium text-2xl">Settings</span>;
+    case null:
+      return <></>;
+  }
 }
 
-function DrawerHeader() {
-  return <span className="font-medium text-2xl">Stats</span>;
+function Drawer(): JSX.Element {
+  const { sideDrawer } = useFlightAnalysisState();
+  switch (sideDrawer.view) {
+    case "stats":
+      const x = [];
+      for (let i = 0; i < 40; ++i) x.push(i);
+      return (
+        <>
+          {x.map(i => (
+            <div key={i}>Drawer</div>
+          ))}
+        </>
+      );
+    case "settings":
+      return <Settings />;
+    case null:
+      return <></>;
+  }
 }

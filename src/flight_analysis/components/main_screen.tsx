@@ -5,21 +5,18 @@ import Menu from "./menu";
 import Timeline from "./timeline";
 import Map from "./map";
 import Settings from "./settings";
+import Loading from "./loading";
 
 export default function MainScreen() {
-  const { sideDrawer } = useFlightAnalysisState();
+  const { sideDrawer, isLoading } = useFlightAnalysisState();
   const dispatch = useFlightAnalysisDispatch();
-
   const closeDrawer = () => dispatch(actions.closeDrawer());
 
-  const mainPanel = <MainPanel />;
-  const drawer = <Drawer />;
-  const drawerHeader = <DrawerHeader />;
   return (
     <FullScreenWithDrawer
-      main={mainPanel}
-      drawer={drawer}
-      drawerHeader={drawerHeader}
+      main={isLoading ? <Loading /> : <MainPanel />}
+      drawer={<Drawer />}
+      drawerHeader={<DrawerHeader />}
       isDrawerOpen={!!sideDrawer.view}
       onClose={closeDrawer}
     />

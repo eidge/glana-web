@@ -16,5 +16,5 @@ export default function Map(_props: Props) {
     };
   }, []);
 
-  return <div ref={element} className="w-full h-full bg-failure-200"></div>;
+  return <div ref={element} className="w-full h-full bg-gray-800"></div>;
 }

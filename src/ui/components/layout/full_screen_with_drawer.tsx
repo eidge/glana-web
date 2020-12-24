@@ -3,7 +3,6 @@ import { usePreventWindowScroll, useWindowHeight } from "../../hooks/window";
 import Button from "../button";
 
 interface Props {
-  header?: ReactNode;
   main: ReactNode;
   drawer: ReactNode;
   drawerHeader?: ReactNode;

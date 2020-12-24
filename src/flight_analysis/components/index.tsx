@@ -1,10 +1,15 @@
 import MainScreen from "./main_screen";
 import React from "react";
 import { StoreProvider } from "../store";
+import FlightGroup from "glana/src/analysis/flight_group";
 
-export default function FlightAnalysis() {
+interface Props {
+  flightGroup?: FlightGroup;
+}
+
+export default function FlightAnalysis(props: Props) {
   return (
-    <StoreProvider>
+    <StoreProvider flightGroup={props.flightGroup}>
       <MainScreen />
     </StoreProvider>
   );

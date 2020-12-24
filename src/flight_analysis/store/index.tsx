@@ -1,16 +1,24 @@
-import React, { ReactNode, useContext, useReducer } from "react";
+import React, { ReactNode, useContext, useEffect, useReducer } from "react";
 import { initialState, reducer } from "./reducer";
-import { Action } from "./actions";
+import { Action, actions } from "./actions";
+import FlightGroup from "glana/src/analysis/flight_group";
 
 const StateContext = React.createContext(initialState());
 const DispatchContent = React.createContext<React.Dispatch<Action>>(() => {});
 
 interface ProviderProps {
+  flightGroup?: FlightGroup;
   children: ReactNode;
 }
 
 export function StoreProvider(props: ProviderProps) {
+  const { flightGroup } = props;
   const [state, dispatch] = useReducer(reducer, initialState());
+  useEffect(() => {
+    if (flightGroup) {
+      dispatch(actions.setFlightGroup(flightGroup));
+    }
+  }, [flightGroup]);
   return (
     <DispatchContent.Provider value={dispatch}>
       <StateContext.Provider value={state}>

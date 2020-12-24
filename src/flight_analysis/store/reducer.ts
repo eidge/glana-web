@@ -1,18 +1,25 @@
+import FlightGroup from "glana/src/analysis/flight_group";
+import { defaultSettings, flightComputer, Settings } from "../settings";
 import { ActionType, Action } from "./actions";
 
 export type DrawerView = "settings" | "stats" | null;
 
 export interface State {
+  isLoading: boolean;
   sideDrawer: {
     view: DrawerView;
   };
+  flightGroup?: FlightGroup;
+  settings: Settings;
 }
 
 export function initialState(): State {
   return {
+    isLoading: true,
     sideDrawer: {
       view: null
-    }
+    },
+    settings: defaultSettings()
   };
 }
 
@@ -23,7 +30,12 @@ export function reducer(state: State, action: Action): State {
 
   switch (action.type) {
     case ActionType.SetFlightGroup:
-      return state;
+      const flightGroup = action.payload;
+      // FIXME: There shouldn't be any side-effects here. Will need to use
+      // something like a thunk!
+      flightGroup.flights.forEach(f => f.analise(flightComputer));
+      flightGroup.synchronize(state.settings.synchronizationMethod);
+      return { ...state, isLoading: false, flightGroup: flightGroup };
     case ActionType.SetActiveTimestamp:
       return state;
     case ActionType.ToggleStats:

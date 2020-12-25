@@ -5,16 +5,19 @@ import Menu from "./menu";
 import Timeline from "./timeline";
 import Map from "./map";
 import Settings from "./settings";
-import Loading from "./loading";
+import LoadingScreen from "./loading_screen";
+import AnimationTicker from "../animation_ticker";
+import { useEffect } from "react";
+import { milliseconds } from "glana/src/units/duration";
 
-export default function MainScreen() {
+export default function Analysis() {
   const { sideDrawer, isLoading } = useFlightAnalysisState();
   const dispatch = useFlightAnalysisDispatch();
   const closeDrawer = () => dispatch(actions.closeDrawer());
 
   return (
     <FullScreenWithDrawer
-      main={isLoading ? <Loading /> : <MainPanel />}
+      main={isLoading ? <LoadingScreen /> : <MainScreen />}
       drawer={<Drawer />}
       drawerHeader={<DrawerHeader />}
       isDrawerOpen={!!sideDrawer.view}
@@ -23,17 +26,36 @@ export default function MainScreen() {
   );
 }
 
-interface MainPanelProps {}
-
-function MainPanel(_props: MainPanelProps) {
-  const { sideDrawer } = useFlightAnalysisState();
+function MainScreen() {
+  const { sideDrawer, isPlaying, settings } = useFlightAnalysisState();
   const dispatch = useFlightAnalysisDispatch();
   const toggleStats = () => {
     dispatch(actions.toggleStats());
   };
+  const togglePlay = () => {
+    dispatch(actions.togglePlay());
+  };
   const toggleSettings = () => {
     dispatch(actions.toggleSettings());
   };
+
+  useEffect(() => {
+    const animationTicker = new AnimationTicker((elapsedTime: number) => {
+      dispatch(
+        actions.advanceActiveTimestamp(
+          milliseconds(elapsedTime).multiply(settings.playbackSpeed)
+        )
+      );
+    });
+
+    if (isPlaying) {
+      animationTicker.start();
+    }
+
+    return () => {
+      animationTicker.stop();
+    };
+  }, [isPlaying, dispatch, settings]);
 
   return (
     <div className="flex flex-col relative w-full h-full">
@@ -44,10 +66,10 @@ function MainPanel(_props: MainPanelProps) {
         </div>
         <Menu
           isStatsOpen={sideDrawer.view === "stats"}
-          isPlaying={false}
+          isPlaying={isPlaying}
           isSettingsOpen={sideDrawer.view === "settings"}
           toggleStats={toggleStats}
-          togglePlay={toggleStats}
+          togglePlay={togglePlay}
           toggleSettings={toggleSettings}
         />
       </div>

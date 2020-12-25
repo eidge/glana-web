@@ -19,7 +19,7 @@ export function useWindowHeight() {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      if (firstRenderAt.getTime() + 5000 < new Date().getTime()) {
+      if (firstRenderAt.getTime() + 15000 < new Date().getTime()) {
         clearInterval(interval);
         return;
       }

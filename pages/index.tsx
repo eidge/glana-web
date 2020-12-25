@@ -1,6 +1,6 @@
 import FlightAnalysis from "../src/flight_analysis/components";
 import { useEffect, useState } from "react";
-import Loading from "../src/flight_analysis/components/loading";
+import LoadingScreen from "../src/flight_analysis/components/loading_screen";
 import FullScreenWithDrawer from "../src/ui/components/layout/full_screen_with_drawer";
 import BGALoader from "../src/flight_analysis/url_flight_loaders/bga_loader";
 import IGCLoader from "../src/flight_analysis/url_flight_loaders/igc_loader";
@@ -22,7 +22,7 @@ export default function Index() {
   }, [setState]);
 
   return state.isLoading ? (
-    <LoadingScreen />
+    <Loading />
   ) : (
     <FlightAnalysis flightGroup={state.flightGroup} />
   );
@@ -47,10 +47,10 @@ async function maybeLoadFlightsFromURL(setState: any) {
   }
 }
 
-function LoadingScreen() {
+function Loading() {
   return (
     <FullScreenWithDrawer
-      main={<Loading />}
+      main={<LoadingScreen />}
       drawer={<></>}
       isDrawerOpen={false}
       onClose={noOp}

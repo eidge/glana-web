@@ -12,7 +12,8 @@ export default function Timeline() {
   const {
     flightsById,
     activeTimestamp,
-    followFlightId
+    followFlightId,
+    flightGroup
   } = useFlightAnalysisState();
   const dispatch = useFlightAnalysisDispatch();
   const elementRef = useRef<HTMLDivElement>(null);
@@ -23,8 +24,8 @@ export default function Timeline() {
   if (flightData.length < 1 || !followFlightId) return null;
 
   const followFlight = flightsById[followFlightId];
-  const timelineStartAt = computeTimelineStartAt(flightData);
-  const timelineFinishAt = computeTimelineFinishAt(flightData);
+  const timelineStartAt = flightGroup!.earliestDatumAt;
+  const timelineFinishAt = flightGroup!.latestDatumAt;
   const setTimestampFromHoverCoordinate = (clientX: number) => {
     if (!elementRef.current) return;
     const clientRect = elementRef.current.getBoundingClientRect();

@@ -20,7 +20,9 @@ export interface State {
   };
   flightGroup: FlightGroup | null;
   flightsById: FlightsById;
+  followFlightId: string | null;
   settings: Settings;
+  activeTimestamp: Date | null;
 }
 
 export function initialState(): State {
@@ -31,7 +33,9 @@ export function initialState(): State {
     },
     flightGroup: null,
     flightsById: {},
-    settings: defaultSettings()
+    followFlightId: null,
+    settings: defaultSettings(),
+    activeTimestamp: null
   };
 }
 
@@ -51,13 +55,21 @@ export function reducer(state: State, action: Action): State {
         },
         {}
       );
+      // FIXME: All of the flightGroup related data should be in a `flight*` key
+      // to prevent having to make null checks for all related data items.
       // FIXME: There shouldn't be any side-effects here. Will need to use
       // something like a thunk!
       flightGroup.flights.forEach(f => f.analise(flightComputer));
       flightGroup.synchronize(state.settings.synchronizationMethod);
-      return { ...state, isLoading: false, flightGroup, flightsById };
+      return {
+        ...state,
+        isLoading: false,
+        flightGroup,
+        flightsById,
+        followFlightId: flightGroup.flights[0].id
+      };
     case ActionType.SetActiveTimestamp:
-      return state;
+      return { ...state, activeTimestamp: action.payload };
     case ActionType.ToggleStats:
       if (view === "stats") {
         newView = null;

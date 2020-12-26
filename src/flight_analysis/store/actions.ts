@@ -9,7 +9,7 @@ export enum ActionType {
   SetFlightGroup = "SET_FLIGHT_GROUP",
   SetActiveTimestamp = "SET_ACTIVE_TIMESTAMP",
   TogglePlay = "TOGGLE_PLAY",
-  ToggleStats = "TOGGLE_STATS",
+  ToggleFlights = "TOGGLE_FLIGHTS",
   ToggleSettings = "TOGGLE_SETTINGS",
   CloseDrawer = "CLOSE_DRAWER",
   AdvanceActiveTimestamp = "ADVANCE_ACTIVE_TIMESTAMP",
@@ -22,7 +22,7 @@ export const actions = {
   setActiveTimestamp,
   advanceActiveTimestamp,
   togglePlay,
-  toggleStats,
+  toggleFlights,
   toggleSettings,
   closeDrawer,
   changeSettings,
@@ -69,9 +69,9 @@ function togglePlay() {
   };
 }
 
-function toggleStats() {
+function toggleFlights() {
   return {
-    type: ActionType.ToggleStats as ActionType.ToggleStats
+    type: ActionType.ToggleFlights as ActionType.ToggleFlights
   };
 }
 

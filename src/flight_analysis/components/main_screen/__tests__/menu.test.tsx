@@ -3,9 +3,9 @@ import { render, screen } from "@testing-library/react";
 
 const props = {
   togglePlay: () => null,
-  toggleStats: () => null,
+  toggleFlights: () => null,
   toggleSettings: () => null,
-  isStatsOpen: false,
+  isFlightsOpen: false,
   isPlaying: false,
   isSettingsOpen: false
 };

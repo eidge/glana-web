@@ -10,8 +10,8 @@ import { actions } from "../../store/actions";
 export default function MainScreen() {
   const { sideDrawer, isPlaying, settings } = useFlightAnalysisState();
   const dispatch = useFlightAnalysisDispatch();
-  const toggleStats = () => {
-    dispatch(actions.toggleStats());
+  const toggleFlights = () => {
+    dispatch(actions.toggleFlights());
   };
   const togglePlay = () => {
     dispatch(actions.togglePlay());
@@ -46,10 +46,10 @@ export default function MainScreen() {
           <Timeline />
         </div>
         <Menu
-          isStatsOpen={sideDrawer.view === "stats"}
+          isFlightsOpen={sideDrawer.view === "flights"}
           isPlaying={isPlaying}
           isSettingsOpen={sideDrawer.view === "settings"}
-          toggleStats={toggleStats}
+          toggleFlights={toggleFlights}
           togglePlay={togglePlay}
           toggleSettings={toggleSettings}
         />

@@ -101,7 +101,7 @@ export default class FlightAnalysis extends Component<Props, State> {
         mainComponent={this.mapComponent()}
         secondaryComponent={this.statsComponent()}
         isDrawerOpen={this.state.isAnalysisOpen}
-        onClose={this.toggleStats}
+        onClose={this.toggleFlights}
       />
     );
   }
@@ -192,7 +192,7 @@ export default class FlightAnalysis extends Component<Props, State> {
               },
               {
                 icon: "chartLine",
-                onClick: this.toggleStats,
+                onClick: this.toggleFlights,
                 isActive: this.state.isAnalysisOpen,
                 color: "white",
                 size: "lg"
@@ -240,7 +240,7 @@ export default class FlightAnalysis extends Component<Props, State> {
     }
   };
 
-  toggleStats = () => {
+  toggleFlights = () => {
     analytics.trackEvent("open_stats", { state: !this.state.isAnalysisOpen });
 
     if (isInIFrame()) {

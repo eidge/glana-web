@@ -3,20 +3,20 @@ import Icon from "../../../ui/components/icon";
 import { IconKey } from "../../../ui/components/icon";
 
 interface Props {
-  isStatsOpen: boolean;
+  isFlightsOpen: boolean;
   isPlaying: boolean;
   isSettingsOpen: boolean;
-  toggleStats: () => void;
+  toggleFlights: () => void;
   togglePlay: () => void;
   toggleSettings: () => void;
 }
 
 export default function Menu(props: Props) {
   const {
-    isStatsOpen,
+    isFlightsOpen,
     isPlaying,
     isSettingsOpen,
-    toggleStats,
+    toggleFlights,
     togglePlay,
     toggleSettings
   } = props;
@@ -24,11 +24,11 @@ export default function Menu(props: Props) {
   return (
     <div className="flex flex-row items-center justify-center w-full bg-gray-800 border-t border-gray-900">
       <MenuItem
-        onClick={toggleStats}
-        isActive={isStatsOpen}
+        onClick={toggleFlights}
+        isActive={isFlightsOpen}
         icon="chartLine"
         text="flights"
-        label="open stats page"
+        label="open flights page"
       />
       <MenuItem
         onClick={togglePlay}

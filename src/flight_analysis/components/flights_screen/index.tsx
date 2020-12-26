@@ -8,7 +8,7 @@ import { FlightDatum } from "../../store/reducer";
 
 type Tab = "Summary" | "Phases" | "More";
 
-export default function Stats() {
+export default function FlightsScreen() {
   const { analysis } = useFlightAnalysisState();
   const dispatch = useFlightAnalysisDispatch();
   const [tab, setTab] = useState<Tab>("Summary");

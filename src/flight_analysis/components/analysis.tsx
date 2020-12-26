@@ -3,7 +3,7 @@ import { useFlightAnalysisDispatch, useFlightAnalysisState } from "../store";
 import { actions } from "../store/actions";
 import LoadingScreen from "./loading_screen";
 import MainScreen from "./main_screen";
-import StatsScreen from "./stats_screen";
+import FlightsScreen from "./flights_screen";
 import SettingsScreen from "./settings_screen";
 
 export default function Analysis() {
@@ -25,7 +25,7 @@ export default function Analysis() {
 function DrawerHeader(): JSX.Element {
   const { sideDrawer } = useFlightAnalysisState();
   switch (sideDrawer.view) {
-    case "stats":
+    case "flights":
       return <span className="font-medium text-2xl">Flights</span>;
     case "settings":
       return <span className="font-medium text-2xl">Settings</span>;
@@ -37,8 +37,8 @@ function DrawerHeader(): JSX.Element {
 function Drawer(): JSX.Element {
   const { sideDrawer } = useFlightAnalysisState();
   switch (sideDrawer.view) {
-    case "stats":
-      return <StatsScreen />;
+    case "flights":
+      return <FlightsScreen />;
     case "settings":
       return <SettingsScreen />;
     case null:

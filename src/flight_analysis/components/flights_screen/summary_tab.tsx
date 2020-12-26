@@ -19,6 +19,7 @@ export default function SummaryTab(props: Props) {
     <div className="space-y-3">
       {flightData.map(fd => (
         <FlightSummary
+          key={fd.id}
           flightDatum={fd}
           isActive={fd.id === followFlightId}
           onClick={onSelectFlight}

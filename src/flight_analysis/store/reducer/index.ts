@@ -4,7 +4,7 @@ import { Colors } from "../../colors";
 import { defaultSettings, flightComputer, Settings } from "../../settings";
 import { ActionType, Action } from "../actions";
 
-export type DrawerView = "settings" | "stats" | null;
+export type DrawerView = "settings" | "flights" | null;
 
 export type FlightDatum = {
   id: string;
@@ -115,11 +115,11 @@ export function reducer(state: State, action: Action): State {
         };
       }
       return { ...state, isPlaying: !state.isPlaying };
-    case ActionType.ToggleStats:
-      if (view === "stats") {
+    case ActionType.ToggleFlights:
+      if (view === "flights") {
         newView = null;
       } else {
-        newView = "stats";
+        newView = "flights";
       }
       return {
         ...state,

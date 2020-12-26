@@ -28,9 +28,11 @@ export function defaultSettings(): Settings {
   };
 }
 
-export const flightComputer = new FlightComputer(
-  new Map([
-    ["averageVario", new AverageVario(seconds(30)) as Calculator],
-    ["engineOn", new EngineInUse(0.5) as Calculator]
-  ])
-);
+export function flightComputer() {
+  return new FlightComputer(
+    new Map([
+      ["averageVario", new AverageVario(seconds(30)) as Calculator],
+      ["engineOn", new EngineInUse(0.5) as Calculator]
+    ])
+  );
+}

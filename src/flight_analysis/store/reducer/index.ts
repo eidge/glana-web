@@ -14,14 +14,16 @@ export type FlightDatum = {
 
 export type FlightDataById = { [key: string]: FlightDatum };
 
+export interface AnalysisState {
+  flightGroup: FlightGroup;
+  flightDataById: FlightDataById;
+  flightData: FlightDatum[];
+  followFlightId: string;
+  activeTimestamp: Date;
+}
+
 export interface State {
-  analysis: {
-    flightGroup: FlightGroup;
-    flightDataById: FlightDataById;
-    flightData: FlightDatum[];
-    followFlightId: string;
-    activeTimestamp: Date;
-  } | null;
+  analysis: AnalysisState | null;
   sideDrawer: {
     view: DrawerView;
   };
@@ -49,28 +51,8 @@ export function reducer(state: State, action: Action): State {
 
   switch (action.type) {
     case ActionType.SetFlightGroup:
-      const colors = new Colors();
-      const flightGroup = action.payload;
-      const flightData = flightGroup.flights.map(flight => ({
-        id: flight.id,
-        flight: flight,
-        color: colors.nextColor()
-      }));
-
-      const flightDataById = flightData.reduce((byId: FlightDataById, data) => {
-        byId[data.id] = data;
-        return byId;
-      }, {});
-      flightGroup.flights.forEach(f => f.analise(flightComputer));
-      flightGroup.synchronize(state.settings.synchronizationMethod);
-
-      const analysis = {
-        flightGroup,
-        flightData,
-        flightDataById,
-        followFlightId: flightGroup.flights[0].id,
-        activeTimestamp: flightGroup.earliestDatumAt
-      };
+      const { flightGroup } = action;
+      const analysis = buildAnalysisState(state, flightGroup);
 
       return {
         ...state,
@@ -83,7 +65,7 @@ export function reducer(state: State, action: Action): State {
 
       return {
         ...state,
-        analysis: { ...state.analysis, activeTimestamp: action.payload }
+        analysis: { ...state.analysis, activeTimestamp: action.timestamp }
       };
     case ActionType.AdvanceActiveTimestamp:
       if (!state.analysis) return state;
@@ -106,7 +88,9 @@ export function reducer(state: State, action: Action): State {
           isPlaying: false
         };
       } else {
-        activeTimestamp = new Date(activeTimestamp.getTime() + action.payload);
+        activeTimestamp = new Date(
+          activeTimestamp.getTime() + action.deltaInMillis
+        );
       }
 
       return {
@@ -157,5 +141,59 @@ export function reducer(state: State, action: Action): State {
         ...state,
         sideDrawer: { ...sideDrawer, view: null }
       };
+    case ActionType.ChangeSettings:
+      const { changes } = action;
+      const newState = {
+        ...state,
+        settings: { ...state.settings, ...changes }
+      };
+
+      if (
+        state.analysis &&
+        Object.keys(changes).includes("synchronizationMethod")
+      ) {
+        newState.analysis = buildAnalysisState(
+          newState,
+          state.analysis.flightGroup,
+          {
+            followFlightId: state.analysis.followFlightId,
+            activeTimestamp: state.analysis.activeTimestamp
+          }
+        );
+      }
+
+      return newState;
   }
+}
+
+function buildAnalysisState(
+  state: State,
+  flightGroup: FlightGroup,
+  overrides: Partial<AnalysisState> = {}
+) {
+  const colors = new Colors();
+
+  const flightData = flightGroup.flights.map(flight => ({
+    id: flight.id,
+    flight: flight,
+    color: colors.nextColor()
+  }));
+
+  const flightDataById = flightData.reduce((byId: FlightDataById, data) => {
+    byId[data.id] = data;
+    return byId;
+  }, {});
+
+  flightGroup.flights.forEach(f => f.analise(flightComputer()));
+  flightGroup.synchronize(state.settings.synchronizationMethod);
+  flightGroup = Object.create(flightGroup);
+
+  return {
+    flightGroup,
+    flightData,
+    flightDataById,
+    followFlightId: flightGroup.flights[0].id,
+    activeTimestamp: flightGroup.earliestDatumAt,
+    ...overrides
+  };
 }

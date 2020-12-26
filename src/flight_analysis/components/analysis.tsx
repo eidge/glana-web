@@ -4,7 +4,7 @@ import { actions } from "../store/actions";
 import Menu from "./menu";
 import Timeline from "./timeline";
 import Map from "./map";
-import Settings from "./settings";
+import SettingsScreen from "./settings_screen";
 import LoadingScreen from "./loading_screen";
 import AnimationTicker from "../animation_ticker";
 import { useEffect } from "react";
@@ -103,7 +103,7 @@ function Drawer(): JSX.Element {
         </>
       );
     case "settings":
-      return <Settings />;
+      return <SettingsScreen />;
     case null:
       return <></>;
   }

@@ -2,6 +2,7 @@ import FlightGroup from "glana/src/analysis/flight_group";
 import { Duration, milliseconds } from "glana/src/units/duration";
 import Quantity from "glana/src/units/quantity";
 import analytics from "../../analytics";
+import { Settings } from "../settings";
 
 export enum ActionType {
   SetFlightGroup = "SET_FLIGHT_GROUP",
@@ -10,7 +11,8 @@ export enum ActionType {
   ToggleStats = "TOGGLE_STATS",
   ToggleSettings = "TOGGLE_SETTINGS",
   CloseDrawer = "CLOSE_DRAWER",
-  AdvanceActiveTimestamp = "ADVANCE_ACTIVE_TIMESTAMP"
+  AdvanceActiveTimestamp = "ADVANCE_ACTIVE_TIMESTAMP",
+  ChangeSettings = "CHANGE_SETTINGS"
 }
 
 export const actions = {
@@ -20,7 +22,8 @@ export const actions = {
   togglePlay,
   toggleStats,
   toggleSettings,
-  closeDrawer
+  closeDrawer,
+  changeSettings
 };
 
 // Magic to produce a union type of all return values of our action functions.
@@ -39,21 +42,21 @@ function setFlightGroup(flightGroup: FlightGroup) {
   });
   return {
     type: ActionType.SetFlightGroup as ActionType.SetFlightGroup,
-    payload: flightGroup
+    flightGroup: flightGroup
   };
 }
 
 function setActiveTimestamp(timestamp: Date) {
   return {
     type: ActionType.SetActiveTimestamp as ActionType.SetActiveTimestamp,
-    payload: timestamp
+    timestamp: timestamp
   };
 }
 
 function advanceActiveTimestamp(duration: Quantity<Duration>) {
   return {
     type: ActionType.AdvanceActiveTimestamp as ActionType.AdvanceActiveTimestamp,
-    payload: duration.convertTo(milliseconds).value
+    deltaInMillis: duration.convertTo(milliseconds).value
   };
 }
 
@@ -78,5 +81,19 @@ function toggleSettings() {
 function closeDrawer() {
   return {
     type: ActionType.CloseDrawer as ActionType.CloseDrawer
+  };
+}
+
+function changeSettings(changes: Partial<Settings>) {
+  const attribute = Object.keys(changes)[0];
+  const value = Object.values(changes)[0];
+  analytics.trackEvent("settings_changed", {
+    attribute,
+    value
+  });
+
+  return {
+    type: ActionType.ChangeSettings as ActionType.ChangeSettings,
+    changes: changes
   };
 }

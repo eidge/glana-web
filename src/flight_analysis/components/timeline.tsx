@@ -1,29 +1,28 @@
 import { Duration, milliseconds } from "glana/src/units/duration";
 import Quantity from "glana/src/units/quantity";
-import { useMemo, useRef } from "react";
+import { useRef } from "react";
 import { useFlightAnalysisDispatch, useFlightAnalysisState } from "../store";
 import { actions } from "../store/actions";
-import { FlightDatum } from "../store/reducer";
 import { absoluteFrom, relativeTo } from "../utils/time";
 import AltitudeChart from "./altitude_chart";
 import TaskTimeline from "./task_timeline";
 
 export default function Timeline() {
+  const { analysis } = useFlightAnalysisState();
+  const dispatch = useFlightAnalysisDispatch();
+  const elementRef = useRef<HTMLDivElement>(null);
+
+  if (!analysis) return null;
+
   const {
-    flightsById,
+    flightData,
+    flightDataById,
     activeTimestamp,
     followFlightId,
     flightGroup
-  } = useFlightAnalysisState();
-  const dispatch = useFlightAnalysisDispatch();
-  const elementRef = useRef<HTMLDivElement>(null);
-  const flightData = useMemo(() => {
-    return Object.values(flightsById);
-  }, [flightsById]);
+  } = analysis;
 
-  if (flightData.length < 1 || !followFlightId) return null;
-
-  const followFlight = flightsById[followFlightId];
+  const followFlight = flightDataById[followFlightId];
   const timelineStartAt = flightGroup!.earliestDatumAt;
   const timelineFinishAt = flightGroup!.latestDatumAt;
   const setTimestampFromHoverCoordinate = (clientX: number) => {
@@ -81,16 +80,6 @@ export default function Timeline() {
       ></div>
     </div>
   );
-}
-
-function computeTimelineStartAt(flightData: FlightDatum[]) {
-  return flightData.map(d => d.flight.getRecordingStartedAt()).sort()[0];
-}
-
-function computeTimelineFinishAt(flightData: FlightDatum[]) {
-  return flightData.map(d => d.flight.getRecordingStoppedAt()).sort()[
-    flightData.length - 1
-  ];
 }
 
 function openInNewTab() {

@@ -4,8 +4,8 @@ import { Datum } from "glana/src/flight_computer/computer";
 import SavedFlight from "glana/src/saved_flight";
 import React from "react";
 import { useMemo } from "react";
-import { splitWhen } from "../../utils/arrays";
-import { FlightDatum } from "../store/reducer";
+import { splitWhen } from "../../../utils/arrays";
+import { FlightDatum } from "../../store/reducer";
 
 const MAX_POINTS = 500;
 

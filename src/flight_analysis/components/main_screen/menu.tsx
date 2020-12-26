@@ -1,6 +1,6 @@
 import React from "react";
-import Icon from "../../ui/components/icon";
-import { IconKey } from "../../ui/components/icon";
+import Icon from "../../../ui/components/icon";
+import { IconKey } from "../../../ui/components/icon";
 
 interface Props {
   isStatsOpen: boolean;

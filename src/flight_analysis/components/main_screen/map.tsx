@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import MapRenderer from "../../maps/map";
+import MapRenderer from "../../../maps/map";
 
 interface Props {}
 

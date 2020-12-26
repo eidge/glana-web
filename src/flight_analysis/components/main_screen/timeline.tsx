@@ -1,9 +1,9 @@
 import { Duration, milliseconds } from "glana/src/units/duration";
 import Quantity from "glana/src/units/quantity";
 import { useRef, useEffect } from "react";
-import { useFlightAnalysisDispatch, useFlightAnalysisState } from "../store";
-import { actions } from "../store/actions";
-import { absoluteFrom, relativeTo } from "../utils/time";
+import { useFlightAnalysisDispatch, useFlightAnalysisState } from "../../store";
+import { actions } from "../../store/actions";
+import { absoluteFrom, relativeTo } from "../../utils/time";
 import AltitudeChart from "./altitude_chart";
 import TaskTimeline from "./task_timeline";
 

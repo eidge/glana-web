@@ -2,10 +2,11 @@ import * as icons from "./icons";
 
 export type IconKey = keyof typeof icons;
 
-type SizeOptions = "lg";
+type SizeOptions = "lg" | "sm";
 
 const iconSizeClasses: { [key in SizeOptions]: string } = {
-  lg: "w-8 h-8"
+  lg: "w-8 h-8",
+  sm: "w-5 h-5"
 };
 
 interface Props {

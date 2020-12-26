@@ -3,6 +3,7 @@ import { Duration, milliseconds } from "glana/src/units/duration";
 import Quantity from "glana/src/units/quantity";
 import analytics from "../../analytics";
 import { Settings } from "../settings";
+import { FlightDatum } from "./reducer";
 
 export enum ActionType {
   SetFlightGroup = "SET_FLIGHT_GROUP",
@@ -12,7 +13,8 @@ export enum ActionType {
   ToggleSettings = "TOGGLE_SETTINGS",
   CloseDrawer = "CLOSE_DRAWER",
   AdvanceActiveTimestamp = "ADVANCE_ACTIVE_TIMESTAMP",
-  ChangeSettings = "CHANGE_SETTINGS"
+  ChangeSettings = "CHANGE_SETTINGS",
+  SetFollowFlight = "SET_FOLLOW_FLIGHT"
 }
 
 export const actions = {
@@ -23,7 +25,8 @@ export const actions = {
   toggleStats,
   toggleSettings,
   closeDrawer,
-  changeSettings
+  changeSettings,
+  setFollowFlight
 };
 
 // Magic to produce a union type of all return values of our action functions.
@@ -95,5 +98,12 @@ function changeSettings(changes: Partial<Settings>) {
   return {
     type: ActionType.ChangeSettings as ActionType.ChangeSettings,
     changes: changes
+  };
+}
+
+function setFollowFlight(flightDatum: FlightDatum) {
+  return {
+    type: ActionType.SetFollowFlight as ActionType.SetFollowFlight,
+    flightDatum
   };
 }

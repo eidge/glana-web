@@ -27,7 +27,7 @@ export default function Menu(props: Props) {
         onClick={toggleStats}
         isActive={isStatsOpen}
         icon="chartLine"
-        text="stats"
+        text="flights"
         label="open stats page"
       />
       <MenuItem

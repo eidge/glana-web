@@ -163,6 +163,13 @@ export function reducer(state: State, action: Action): State {
       }
 
       return newState;
+    case ActionType.SetFollowFlight:
+      if (!state.analysis) return state;
+
+      return {
+        ...state,
+        analysis: { ...state.analysis, followFlightId: action.flightDatum.id }
+      };
   }
 }
 

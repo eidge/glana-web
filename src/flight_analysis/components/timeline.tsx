@@ -1,6 +1,6 @@
 import { Duration, milliseconds } from "glana/src/units/duration";
 import Quantity from "glana/src/units/quantity";
-import { useRef } from "react";
+import { useRef, useEffect } from "react";
 import { useFlightAnalysisDispatch, useFlightAnalysisState } from "../store";
 import { actions } from "../store/actions";
 import { absoluteFrom, relativeTo } from "../utils/time";
@@ -11,6 +11,7 @@ export default function Timeline() {
   const { analysis } = useFlightAnalysisState();
   const dispatch = useFlightAnalysisDispatch();
   const elementRef = useRef<HTMLDivElement>(null);
+  usePreventDragScroll(elementRef);
 
   if (!analysis) return null;
 
@@ -80,6 +81,23 @@ export default function Timeline() {
       ></div>
     </div>
   );
+}
+
+function usePreventDragScroll(elementRef: React.RefObject<HTMLElement>) {
+  useEffect(() => {
+    const elm = elementRef.current;
+    if (!elm) return;
+
+    const preventDefault = (event: any) => {
+      event.preventDefault();
+    };
+
+    elm.addEventListener("touchmove", preventDefault, {
+      passive: false
+    });
+
+    return () => elm.removeEventListener("touchmove", preventDefault);
+  }, [elementRef]);
 }
 
 function openInNewTab() {

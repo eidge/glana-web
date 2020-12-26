@@ -10,6 +10,9 @@ export function usePreventWindowScroll() {
 
 function preventScroll(event: Event) {
   event.preventDefault();
+  setTimeout(() => {
+    window.scrollTo(0, 0);
+  }, 100);
   window.scrollTo(0, 0);
 }
 

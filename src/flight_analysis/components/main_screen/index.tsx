@@ -6,9 +6,15 @@ import Map from "./map";
 import AnimationTicker from "../../animation_ticker";
 import { useFlightAnalysisDispatch, useFlightAnalysisState } from "../../store";
 import { actions } from "../../store/actions";
+import FlightLabel from "../../../ui/components/flight_label";
 
 export default function MainScreen() {
-  const { sideDrawer, isPlaying, settings } = useFlightAnalysisState();
+  const {
+    sideDrawer,
+    isPlaying,
+    settings,
+    analysis
+  } = useFlightAnalysisState();
   const dispatch = useFlightAnalysisDispatch();
   const toggleFlights = () => {
     dispatch(actions.toggleFlights());
@@ -45,6 +51,12 @@ export default function MainScreen() {
         <div className="absolute w-full" style={{ bottom: "100%" }}>
           <Timeline />
         </div>
+        {analysis &&
+          analysis.flightData.map(fd => (
+            <div className="bg-gray-700 border-t border-gray-800 text-white py-2 leading-none flex flex-row justify-center">
+              <FlightLabel flightDatum={fd} isActive={true} />
+            </div>
+          ))}
         <Menu
           isFlightsOpen={sideDrawer.view === "flights"}
           isPlaying={isPlaying}

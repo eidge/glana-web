@@ -80,7 +80,7 @@ function drawerClasses(isOpen: boolean) {
 
 function drawerHeaderClasses() {
   return [
-    "flex flex-row sticky top-0 items-center",
+    "flex flex-row sticky top-0 items-center z-10",
     `shadow-lg border-b ${innerDrawerBorderColor} ${drawerBackgroundColor}`,
     "py-3",
     drawerPaddingX

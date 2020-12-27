@@ -1,25 +1,33 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import analytics from "../../../analytics";
 import SummaryTab from "./summary_tab";
 import PhasesTab from "./phases_tab";
 import { useFlightAnalysisDispatch, useFlightAnalysisState } from "../../store";
 import { actions } from "../../store/actions";
 import { FlightDatum } from "../../store/reducer";
+import { units } from "../../settings";
 
 type Tab = "Summary" | "Phases" | "More";
 
 export default function FlightsScreen() {
-  const { analysis } = useFlightAnalysisState();
+  const { analysis, settings } = useFlightAnalysisState();
   const dispatch = useFlightAnalysisDispatch();
   const [tab, setTab] = useState<Tab>("Summary");
-  const selectFlight = (fd: FlightDatum) => {
-    dispatch(actions.setFollowFlight(fd));
-  };
+  const selectFlight = useCallback(
+    (fd: FlightDatum) => {
+      dispatch(actions.setFollowFlight(fd));
+    },
+    [dispatch]
+  );
+  const setActiveTimestamp = useCallback(
+    (ts: Date) => dispatch(actions.setActiveTimestamp(ts)),
+    [dispatch]
+  );
   useEffect(() => analytics.trackEvent("viewed_stats"), []);
 
   if (!analysis) return null;
 
-  const { flightData, followFlightId } = analysis;
+  const { flightData, flightDataById, followFlightId } = analysis;
 
   return (
     <>
@@ -52,7 +60,16 @@ export default function FlightsScreen() {
             onSelectFlight={selectFlight}
           />
         )}
-        {tab === "Phases" && <PhasesTab />}
+        {tab === "Phases" && (
+          <PhasesTab
+            flightData={flightData}
+            flightDataById={flightDataById}
+            followFlightId={followFlightId}
+            onSelectFlight={selectFlight}
+            unitSettings={units[settings.units]}
+            setActiveTimestamp={setActiveTimestamp}
+          />
+        )}
       </div>
     </>
   );

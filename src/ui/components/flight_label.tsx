@@ -12,7 +12,7 @@ const labelText = (flight: SavedFlight) => {
 
 const containerClasses = () => {
   const textSize = "text-base";
-  return `inline-flex flex-row items-center font-semibold leading-none whitespace-nowrap ${textSize}`;
+  return `inline-flex flex-row items-center text-base font-semibold leading-none whitespace-nowrap ${textSize}`;
 };
 
 export default function FlightLabel(props: Props) {

@@ -53,7 +53,7 @@ function FlightSummary(props: FlightSummaryProps) {
         {pilotName && <span className="ml-3">{pilotName}</span>}
       </div>
       <div className="pl-4 pt-3 leading-none flex flex-row items-center">
-        <Icon icon="calendar" size="sm" />
+        <Icon icon="calendar" size="md" />
         <span className="ml-2 mr-4">
           {(
             flightDatum.flight.getTakeoffAt(true) ||
@@ -63,7 +63,7 @@ function FlightSummary(props: FlightSummaryProps) {
       </div>
 
       <div className="pl-4 pt-3 leading-none flex flex-row items-center">
-        <Icon icon="clock" size="sm" />
+        <Icon icon="clock" size="md" />
         <span className="ml-2">
           {flightDatum.flight.getTakeoffAt(true)?.toLocaleTimeString()} -{" "}
           {flightDatum.flight.getLandedAt(true)?.toLocaleTimeString()} (
@@ -73,7 +73,7 @@ function FlightSummary(props: FlightSummaryProps) {
 
       {task && (
         <div className="pl-4 pt-3 leading-none flex flex-row items-center">
-          <Icon icon="map" size="sm" />
+          <Icon icon="map" size="md" />
           <span className="ml-2">{taskValue(task)}</span>
         </div>
       )}

@@ -55,7 +55,7 @@ export const units: { [key in UnitOption]: UnitSettings } = {
 
 export function defaultSettings(): Settings {
   return {
-    synchronizationMethod: synchronizationMethods.recordingStarted,
+    synchronizationMethod: synchronizationMethods.realTime,
     renderFullTracks: false,
     followFlight: true,
     playbackSpeed: 250,

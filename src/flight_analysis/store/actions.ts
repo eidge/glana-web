@@ -14,7 +14,8 @@ export enum ActionType {
   CloseDrawer = "CLOSE_DRAWER",
   AdvanceActiveTimestamp = "ADVANCE_ACTIVE_TIMESTAMP",
   ChangeSettings = "CHANGE_SETTINGS",
-  SetFollowFlight = "SET_FOLLOW_FLIGHT"
+  SetFollowFlight = "SET_FOLLOW_FLIGHT",
+  SetDebug = "SET_DEBUG"
 }
 
 export const actions = {
@@ -26,7 +27,8 @@ export const actions = {
   toggleSettings,
   closeDrawer,
   changeSettings,
-  setFollowFlight
+  setFollowFlight,
+  setDebug
 };
 
 // Magic to produce a union type of all return values of our action functions.
@@ -105,5 +107,12 @@ function setFollowFlight(flightDatum: FlightDatum) {
   return {
     type: ActionType.SetFollowFlight as ActionType.SetFollowFlight,
     flightDatum
+  };
+}
+
+function setDebug(isDebug: boolean) {
+  return {
+    type: ActionType.SetDebug as ActionType.SetDebug,
+    isDebug
   };
 }

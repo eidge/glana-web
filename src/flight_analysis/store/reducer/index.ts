@@ -30,6 +30,7 @@ export interface State {
   settings: Settings;
   isLoading: boolean;
   isPlaying: boolean;
+  isDebug: boolean;
 }
 
 export function initialState(): State {
@@ -40,7 +41,8 @@ export function initialState(): State {
     sideDrawer: {
       view: null
     },
-    settings: defaultSettings()
+    settings: defaultSettings(),
+    isDebug: false
   };
 }
 
@@ -169,6 +171,12 @@ export function reducer(state: State, action: Action): State {
       return {
         ...state,
         analysis: { ...state.analysis, followFlightId: action.flightDatum.id }
+      };
+
+    case ActionType.SetDebug:
+      return {
+        ...state,
+        isDebug: action.isDebug
       };
   }
 }

@@ -18,6 +18,12 @@ export function StoreProvider(props: ProviderProps) {
     if (flightGroup) {
       dispatch(actions.setFlightGroup(flightGroup));
     }
+    if (typeof window !== "undefined") {
+      //@ts-ignore
+      window.glana = {
+        setDebug: (isDebug: boolean) => dispatch(actions.setDebug(isDebug))
+      };
+    }
   }, [flightGroup]);
   return (
     <DispatchContent.Provider value={dispatch}>

@@ -15,7 +15,8 @@ export default function MainScreen() {
     sideDrawer,
     isPlaying,
     settings,
-    analysis
+    analysis,
+    isDebug
   } = useFlightAnalysisState();
   const dispatch = useFlightAnalysisDispatch();
 
@@ -38,7 +39,7 @@ export default function MainScreen() {
 
   return (
     <div className="flex flex-col relative w-full h-full">
-      <Map></Map>
+      <Map isDebug={isDebug} showAirspace={settings.showAirspace} />
       <div className="relative">
         <div className="absolute w-full" style={{ bottom: "100%" }}>
           <Timeline />

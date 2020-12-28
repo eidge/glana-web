@@ -9,6 +9,7 @@ import { Action, actions } from "../../store/actions";
 import { Settings, units } from "../../settings";
 import { FlightDatum } from "../../store/reducer";
 import TimelineDetails from "./timeline_details";
+import analytics from "../../../analytics";
 
 export default function MainScreen() {
   const {
@@ -29,6 +30,7 @@ export default function MainScreen() {
     dispatch(actions.togglePlay());
   };
   const toggleSettings = () => {
+    if (!isPlaying) analytics.trackEvent("play_flight");
     dispatch(actions.toggleSettings());
   };
   const setFollowFlight = (fd: FlightDatum) => {

@@ -2,6 +2,8 @@ import { synchronizationMethods } from "glana/src/analysis/flight_group";
 import { Settings, UnitOption } from "../settings";
 import { actions } from "../store/actions";
 import { useFlightAnalysisDispatch, useFlightAnalysisState } from "../store";
+import { useEffect } from "react";
+import analytics from "../../analytics";
 
 export default function SettingsScreen() {
   const { settings } = useFlightAnalysisState();
@@ -9,6 +11,8 @@ export default function SettingsScreen() {
   const onChange = (changes: Partial<Settings>) => {
     dispatch(actions.changeSettings(changes));
   };
+
+  useEffect(() => analytics.trackEvent("settings_opened"), []);
 
   return (
     <div>

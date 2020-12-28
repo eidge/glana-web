@@ -24,6 +24,7 @@ export default function TimelineDetails(props: Props) {
     <div className="flex flex-row flex-wrap w-full justify-around bg-gray-700">
       {flightData.map(fd => (
         <TimelineDetail
+          key={fd.id}
           flightDatum={fd}
           timestamp={timestamp}
           isActive={fd.id === followFlightId}

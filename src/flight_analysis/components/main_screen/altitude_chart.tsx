@@ -11,12 +11,19 @@ const MAX_POINTS = 500;
 
 interface Props {
   flightData: FlightDatum[];
+  followFlightId: string;
 }
 
 function AltitudeChart(props: Props) {
-  const { flightData } = props;
-  const chartData = useMemo(() => buildChartData(flightData), [flightData]);
-  const colors = flightData.map(d => d.color);
+  const { flightData, followFlightId } = props;
+  const sortedData = useMemo(
+    () => followedFlightLast(flightData, followFlightId),
+    [flightData, followFlightId]
+  );
+  const chartData = useMemo(() => buildChartData(sortedData), [sortedData]);
+  const colors = sortedData.map(d =>
+    d.id === followFlightId ? d.color : `${d.color}77`
+  );
 
   return (
     <Line
@@ -36,6 +43,10 @@ function AltitudeChart(props: Props) {
 }
 
 export default React.memo(AltitudeChart);
+
+function followedFlightLast(flightData: FlightDatum[], followFlightId: string) {
+  return flightData.slice().sort((a, _b) => (a.id === followFlightId ? 1 : -1));
+}
 
 function buildChartData(flightData: FlightDatum[]) {
   return flightData.flatMap(flightDatum => chartData(flightDatum));

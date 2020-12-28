@@ -54,7 +54,10 @@ export default function Timeline() {
       onClick={openInNewTab}
     >
       <div className="h-24">
-        <AltitudeChart flightData={flightData} />
+        <AltitudeChart
+          flightData={flightData}
+          followFlightId={followFlightId}
+        />
       </div>
       <div>
         {flightData.map(datum => (

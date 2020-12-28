@@ -12,7 +12,7 @@ interface Props {
 
 const animationDuration = 200;
 const animationDurationClass = "duration-200";
-const drawerSizes = `w-full h-full sm:w-1/2 md:max-w-screen-sm`;
+const drawerSizes = `w-full h-full sm:w-1/2 md:max-w-screen-sm flex-shrink-0`;
 const drawerPaddingX = "px-6";
 const drawerBackgroundColor = "bg-gray-900";
 const innerDrawerBorderColor = "border-gray-600";

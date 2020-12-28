@@ -5,6 +5,8 @@ import { durationToHuman } from "../../../utils/human";
 import Task from "glana/src/flight_computer/tasks/task";
 import { kilometers } from "glana/src/units/length";
 import { kilometersPerHour } from "glana/src/units/speed";
+import { useEffect } from "react";
+import analytics from "../../../analytics";
 
 interface Props {
   flightData: FlightDatum[];
@@ -14,6 +16,7 @@ interface Props {
 
 export default function SummaryTab(props: Props) {
   const { flightData, followFlightId, onSelectFlight } = props;
+  useEffect(() => analytics.trackEvent("viewed_stats_summary"), []);
 
   return (
     <div className="space-y-3">

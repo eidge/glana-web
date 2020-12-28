@@ -48,7 +48,7 @@ export default function Menu(props: Props) {
   );
 }
 
-interface ButtonProps {
+interface MenuItemProps {
   icon: IconKey;
   text: string;
   label: string;
@@ -56,7 +56,7 @@ interface ButtonProps {
   onClick: () => void;
 }
 
-function MenuItem(props: ButtonProps) {
+function MenuItem(props: MenuItemProps) {
   const { icon, text, onClick, label } = props;
 
   return (
@@ -73,8 +73,9 @@ function MenuItem(props: ButtonProps) {
   );
 }
 
-function menuItemClasses(props: ButtonProps) {
+function menuItemClasses(props: MenuItemProps) {
   const classes = [
+    "transition ease-in-out duration-200",
     "flex flex-col items-center justify-center w-20 p-2",
     "text-gray-400 leading-none focus:outline-none hover:bg-gray-900"
   ];
@@ -86,7 +87,7 @@ function menuItemClasses(props: ButtonProps) {
   return classes.join(" ");
 }
 
-function menuItemTextClasses(props: ButtonProps) {
+function menuItemTextClasses(props: MenuItemProps) {
   const classes = ["text-xs text-gray-400 pt-1"];
   if (props.isActive) {
     classes.push("text-primary");

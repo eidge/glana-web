@@ -82,11 +82,6 @@ const synchronizationOptions = [
     stringValue: "realTime"
   },
   {
-    label: "Recording started",
-    value: synchronizationMethods.recordingStarted,
-    stringValue: "recordingStarted"
-  },
-  {
     label: "Takeoff time",
     value: synchronizationMethods.takeOff,
     stringValue: "takeoffTime"

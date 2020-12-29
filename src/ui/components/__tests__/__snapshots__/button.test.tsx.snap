@@ -2,7 +2,8 @@
 
 exports[`Button renders icon and text 1`] = `
 <button
-  class="jsx-943652769 gl-button inline-flex items-center justify-center leading-none p-2 focus:outline-none rounded shadow hover:shadow-inner text-white hover:bg-white hover:bg-opacity-10 "
+  class="gl-button inline-flex items-center justify-center cursor-pointer select-none leading-none p-2 focus:outline-none rounded shadow hover:shadow-inner text-white hover:bg-white hover:bg-opacity-10 "
+  style="font-size: 0px;"
   type="button"
 >
   <i
@@ -30,7 +31,7 @@ exports[`Button renders icon and text 1`] = `
     </svg>
   </i>
   <span
-    class="jsx-943652769 leading-none text-2xl pl-2"
+    class="leading-none text-2xl pl-2"
   >
     click me
   </span>
@@ -39,11 +40,12 @@ exports[`Button renders icon and text 1`] = `
 
 exports[`Button renders solo text 1`] = `
 <button
-  class="jsx-943652769 gl-button inline-flex items-center justify-center leading-none p-2 focus:outline-none rounded shadow hover:shadow-inner text-white hover:bg-white hover:bg-opacity-10 "
+  class="gl-button inline-flex items-center justify-center cursor-pointer select-none leading-none p-2 focus:outline-none rounded shadow hover:shadow-inner text-white hover:bg-white hover:bg-opacity-10 "
+  style="font-size: 0px;"
   type="button"
 >
   <span
-    class="jsx-943652769 leading-none text-2xl"
+    class="leading-none text-2xl"
   >
     click me
   </span>

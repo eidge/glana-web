@@ -52,16 +52,15 @@ export function ButtonStyle(p: Props & { element: string; attributes?: {} }) {
 
   return React.createElement(
     p.element,
-    { className: buttonContainerClasses(props), ...p.attributes },
+    {
+      className: buttonContainerClasses(props),
+      ...p.attributes,
+      style: { fontSize: 0 }
+    },
     <>
       {children}
       {icon && <Icon icon={icon} size={size} />}
       {text && <span className={buttonTextClasses(props)}>{text}</span>}
-      <style jsx>{`
-        .gl-button {
-          font-size: 0;
-        }
-      `}</style>
     </>
   );
 }

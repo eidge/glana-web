@@ -27,7 +27,9 @@ export default function FullScreenWithDrawer(props: Props) {
   return (
     <div className={containerClasses()} style={{ height }}>
       <div className={mainClasses()}>{props.main}</div>
-      {shouldPushMainLeft && <div className={drawerSizes}></div>}
+      {shouldPushMainLeft && (
+        <div className={`hidden sm:block ${drawerSizes}`}></div>
+      )}
       <div className={drawerClasses(isDrawerOpen)} style={{ height }}>
         <div className={drawerHeaderClasses()}>
           <CloseButton {...props} />

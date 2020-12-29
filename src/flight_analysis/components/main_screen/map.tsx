@@ -3,7 +3,7 @@ import MapRenderer from "../../maps/map_renderer";
 import FlightRenderer from "../../maps/flight_renderer";
 import { AnalysisState } from "../../store/reducer";
 import TaskRenderer from "../../maps/task_renderer";
-import { createEmpty } from "ol/extent";
+import { createEmpty, Extent } from "ol/extent";
 import Timeline from "./timeline";
 
 const PADDING = {
@@ -68,6 +68,7 @@ function useFlightRenderers(
   analysis: AnalysisState | null,
   renderFullTrack: boolean
 ) {
+  const [extents, setExtents] = useState<Extent[]>([]);
   const [flightRenderers, setFlightRenderers] = useState<FlightRenderer[]>([]);
   const flightData = analysis?.flightData;
   const activeTimestamp = analysis?.activeTimestamp;
@@ -89,10 +90,10 @@ function useFlightRenderers(
     const taskRenderer = task && new TaskRenderer(mapRenderer, task);
     taskRenderer?.render();
 
-    mapRenderer.zoomToFit(
+    setExtents([
       ...flightRenderers.map(r => r.getExtent()),
       taskRenderer?.getExtent() || createEmpty()
-    );
+    ]);
 
     return () => {
       flightRenderers.forEach(fr => fr.destroy());
@@ -112,10 +113,15 @@ function useFlightRenderers(
 
   useEffect(() => {
     if (flightRenderers.length === 0) return;
+
     flightRenderers.forEach(fr =>
       fr.setRenderFullTrack(isSummary || renderFullTrack)
     );
-  }, [flightRenderers, renderFullTrack, isSummary]);
+
+    if (mapRenderer && isSummary) {
+      setTimeout(() => mapRenderer.zoomToFit(...extents), 500);
+    }
+  }, [mapRenderer, flightRenderers, renderFullTrack, isSummary, extents]);
 }
 
 function UseableClientRectDebug(props: {

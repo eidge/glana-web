@@ -15,9 +15,8 @@ export default function UploadScreen() {
     setIsLoading(true);
     const flightGroup = await handleFileInput(event);
     if (flightGroup) {
+      dispatch(actions.closeDrawer());
       dispatch(actions.setFlightGroup(flightGroup));
-      // Let drawer animation finish
-      setTimeout(() => dispatch(actions.closeDrawer()), 500);
     }
   };
 
@@ -53,7 +52,7 @@ export default function UploadScreen() {
           className="border border-white rounded mb-3 flex flex-col hover:border-primary overflow-hidden"
           href="/?igcUrl=%2Fdun1.igc,%2Fdun2.igc,%2Fdun3.igc"
         >
-          <Image src="/sa_thumb.png" width={120} height={120} />
+          <Image src="/dun_thumbnail.png" width={120} height={120} />
           <div className="py-2 bg-gray-800 font-bold text-gray-100 text-center">
             Multiple flights
             <br />
@@ -65,7 +64,7 @@ export default function UploadScreen() {
           className="border border-white rounded mb-3 flex flex-col hover:border-primary overflow-hidden"
           href="/?igcUrl=%2Fsa750.igc"
         >
-          <Image src="/dun_thumb.png" width={120} height={120} />
+          <Image src="/sa_thumbnail.png" width={120} height={120} />
           <div className="py-2 bg-gray-800 font-bold text-gray-100 text-center">
             750 km
             <br />

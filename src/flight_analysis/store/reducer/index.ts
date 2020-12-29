@@ -159,7 +159,6 @@ export function reducer(state: State, action: Action): State {
         isLoading: false
       };
     case ActionType.CloseDrawer:
-      console.log("here");
       return {
         ...state,
         sideDrawer: null

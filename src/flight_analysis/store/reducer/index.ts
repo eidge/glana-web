@@ -16,6 +16,7 @@ export type FlightDatum = {
 export type FlightDataById = { [key: string]: FlightDatum };
 
 export interface AnalysisState {
+  isSummary: boolean;
   task: Task | null;
   flightGroup: FlightGroup;
   flightDataById: FlightDataById;
@@ -75,7 +76,11 @@ export function reducer(state: State, action: Action): State {
 
       return {
         ...state,
-        analysis: { ...state.analysis, activeTimestamp: action.timestamp }
+        analysis: {
+          ...state.analysis,
+          activeTimestamp: action.timestamp,
+          isSummary: false
+        }
       };
     case ActionType.AdvanceActiveTimestamp:
       if (!state.analysis) return state;
@@ -168,7 +173,8 @@ export function reducer(state: State, action: Action): State {
           state.analysis.task,
           {
             followFlightId: state.analysis.followFlightId,
-            activeTimestamp: state.analysis.activeTimestamp
+            activeTimestamp: state.analysis.activeTimestamp,
+            isSummary: state.analysis.isSummary
           }
         );
       }
@@ -220,6 +226,7 @@ function buildAnalysisState(
     flightDataById,
     followFlightId: flightGroup.flights[0].id,
     activeTimestamp: flightGroup.earliestDatumAt,
+    isSummary: true,
     ...overrides
   };
 }

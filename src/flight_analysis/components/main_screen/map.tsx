@@ -71,6 +71,7 @@ function useFlightRenderers(
   const followFlightId = analysis?.followFlightId || null;
   const followFlight =
     followFlightId && analysis!.flightDataById[followFlightId];
+  const isSummary = analysis?.isSummary || false;
 
   useEffect(() => {
     if (!mapRenderer || !flightData) return;
@@ -107,8 +108,10 @@ function useFlightRenderers(
 
   useEffect(() => {
     if (flightRenderers.length === 0) return;
-    flightRenderers.forEach(fr => fr.setRenderFullTrack(renderFullTrack));
-  }, [flightRenderers, renderFullTrack]);
+    flightRenderers.forEach(fr =>
+      fr.setRenderFullTrack(isSummary || renderFullTrack)
+    );
+  }, [flightRenderers, renderFullTrack, isSummary]);
 }
 
 function UseableClientRectDebug(props: {

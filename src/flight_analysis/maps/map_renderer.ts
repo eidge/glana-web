@@ -4,7 +4,7 @@ import View from "ol/View";
 import TileLayer from "ol/layer/Tile";
 import TileImage from "ol/source/XYZ";
 import OSM from "ol/source/OSM";
-import { positionToOlPoint } from "./utils";
+import { extentUnion, positionToOlPoint } from "./utils";
 import Position from "glana/src/flight_computer/position";
 import { Coordinate } from "ol/coordinate";
 import { Extent } from "ol/extent";
@@ -90,8 +90,11 @@ export default class MapRenderer {
     });
   }
 
-  zoomToFit(extent: Extent) {
+  zoomToFit(...extents: Extent[]) {
+    const extent = extentUnion(...extents);
+
     if (extent[0] === Infinity) return;
+
     this.olMap.getView().fit(extent, {
       padding: [
         this.padding.top + 5,
@@ -146,7 +149,7 @@ export default class MapRenderer {
           "https://{1-2}.tile.maps.openaip.net/geowebcache/service/tms/1.0.0/openaip_basemap@EPSG%3A900913@png/{z}/{x}/{-y}.png",
         projection: "EPSG:900913"
       }),
-      opacity: 0.5,
+      opacity: 0.4,
       minZoom: 8,
       maxZoom: 14
     });

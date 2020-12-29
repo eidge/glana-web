@@ -8,7 +8,7 @@ import AltitudeChart from "./altitude_chart";
 import TaskTimeline from "./task_timeline";
 
 export default function Timeline() {
-  const { analysis } = useFlightAnalysisState();
+  const { analysis, isPlaying } = useFlightAnalysisState();
   const dispatch = useFlightAnalysisDispatch();
   const elementRef = useRef<HTMLDivElement>(null);
   usePreventDragScroll(elementRef);
@@ -38,21 +38,23 @@ export default function Timeline() {
     dispatch(actions.setActiveTimestamp(timestampAtEvent));
   };
 
+  const onClick = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+    setTimestampFromHoverCoordinate(event.clientX);
+  };
+
   const onMouseMove = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+    if (isPlaying) return;
     setTimestampFromHoverCoordinate(event.clientX);
   };
 
   const onTouchMove = (event: React.TouchEvent<HTMLDivElement>) => {
+    if (isPlaying) return;
     const lastTouch = event.touches[event.touches.length - 1];
     setTimestampFromHoverCoordinate(lastTouch.clientX);
   };
 
   return (
-    <div
-      ref={elementRef}
-      className="w-full cursor-crosshair relative"
-      onClick={openInNewTab}
-    >
+    <div ref={elementRef} className="w-full cursor-crosshair relative">
       <div className="h-24">
         <AltitudeChart
           flightData={flightData}
@@ -79,6 +81,7 @@ export default function Timeline() {
 
       <div
         className="w-full h-full absolute left-0 bottom-0"
+        onClick={onClick}
         onMouseMove={onMouseMove}
         onTouchMove={onTouchMove}
       ></div>
@@ -101,12 +104,6 @@ function usePreventDragScroll(elementRef: React.RefObject<HTMLElement>) {
 
     return () => elm.removeEventListener("touchmove", preventDefault);
   }, [elementRef]);
-}
-
-function openInNewTab() {
-  window.open(
-    "http://192.168.1.105:3000/?igcUrl=%2Fdun1.igc,%2Fdun2.igc,%2Fdun3.igc"
-  );
 }
 
 function TimelineMarker(props: {

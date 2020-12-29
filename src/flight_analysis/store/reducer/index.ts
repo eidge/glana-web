@@ -1,4 +1,5 @@
 import FlightGroup from "glana/src/analysis/flight_group";
+import Task from "glana/src/flight_computer/tasks/task";
 import SavedFlight from "glana/src/saved_flight";
 import { Colors } from "../../colors";
 import { defaultSettings, flightComputer, Settings } from "../../settings";
@@ -15,6 +16,7 @@ export type FlightDatum = {
 export type FlightDataById = { [key: string]: FlightDatum };
 
 export interface AnalysisState {
+  task: Task | null;
   flightGroup: FlightGroup;
   flightDataById: FlightDataById;
   flightData: FlightDatum[];
@@ -54,7 +56,13 @@ export function reducer(state: State, action: Action): State {
   switch (action.type) {
     case ActionType.SetFlightGroup:
       const { flightGroup } = action;
-      const analysis = buildAnalysisState(state, flightGroup);
+      const task = flightGroup.flights.map(f => f.task).find(t => !!t) || null;
+
+      if (task) {
+        flightGroup.flights.forEach(f => (f.task = new Task(task.turnpoints)));
+      }
+
+      const analysis = buildAnalysisState(state, flightGroup, task);
 
       return {
         ...state,
@@ -157,6 +165,7 @@ export function reducer(state: State, action: Action): State {
         newState.analysis = buildAnalysisState(
           newState,
           state.analysis.flightGroup,
+          state.analysis.task,
           {
             followFlightId: state.analysis.followFlightId,
             activeTimestamp: state.analysis.activeTimestamp
@@ -184,6 +193,7 @@ export function reducer(state: State, action: Action): State {
 function buildAnalysisState(
   state: State,
   flightGroup: FlightGroup,
+  task: Task | null,
   overrides: Partial<AnalysisState> = {}
 ) {
   const colors = new Colors();
@@ -204,6 +214,7 @@ function buildAnalysisState(
   flightGroup = Object.create(flightGroup);
 
   return {
+    task,
     flightGroup,
     flightData,
     flightDataById,

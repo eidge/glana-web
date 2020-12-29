@@ -41,7 +41,12 @@ export default function MainScreen() {
 
   return (
     <div className="flex flex-col relative w-full h-full">
-      <Map isDebug={isDebug} showAirspace={settings.showAirspace} />
+      <Map
+        analysis={analysis}
+        showAirspace={settings.showAirspace}
+        renderFullTrack={settings.renderFullTracks}
+        isDebug={isDebug}
+      />
       <div className="relative">
         <div className="absolute w-full" style={{ bottom: "100%" }}>
           <Timeline />

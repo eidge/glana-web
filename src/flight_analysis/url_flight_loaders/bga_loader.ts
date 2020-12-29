@@ -28,12 +28,16 @@ export default class BGALoader implements Loader {
 
   async loadFlightGroup() {
     const flightDetailsResponses = await this.loadFlightDetails();
-    const savedFlights = flightDetailsResponses.map(response =>
-      this.parseFlightDetails(response)
-    );
-    if (savedFlights.length < 1) {
-      throw new Error("No flights available");
-    }
+    const savedFlights = flightDetailsResponses
+      .map(response => {
+        try {
+          return this.parseFlightDetails(response);
+        } catch (e) {
+          return null;
+        }
+      })
+      .filter(sf => !!sf) as SavedFlight[];
+
     return new FlightGroup(savedFlights);
   }
 
@@ -56,12 +60,26 @@ export default class BGALoader implements Loader {
   }
 
   private async loadFlightDetails() {
-    let promises = this.flightURLs.map(url => fetch(url));
-    let responses = await Promise.all(promises);
-    let jsonResponses = responses
-      .filter(response => response.status === 200)
-      .map(response => response.json());
-    return Promise.all(jsonResponses);
+    let promises = this.flightURLs.map(url => this.fetchJSON(url));
+    let jsonResponses = await Promise.all(promises);
+    return jsonResponses.filter(r => !!r);
+  }
+
+  private async fetchJSON(url: string) {
+    try {
+      let response = await fetch(url);
+      if (response.ok) {
+        return response.json();
+      } else {
+        console.error(
+          `Fetching "${url}" failed with ${response.status} (${response.statusText})`
+        );
+        return null;
+      }
+    } catch (e) {
+      console.error(e);
+      return null;
+    }
   }
 
   private parseFlightDetails(json: any) {

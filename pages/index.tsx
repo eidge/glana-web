@@ -37,6 +37,9 @@ async function maybeLoadFlightsFromURL(setState: any) {
 
   if (loader) {
     const flightGroup = await loader.loadFlightGroup();
+    if (flightGroup.flights.length < 1) {
+      window.location.href = "/failed_to_load_flight";
+    }
     setState((s: State) => ({
       ...s,
       isLoading: false,

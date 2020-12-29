@@ -1,6 +1,7 @@
 import Loader from "./loader";
 import FlightGroup from "glana/src/analysis/flight_group";
 import IGCParser from "glana/src/igc/parser";
+import SavedFlight from "glana/src/saved_flight";
 
 export default class IGCLoader implements Loader {
   private urls: string[];
@@ -15,8 +16,9 @@ export default class IGCLoader implements Loader {
 
   async loadFlightGroup() {
     const igcs = await this.loadIGCs();
-    const flights = this.parseIGCs(igcs);
-    return new FlightGroup(flights);
+    const nonEmptyIgcs = igcs.filter(igc => !!igc) as string[];
+    const flights = this.parseIGCs(nonEmptyIgcs);
+    return new FlightGroup(flights.filter(f => !!f) as SavedFlight[]);
   }
 
   private parseQueryString(query: URLSearchParams) {
@@ -31,14 +33,31 @@ export default class IGCLoader implements Loader {
   }
 
   private async fetchText(url: string) {
-    let response = await fetch(url);
-    return await response.text();
+    try {
+      let response = await fetch(url);
+      if (response.ok) {
+        return await response.text();
+      } else {
+        console.error(
+          `Fetching "${url}" failed with ${response.status} (${response.statusText})`
+        );
+        return null;
+      }
+    } catch (e) {
+      console.error(e);
+      return null;
+    }
   }
 
   private parseIGCs(fileContents: string[]) {
     return fileContents.map(contents => {
-      let parser = new IGCParser();
-      return parser.parse(contents);
+      try {
+        let parser = new IGCParser();
+        return parser.parse(contents);
+      } catch (e) {
+        console.error(e);
+        return null;
+      }
     });
   }
 }

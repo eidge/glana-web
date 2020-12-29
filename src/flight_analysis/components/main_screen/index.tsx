@@ -1,7 +1,6 @@
 import { useEffect } from "react";
 import { milliseconds } from "glana/src/units/duration";
 import Menu from "./menu";
-import Timeline from "./timeline";
 import Map from "./map";
 import AnimationTicker from "../../animation_ticker";
 import { useFlightAnalysisDispatch, useFlightAnalysisState } from "../../store";
@@ -48,9 +47,6 @@ export default function MainScreen() {
         isDebug={isDebug}
       />
       <div className="relative">
-        <div className="absolute w-full" style={{ bottom: "100%" }}>
-          <Timeline />
-        </div>
         {analysis && (
           <TimelineDetails
             flightData={analysis.flightData}

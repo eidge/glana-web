@@ -4,6 +4,7 @@ import FlightRenderer from "../../maps/flight_renderer";
 import { AnalysisState } from "../../store/reducer";
 import TaskRenderer from "../../maps/task_renderer";
 import { createEmpty } from "ol/extent";
+import Timeline from "./timeline";
 
 const PADDING = {
   top: 40,
@@ -29,6 +30,9 @@ export default function Map(props: Props) {
   return (
     <div className="relative w-full h-full bg-gray-800">
       <div className="w-full h-full" ref={element}></div>
+      <div className="w-full absolute bottom-0 left-0">
+        <Timeline />
+      </div>
       <UseableClientRectDebug isDebug={isDebug} mapRenderer={mapRenderer} />
     </div>
   );

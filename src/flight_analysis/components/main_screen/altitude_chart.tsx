@@ -20,10 +20,11 @@ function AltitudeChart(props: Props) {
     () => followedFlightLast(flightData, followFlightId),
     [flightData, followFlightId]
   );
-  const chartData = useMemo(() => buildChartData(sortedData), [sortedData]);
-  const colors = sortedData.map(d =>
-    d.id === followFlightId ? d.color : `${d.color}77`
-  );
+  const chartData = useMemo(() => buildChartData(sortedData, followFlightId), [
+    sortedData,
+    followFlightId
+  ]);
+  const colors = chartData.map(d => d.color);
 
   return (
     <Line
@@ -48,18 +49,21 @@ function followedFlightLast(flightData: FlightDatum[], followFlightId: string) {
   return flightData.slice().sort((a, _b) => (a.id === followFlightId ? 1 : -1));
 }
 
-function buildChartData(flightData: FlightDatum[]) {
-  return flightData.flatMap(flightDatum => chartData(flightDatum));
+function buildChartData(flightData: FlightDatum[], followFlightId: string) {
+  return flightData.flatMap(flightDatum =>
+    chartData(flightDatum, flightDatum.id === followFlightId)
+  );
 }
 
-function chartData(flightDatum: FlightDatum) {
+function chartData(flightDatum: FlightDatum, isActive: boolean) {
   let datums = limitNumberOfPoints(flightDatum.flight, MAX_POINTS);
-  return splitFlightByEngineSegments(flightDatum, datums);
+  return splitFlightByEngineSegments(flightDatum, datums, isActive);
 }
 
 function splitFlightByEngineSegments(
   flightDatum: FlightDatum,
-  datums: Datum[]
+  datums: Datum[],
+  isActive: boolean
 ) {
   const groups = splitWhen(datums, datum => isEngineOn(datum), {
     includeLastValueInBothGroups: true
@@ -73,10 +77,12 @@ function splitFlightByEngineSegments(
       };
     });
 
+    const color = isEngineOn(group[0]) ? "#FF0000" : flightDatum.color;
+
     return {
       id: `altitude-${data[0].x}-${data[data.length - 1].x}`,
       data: data,
-      color: isEngineOn(group[0]) ? "red" : flightDatum.color
+      color: isActive ? color : `${color}66`
     };
   });
 }

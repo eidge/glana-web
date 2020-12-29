@@ -17,7 +17,10 @@ export function StoreProvider(props: ProviderProps) {
   useEffect(() => {
     if (flightGroup) {
       dispatch(actions.setFlightGroup(flightGroup));
+    } else {
+      dispatch(actions.showFlightUploader());
     }
+
     if (typeof window !== "undefined") {
       //@ts-ignore
       window.glana = {

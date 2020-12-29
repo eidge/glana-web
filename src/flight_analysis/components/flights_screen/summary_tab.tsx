@@ -1,6 +1,7 @@
 import { FlightDatum } from "../../store/reducer";
 import FlightLabel from "../../../ui/components/flight_label";
 import Icon from "../../../ui/components/icon";
+import Button from "../../../ui/components/button";
 import { durationToHuman } from "../../../utils/human";
 import Task from "glana/src/flight_computer/tasks/task";
 import { kilometers } from "glana/src/units/length";
@@ -12,10 +13,16 @@ interface Props {
   flightData: FlightDatum[];
   followFlightId: string;
   onSelectFlight: (fd: FlightDatum) => void;
+  showFlightUploader: () => void;
 }
 
 export default function SummaryTab(props: Props) {
-  const { flightData, followFlightId, onSelectFlight } = props;
+  const {
+    flightData,
+    followFlightId,
+    onSelectFlight,
+    showFlightUploader
+  } = props;
   useEffect(() => analytics.trackEvent("viewed_stats_summary"), []);
 
   return (
@@ -28,6 +35,16 @@ export default function SummaryTab(props: Props) {
           onClick={onSelectFlight}
         />
       ))}
+
+      <div className="text-center">
+        <Button
+          size="md"
+          color="white"
+          type="simple"
+          text="change flights"
+          onClick={showFlightUploader}
+        />
+      </div>
     </div>
   );
 }

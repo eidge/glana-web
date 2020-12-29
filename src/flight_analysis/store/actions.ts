@@ -11,6 +11,7 @@ export enum ActionType {
   TogglePlay = "TOGGLE_PLAY",
   ToggleFlights = "TOGGLE_FLIGHTS",
   ToggleSettings = "TOGGLE_SETTINGS",
+  ShowFlightUploader = "SHOW_FLIGHT_UPLOADER",
   CloseDrawer = "CLOSE_DRAWER",
   AdvanceActiveTimestamp = "ADVANCE_ACTIVE_TIMESTAMP",
   ChangeSettings = "CHANGE_SETTINGS",
@@ -25,6 +26,7 @@ export const actions = {
   togglePlay,
   toggleFlights,
   toggleSettings,
+  showFlightUploader,
   closeDrawer,
   changeSettings,
   setFollowFlight,
@@ -80,6 +82,12 @@ function toggleFlights() {
 function toggleSettings() {
   return {
     type: ActionType.ToggleSettings as ActionType.ToggleSettings
+  };
+}
+
+function showFlightUploader() {
+  return {
+    type: ActionType.ShowFlightUploader as ActionType.ShowFlightUploader
   };
 }
 

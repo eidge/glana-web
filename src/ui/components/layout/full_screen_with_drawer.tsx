@@ -7,7 +7,7 @@ interface Props {
   drawer: ReactNode;
   drawerHeader?: ReactNode;
   isDrawerOpen: boolean;
-  onClose: () => void;
+  onClose: (() => void) | null | false;
 }
 
 const animationDuration = 200;
@@ -31,7 +31,7 @@ export default function FullScreenWithDrawer(props: Props) {
       <div className={drawerClasses(isDrawerOpen)} style={{ height }}>
         <div className={drawerHeaderClasses()}>
           <CloseButton {...props} />
-          {drawerHeader && <div className="pl-3">{drawerHeader}</div>}
+          {drawerHeader && <div>{drawerHeader}</div>}
         </div>
         {isDrawerOpen && <div className="p-6">{props.drawer}</div>}
       </div>
@@ -88,17 +88,19 @@ function drawerHeaderClasses() {
 }
 
 function CloseButton(props: Props) {
+  if (!props.onClose) return null;
+
   return (
     <>
       <Button
-        className={`inline-block sm:hidden`}
+        className={`inline-block sm:hidden mr-3`}
         icon="chevronLeft"
         size="lg"
         color="white"
         onClick={props.onClose}
       />
       <Button
-        className={`hidden sm:inline-block`}
+        className={`hidden sm:inline-block mr-3`}
         icon="close"
         size="lg"
         color="white"

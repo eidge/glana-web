@@ -5,7 +5,12 @@ import { Colors } from "../../colors";
 import { defaultSettings, flightComputer, Settings } from "../../settings";
 import { ActionType, Action } from "../actions";
 
-export type DrawerView = "settings" | "flights" | null;
+export type DrawerView = "settings" | "flights" | "upload_flight";
+
+export type DrawerState = {
+  view: DrawerView;
+  canClose: boolean;
+};
 
 export type FlightDatum = {
   id: string;
@@ -27,9 +32,7 @@ export interface AnalysisState {
 
 export interface State {
   analysis: AnalysisState | null;
-  sideDrawer: {
-    view: DrawerView;
-  };
+  sideDrawer: DrawerState | null;
   settings: Settings;
   isLoading: boolean;
   isPlaying: boolean;
@@ -41,9 +44,7 @@ export function initialState(): State {
     analysis: null,
     isLoading: true,
     isPlaying: false,
-    sideDrawer: {
-      view: null
-    },
+    sideDrawer: null,
     settings: defaultSettings(),
     isDebug: false
   };
@@ -51,8 +52,7 @@ export function initialState(): State {
 
 export function reducer(state: State, action: Action): State {
   const { sideDrawer } = state;
-  const { view } = sideDrawer;
-  let newView: DrawerView;
+  let newSideDrawer: DrawerState | null;
 
   switch (action.type) {
     case ActionType.SetFlightGroup:
@@ -131,30 +131,38 @@ export function reducer(state: State, action: Action): State {
       }
       return { ...state, isPlaying: !state.isPlaying };
     case ActionType.ToggleFlights:
-      if (view === "flights") {
-        newView = null;
+      if (!sideDrawer || sideDrawer.view !== "flights") {
+        newSideDrawer = { view: "flights", canClose: true };
       } else {
-        newView = "flights";
+        newSideDrawer = null;
       }
       return {
         ...state,
-        sideDrawer: { ...sideDrawer, view: newView }
+        sideDrawer: newSideDrawer
       };
     case ActionType.ToggleSettings:
-      if (view === "settings") {
-        newView = null;
+      if (!sideDrawer || sideDrawer.view !== "settings") {
+        newSideDrawer = { view: "settings", canClose: true };
       } else {
-        newView = "settings";
+        newSideDrawer = null;
       }
 
       return {
         ...state,
-        sideDrawer: { ...sideDrawer, view: newView }
+        sideDrawer: newSideDrawer
       };
-    case ActionType.CloseDrawer:
+
+    case ActionType.ShowFlightUploader:
       return {
         ...state,
-        sideDrawer: { ...sideDrawer, view: null }
+        sideDrawer: { view: "upload_flight", canClose: !!state.analysis },
+        isLoading: false
+      };
+    case ActionType.CloseDrawer:
+      console.log("here");
+      return {
+        ...state,
+        sideDrawer: null
       };
     case ActionType.ChangeSettings:
       const { changes } = action;

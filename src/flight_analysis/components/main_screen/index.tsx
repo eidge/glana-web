@@ -56,14 +56,16 @@ export default function MainScreen() {
             unitSettings={unitSettings}
           />
         )}
-        <Menu
-          isFlightsOpen={sideDrawer.view === "flights"}
-          isPlaying={isPlaying}
-          isSettingsOpen={sideDrawer.view === "settings"}
-          toggleFlights={toggleFlights}
-          togglePlay={togglePlay}
-          toggleSettings={toggleSettings}
-        />
+        {analysis && (
+          <Menu
+            isFlightsOpen={!!sideDrawer && sideDrawer.view === "flights"}
+            isPlaying={isPlaying}
+            isSettingsOpen={!!sideDrawer && sideDrawer.view === "settings"}
+            toggleFlights={toggleFlights}
+            togglePlay={togglePlay}
+            toggleSettings={toggleSettings}
+          />
+        )}
       </div>
     </div>
   );

@@ -23,6 +23,11 @@ export default function FlightsScreen() {
     (ts: Date) => dispatch(actions.setActiveTimestamp(ts)),
     [dispatch]
   );
+  const showFlightUploader = useCallback(
+    () => dispatch(actions.showFlightUploader()),
+    [dispatch]
+  );
+
   useEffect(() => analytics.trackEvent("viewed_stats"), []);
 
   if (!analysis) return null;
@@ -58,6 +63,7 @@ export default function FlightsScreen() {
             flightData={flightData}
             followFlightId={followFlightId}
             onSelectFlight={selectFlight}
+            showFlightUploader={showFlightUploader}
           />
         )}
         {tab === "Phases" && (

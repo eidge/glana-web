@@ -5,6 +5,8 @@ import LoadingScreen from "./loading_screen";
 import MainScreen from "./main_screen";
 import FlightsScreen from "./flights_screen";
 import SettingsScreen from "./settings_screen";
+import UploadScreen from "./upload_screen";
+import { DrawerState } from "../store/reducer";
 
 export default function Analysis() {
   const { sideDrawer, isLoading } = useFlightAnalysisState();
@@ -14,34 +16,34 @@ export default function Analysis() {
   return (
     <FullScreenWithDrawer
       main={isLoading ? <LoadingScreen /> : <MainScreen />}
-      drawer={<Drawer />}
-      drawerHeader={<DrawerHeader />}
-      isDrawerOpen={!!sideDrawer.view}
-      onClose={closeDrawer}
+      drawer={sideDrawer && <Drawer sideDrawer={sideDrawer} />}
+      drawerHeader={sideDrawer && <DrawerHeader sideDrawer={sideDrawer} />}
+      isDrawerOpen={!!sideDrawer}
+      onClose={sideDrawer && sideDrawer.canClose && closeDrawer}
     />
   );
 }
 
-function DrawerHeader(): JSX.Element {
-  const { sideDrawer } = useFlightAnalysisState();
+function DrawerHeader(props: { sideDrawer: DrawerState }): JSX.Element {
+  const { sideDrawer } = props;
   switch (sideDrawer.view) {
     case "flights":
       return <span className="font-medium text-2xl">Flights</span>;
     case "settings":
       return <span className="font-medium text-2xl">Settings</span>;
-    case null:
-      return <></>;
+    case "upload_flight":
+      return <span className="font-medium text-2xl">Welcome to Glana</span>;
   }
 }
 
-function Drawer(): JSX.Element {
-  const { sideDrawer } = useFlightAnalysisState();
+function Drawer(props: { sideDrawer: DrawerState }): JSX.Element {
+  const { sideDrawer } = props;
   switch (sideDrawer.view) {
     case "flights":
       return <FlightsScreen />;
     case "settings":
       return <SettingsScreen />;
-    case null:
-      return <></>;
+    case "upload_flight":
+      return <UploadScreen />;
   }
 }

@@ -13,13 +13,18 @@ interface Props {
   size: SizeOptions;
   color: ColorOptions;
   type?: TypeOptions;
+  isVertical?: boolean;
   buttons: ButtonProps[];
 }
 
 export default function ButtonGroup(props: Props) {
-  const { size, color, buttons, type } = props;
+  const { size, color, buttons, type, isVertical } = props;
   return (
-    <div className="inline-block rounded overflow-hidden divide-x">
+    <div
+      className={`inline-flex rounded overflow-hidden ${
+        isVertical ? "flex-col divide-y" : "flex-row divide-x"
+      }`}
+    >
       {buttons.map((buttonProps, idx) => (
         <Button
           key={idx}

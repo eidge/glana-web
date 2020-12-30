@@ -208,14 +208,16 @@ export default class FlightRenderer {
       const isEngineOn = segment.isEngineOn;
       const line = new LineString(segment.positions);
       const feature = new Feature<LineString>({ geometry: line });
-      feature.setStyle(this.traceStyle(isEngineOn));
+      if (isEngineOn) {
+        feature.setStyle(this.engineOnStyle(isEngineOn));
+      }
       return feature;
     });
   }
 
-  private traceStyle(isEngineOn: boolean) {
+  private engineOnStyle(isEngineOn: boolean) {
     if (!isEngineOn) return;
-    const color = this.isActive ? "#FF000" : "#FF000000";
+    const color = "#FF0000";
     return [
       new Style({
         stroke: new Stroke({

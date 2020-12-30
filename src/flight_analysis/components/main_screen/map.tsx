@@ -1,10 +1,11 @@
-import { RefObject, useEffect, useRef, useState } from "react";
+import { RefObject, useCallback, useEffect, useRef, useState } from "react";
 import MapRenderer from "../../maps/map_renderer";
 import FlightRenderer from "../../maps/flight_renderer";
 import { AnalysisState } from "../../store/reducer";
 import TaskRenderer from "../../maps/task_renderer";
 import { createEmpty, Extent } from "ol/extent";
 import Timeline from "./timeline";
+import ButtonGroup from "../../../ui/components/button_group";
 
 const PADDING = {
   top: 40,
@@ -33,12 +34,28 @@ export default function Map(props: Props) {
   } = props;
   const element = useRef(null);
   const mapRenderer = useMapRenderer(element, showAirspace);
+  const zoomIn = useCallback(() => mapRenderer?.zoomIn(), [mapRenderer]);
+  const zoomToFit = useCallback(() => mapRenderer?.zoomToFit(), [mapRenderer]);
+  const zoomOut = useCallback(() => mapRenderer?.zoomOut(), [mapRenderer]);
 
   useFlightRenderers(mapRenderer, analysis, renderFullTrack);
 
   return (
     <div className="relative w-full h-full bg-gray-800">
       <div className="w-full h-full" ref={element}></div>
+      <div className="absolute hidden lg:block top-0 left-0 ml-3 mt-3">
+        <ButtonGroup
+          size="lg"
+          color="white"
+          type="full"
+          isVertical={true}
+          buttons={[
+            { icon: "zoomIn", onClick: zoomIn },
+            { icon: "search", onClick: zoomToFit },
+            { icon: "zoomOut", onClick: zoomOut }
+          ]}
+        />
+      </div>
       <div className="w-full absolute bottom-0 left-0">
         {analysis && (
           <Timeline

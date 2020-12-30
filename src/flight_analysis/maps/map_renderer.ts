@@ -7,7 +7,7 @@ import OSM from "ol/source/OSM";
 import { extentUnion, positionToOlPoint } from "./utils";
 import Position from "glana/src/flight_computer/position";
 import { Coordinate } from "ol/coordinate";
-import { Extent } from "ol/extent";
+import { createEmpty, extend, Extent } from "ol/extent";
 
 const ANIMATION_DURATION = 400;
 
@@ -91,7 +91,11 @@ export default class MapRenderer {
   }
 
   zoomToFit(...extents: Extent[]) {
-    const extent = extentUnion(...extents);
+    let extent = extentUnion(...extents);
+
+    if (extents.length < 1) {
+      extent = this.visibleExtent();
+    }
 
     if (extent[0] === Infinity) return;
 
@@ -104,6 +108,24 @@ export default class MapRenderer {
       ],
       duration: ANIMATION_DURATION
     });
+  }
+
+  private visibleExtent() {
+    return this.getLayers().reduce(
+      (extent, layer) => extend(extent, layer.getSource().getExtent()),
+      createEmpty()
+    );
+  }
+
+  private getLayers(): any[] {
+    return this.olMap
+      .getLayers()
+      .getArray()
+      .filter((layer: any) => !this.isTileLayer(layer));
+  }
+
+  private isTileLayer(layer: any) {
+    return layer instanceof TileLayer;
   }
 
   destroy() {

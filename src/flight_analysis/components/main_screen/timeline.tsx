@@ -1,6 +1,6 @@
 import { Duration, milliseconds } from "glana/src/units/duration";
 import Quantity from "glana/src/units/quantity";
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState } from "react";
 import { useFlightAnalysisDispatch, useFlightAnalysisState } from "../../store";
 import { actions } from "../../store/actions";
 import { absoluteFrom, relativeTo } from "../../utils/time";
@@ -11,6 +11,7 @@ export default function Timeline() {
   const { analysis, isPlaying } = useFlightAnalysisState();
   const dispatch = useFlightAnalysisDispatch();
   const elementRef = useRef<HTMLDivElement>(null);
+  const width = useComponentWidth(elementRef.current);
   usePreventDragScroll(elementRef);
 
   if (!analysis) return null;
@@ -73,6 +74,7 @@ export default function Timeline() {
       </div>
 
       <TimelineMarker
+        timelineWidth={width}
         timelineStartAt={timelineStartAt}
         timelineFinishAt={timelineFinishAt}
         activeTimestamp={activeTimestamp}
@@ -87,6 +89,23 @@ export default function Timeline() {
       ></div>
     </div>
   );
+}
+
+function useComponentWidth(domElement: HTMLElement | null) {
+  const [width, setWidth] = useState(0);
+
+  useEffect(() => {
+    if (!domElement) return;
+
+    const resizeObserver = new ResizeObserver(() => {
+      setWidth(domElement.clientWidth);
+    });
+    resizeObserver.observe(domElement);
+
+    return () => resizeObserver.unobserve(domElement);
+  }, [domElement, setWidth]);
+
+  return width;
 }
 
 function usePreventDragScroll(elementRef: React.RefObject<HTMLElement>) {
@@ -107,25 +126,39 @@ function usePreventDragScroll(elementRef: React.RefObject<HTMLElement>) {
 }
 
 function TimelineMarker(props: {
+  timelineWidth: number;
   timelineStartAt: Date;
   timelineFinishAt: Date;
   activeTimestamp: Date | null;
   offset: Quantity<Duration>;
 }) {
-  const { timelineStartAt, timelineFinishAt, activeTimestamp, offset } = props;
+  const {
+    timelineWidth,
+    timelineStartAt,
+    timelineFinishAt,
+    activeTimestamp,
+    offset
+  } = props;
 
   if (!activeTimestamp) return null;
 
-  const relativeLeftPosition =
-    relativeTo(timelineStartAt, timelineFinishAt, activeTimestamp) * 100;
+  const relativeLeftPosition = relativeTo(
+    timelineStartAt,
+    timelineFinishAt,
+    activeTimestamp
+  );
+  const absoluteLeftPosition = relativeLeftPosition * timelineWidth;
   const detailsStyle =
-    relativeLeftPosition > 50 ? { right: "-1px" } : { left: "-2px" };
+    relativeLeftPosition > 0.5 ? { right: "-1px" } : { left: "-2px" };
   const displayTimestamp = revertTimestampOffset(activeTimestamp, offset);
 
   return (
     <div
-      className="absolute w-0 h-full bottom-0 border-l-2 border-white border-dashed shadow"
-      style={{ left: `${relativeLeftPosition}%` }}
+      className="absolute w-0 h-full left-0 bottom-0 border-l-2 border-white border-dashed shadow"
+      style={{
+        transform: `translate(${absoluteLeftPosition - 1}px,0px)`,
+        willChange: "transform"
+      }}
     >
       <div className="gl-details" style={detailsStyle}>
         {displayTimestamp.toLocaleTimeString()}

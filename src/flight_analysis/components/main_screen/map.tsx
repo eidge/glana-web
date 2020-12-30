@@ -68,8 +68,10 @@ function useFlightRenderers(
   analysis: AnalysisState | null,
   renderFullTrack: boolean
 ) {
-  const [extents, setExtents] = useState<Extent[]>([]);
-  const [flightRenderers, setFlightRenderers] = useState<FlightRenderer[]>([]);
+  const [{ extents, flightRenderers }, setRenderState] = useState<{
+    extents: Extent[];
+    flightRenderers: FlightRenderer[];
+  }>({ extents: [], flightRenderers: [] });
   const flightData = analysis?.flightData;
   const activeTimestamp = analysis?.activeTimestamp;
   const task = analysis?.task || null;
@@ -85,15 +87,16 @@ function useFlightRenderers(
       fd => new FlightRenderer(mapRenderer, fd)
     );
     flightRenderers.forEach(fr => fr.render());
-    setFlightRenderers(flightRenderers);
 
     const taskRenderer = task && new TaskRenderer(mapRenderer, task);
     taskRenderer?.render();
 
-    setExtents([
+    const extents = [
       ...flightRenderers.map(r => r.getExtent()),
       taskRenderer?.getExtent() || createEmpty()
-    ]);
+    ];
+
+    setRenderState({ flightRenderers, extents });
 
     return () => {
       flightRenderers.forEach(fr => fr.destroy());
@@ -118,9 +121,14 @@ function useFlightRenderers(
       fr.setRenderFullTrack(isSummary || renderFullTrack)
     );
 
+    let timeout: NodeJS.Timeout;
     if (mapRenderer && isSummary) {
-      setTimeout(() => mapRenderer.zoomToFit(...extents), 500);
+      timeout = setTimeout(() => {
+        // We run the zoom to fit in a timeout to debounce multiple renders.
+        mapRenderer.zoomToFit(...extents);
+      }, 500);
     }
+    return () => clearTimeout(timeout);
   }, [mapRenderer, flightRenderers, renderFullTrack, isSummary, extents]);
 }
 

@@ -35,12 +35,17 @@ export default function MainScreen() {
   const setFollowFlight = (fd: FlightDatum) => {
     dispatch(actions.setFollowFlight(fd));
   };
+  const setActiveTimestamp = (ts: Date) => {
+    dispatch(actions.setActiveTimestamp(ts));
+  };
 
   useAnimationTicker(isPlaying, dispatch, settings);
 
   return (
     <div className="flex flex-col relative w-full h-full">
       <Map
+        isPlaying={isPlaying}
+        setActiveTimestamp={setActiveTimestamp}
         analysis={analysis}
         showAirspace={settings.showAirspace}
         renderFullTrack={settings.renderFullTracks}

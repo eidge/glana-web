@@ -15,13 +15,22 @@ const PADDING = {
 
 interface Props {
   analysis: AnalysisState | null;
-  showAirspace: boolean;
-  renderFullTrack: boolean;
   isDebug: boolean;
+  isPlaying: boolean;
+  renderFullTrack: boolean;
+  setActiveTimestamp: (ts: Date) => void;
+  showAirspace: boolean;
 }
 
 export default function Map(props: Props) {
-  const { isDebug, showAirspace, renderFullTrack, analysis } = props;
+  const {
+    analysis,
+    isDebug,
+    isPlaying,
+    renderFullTrack,
+    setActiveTimestamp,
+    showAirspace
+  } = props;
   const element = useRef(null);
   const mapRenderer = useMapRenderer(element, showAirspace);
 
@@ -31,7 +40,13 @@ export default function Map(props: Props) {
     <div className="relative w-full h-full bg-gray-800">
       <div className="w-full h-full" ref={element}></div>
       <div className="w-full absolute bottom-0 left-0">
-        <Timeline />
+        {analysis && (
+          <Timeline
+            analysis={analysis}
+            isPlaying={isPlaying}
+            setActiveTimestamp={setActiveTimestamp}
+          />
+        )}
       </div>
       <UseableClientRectDebug isDebug={isDebug} mapRenderer={mapRenderer} />
     </div>

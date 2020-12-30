@@ -1,20 +1,22 @@
 import { Duration, milliseconds } from "glana/src/units/duration";
 import Quantity from "glana/src/units/quantity";
-import { useRef, useEffect, useState } from "react";
-import { useFlightAnalysisDispatch, useFlightAnalysisState } from "../../store";
-import { actions } from "../../store/actions";
+import { useRef, useEffect, useState, useCallback } from "react";
+import { AnalysisState } from "../../store/reducer";
 import { absoluteFrom, relativeTo } from "../../utils/time";
 import AltitudeChart from "./altitude_chart";
 import TaskTimeline from "./task_timeline";
 
-export default function Timeline() {
-  const { analysis, isPlaying } = useFlightAnalysisState();
-  const dispatch = useFlightAnalysisDispatch();
+interface Props {
+  analysis: AnalysisState;
+  isPlaying: boolean;
+  setActiveTimestamp: (ts: Date) => void;
+}
+
+export default function Timeline(props: Props) {
+  const { analysis, isPlaying, setActiveTimestamp } = props;
   const elementRef = useRef<HTMLDivElement>(null);
   const width = useComponentWidth(elementRef.current);
   usePreventDragScroll(elementRef);
-
-  if (!analysis) return null;
 
   const {
     flightData,
@@ -25,34 +27,46 @@ export default function Timeline() {
   } = analysis;
 
   const followFlight = flightDataById[followFlightId];
-  const timelineStartAt = flightGroup!.earliestDatumAt;
-  const timelineFinishAt = flightGroup!.latestDatumAt;
-  const setTimestampFromHoverCoordinate = (clientX: number) => {
-    if (!elementRef.current) return;
-    const clientRect = elementRef.current.getBoundingClientRect();
-    const relativeLeft = (clientX - clientRect.left) / clientRect.width;
-    const timestampAtEvent = absoluteFrom(
-      timelineStartAt,
-      timelineFinishAt,
-      relativeLeft
-    );
-    dispatch(actions.setActiveTimestamp(timestampAtEvent));
-  };
+  const timelineStartAt = flightGroup.earliestDatumAt;
+  const timelineFinishAt = flightGroup.latestDatumAt;
+  const setTimestampFromHoverCoordinate = useCallback(
+    (clientX: number) => {
+      if (!elementRef.current) return;
+      const clientRect = elementRef.current.getBoundingClientRect();
+      const relativeLeft = (clientX - clientRect.left) / clientRect.width;
+      const timestampAtEvent = absoluteFrom(
+        timelineStartAt,
+        timelineFinishAt,
+        relativeLeft
+      );
+      setActiveTimestamp(timestampAtEvent);
+    },
+    [timelineStartAt, timelineFinishAt, setActiveTimestamp]
+  );
 
-  const onClick = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-    setTimestampFromHoverCoordinate(event.clientX);
-  };
+  const onClick = useCallback(
+    (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+      setTimestampFromHoverCoordinate(event.clientX);
+    },
+    [setTimestampFromHoverCoordinate]
+  );
 
-  const onMouseMove = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-    if (isPlaying) return;
-    setTimestampFromHoverCoordinate(event.clientX);
-  };
+  const onMouseMove = useCallback(
+    (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+      if (isPlaying) return;
+      setTimestampFromHoverCoordinate(event.clientX);
+    },
+    [setTimestampFromHoverCoordinate, isPlaying]
+  );
 
-  const onTouchMove = (event: React.TouchEvent<HTMLDivElement>) => {
-    if (isPlaying) return;
-    const lastTouch = event.touches[event.touches.length - 1];
-    setTimestampFromHoverCoordinate(lastTouch.clientX);
-  };
+  const onTouchMove = useCallback(
+    (event: React.TouchEvent<HTMLDivElement>) => {
+      if (isPlaying) return;
+      const lastTouch = event.touches[event.touches.length - 1];
+      setTimestampFromHoverCoordinate(lastTouch.clientX);
+    },
+    [isPlaying, setTimestampFromHoverCoordinate]
+  );
 
   return (
     <div ref={elementRef} className="w-full cursor-crosshair relative">

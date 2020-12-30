@@ -1,11 +1,10 @@
-import IGCParser from "glana/src/igc/parser";
-import FlightGroup from "glana/src/analysis/flight_group";
 import FileInput from "../../ui/components/file_input";
 import { useFlightAnalysisDispatch } from "../store";
 import { actions } from "../store/actions";
 import Icon from "../../ui/components/icon";
 import { useState } from "react";
 import Image from "next/image";
+import IGCBlob from "../igc_blob";
 
 export default function UploadScreen() {
   const [isLoading, setIsLoading] = useState(false);
@@ -17,6 +16,8 @@ export default function UploadScreen() {
     if (flightGroup) {
       dispatch(actions.closeDrawer());
       dispatch(actions.setFlightGroup(flightGroup));
+    } else {
+      setIsLoading(false);
     }
   };
 
@@ -82,40 +83,11 @@ async function handleFileInput(event: React.ChangeEvent<HTMLInputElement>) {
   const files = Array.from(event.target.files) as Blob[];
   if (files.length < 1) return;
 
-  return await readAndAnalyseIgcs(files);
-}
-
-async function readAndAnalyseIgcs(files: Blob[]) {
   try {
-    let fileContents = await readFiles(files);
-    return parseIGCs(fileContents);
+    const igcBlob = new IGCBlob(files);
+    return await igcBlob.toFlightGroup();
   } catch (e) {
     console.error(e);
     return null;
   }
-}
-
-function readFiles(blobs: Blob[]) {
-  let fileContentPromises = blobs.map(file => readFile(file as Blob));
-  return Promise.all(fileContentPromises);
-}
-
-function readFile(file: Blob): Promise<string> {
-  return new Promise((resolve, reject) => {
-    let reader = new FileReader();
-    reader.onload = fileContents =>
-      resolve(fileContents.target?.result as string);
-    reader.onerror = error => reject(error);
-    reader.readAsText(file);
-  });
-}
-
-function parseIGCs(fileContents: string[]) {
-  let savedFlights = fileContents.map(contents => {
-    let parser = new IGCParser();
-    const flight = parser.parse(contents);
-    return flight;
-  });
-
-  return new FlightGroup(savedFlights);
 }

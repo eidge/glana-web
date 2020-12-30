@@ -1,3 +1,4 @@
+import React from "react";
 import { ReactNode, useEffect, useState } from "react";
 import { usePreventWindowScroll, useWindowHeight } from "../../hooks/window";
 import Button from "../button";
@@ -8,6 +9,7 @@ interface Props {
   drawerHeader?: ReactNode;
   isDrawerOpen: boolean;
   onClose: (() => void) | null | false;
+  extraAttributes?: {};
 }
 
 const animationDuration = 200;
@@ -20,23 +22,27 @@ const outerDrawerBorderColor = "border-black";
 
 export default function FullScreenWithDrawer(props: Props) {
   usePreventWindowScroll();
-  const { isDrawerOpen, drawerHeader } = props;
+  const { isDrawerOpen, drawerHeader, extraAttributes } = props;
   const height = useWindowHeight();
   const shouldPushMainLeft = useShouldPushMainLeft(isDrawerOpen);
 
-  return (
-    <div className={containerClasses()} style={{ height }}>
-      <div className={mainClasses()}>{props.main}</div>
-      {shouldPushMainLeft && (
-        <div className={`hidden sm:block ${drawerSizes}`}></div>
-      )}
-      <div className={drawerClasses(isDrawerOpen)} style={{ height }}>
-        <div className={drawerHeaderClasses()}>
-          <CloseButton {...props} />
-          {drawerHeader && <div>{drawerHeader}</div>}
-        </div>
-        {isDrawerOpen && <div className="p-6">{props.drawer}</div>}
+  return React.createElement(
+    "div",
+    {
+      className: containerClasses(),
+      style: { height },
+      ...extraAttributes
+    },
+    <div className={mainClasses()}>{props.main}</div>,
+    shouldPushMainLeft && (
+      <div className={`hidden sm:block ${drawerSizes}`}></div>
+    ),
+    <div className={drawerClasses(isDrawerOpen)} style={{ height }}>
+      <div className={drawerHeaderClasses()}>
+        <CloseButton {...props} />
+        {drawerHeader && <div>{drawerHeader}</div>}
       </div>
+      {isDrawerOpen && <div className="p-6">{props.drawer}</div>}
     </div>
   );
 }

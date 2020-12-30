@@ -7,11 +7,34 @@ import FlightsScreen from "./flights_screen";
 import SettingsScreen from "./settings_screen";
 import UploadScreen from "./upload_screen";
 import { DrawerState } from "../store/reducer";
+import { useCallback } from "react";
+import IGCBlob from "../igc_blob";
+import analytics from "../../analytics";
 
 export default function Analysis() {
   const { sideDrawer, isLoading } = useFlightAnalysisState();
   const dispatch = useFlightAnalysisDispatch();
-  const closeDrawer = () => dispatch(actions.closeDrawer());
+  const closeDrawer = useCallback(() => dispatch(actions.closeDrawer()), [
+    dispatch
+  ]);
+  const uploadFlight = useCallback(
+    async (event: any) => {
+      event.preventDefault();
+      let files = Array.from(event.dataTransfer.files) as Blob[];
+      if (files.length < 1) return;
+
+      analytics.trackEvent("dropped_file");
+
+      try {
+        const igcBlob = new IGCBlob(files);
+        const flightGroup = await igcBlob.toFlightGroup();
+        dispatch(actions.setFlightGroup(flightGroup));
+      } catch (e) {
+        console.error(e);
+      }
+    },
+    [dispatch]
+  );
 
   return (
     <FullScreenWithDrawer
@@ -20,8 +43,17 @@ export default function Analysis() {
       drawerHeader={sideDrawer && <DrawerHeader sideDrawer={sideDrawer} />}
       isDrawerOpen={!!sideDrawer}
       onClose={sideDrawer && sideDrawer.canClose && closeDrawer}
+      extraAttributes={{
+        onDragEnter: preventDefault,
+        onDragOver: preventDefault,
+        onDrop: uploadFlight
+      }}
     />
   );
+}
+
+function preventDefault(e: Event) {
+  e.preventDefault();
 }
 
 function DrawerHeader(props: { sideDrawer: DrawerState }): JSX.Element {

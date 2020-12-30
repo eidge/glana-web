@@ -69,7 +69,8 @@ export function reducer(state: State, action: Action): State {
         ...state,
         ...analysis,
         analysis,
-        isLoading: false
+        isLoading: false,
+        sideDrawer: null
       };
     case ActionType.SetActiveTimestamp:
       if (!state.analysis) return state;

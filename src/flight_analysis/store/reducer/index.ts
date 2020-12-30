@@ -1,4 +1,6 @@
-import FlightGroup from "glana/src/analysis/flight_group";
+import FlightGroup, {
+  synchronizationMethods
+} from "glana/src/analysis/flight_group";
 import Task from "glana/src/flight_computer/tasks/task";
 import SavedFlight from "glana/src/saved_flight";
 import { Colors } from "../../colors";
@@ -52,6 +54,7 @@ export function initialState(): State {
 
 export function reducer(state: State, action: Action): State {
   const { sideDrawer } = state;
+  let newState: State;
   let newSideDrawer: DrawerState | null;
 
   switch (action.type) {
@@ -63,15 +66,25 @@ export function reducer(state: State, action: Action): State {
         flightGroup.flights.forEach(f => (f.task = new Task(task.turnpoints)));
       }
 
-      const analysis = buildAnalysisState(state, flightGroup, task);
+      let synchronizationMethod = state.settings.synchronizationMethod;
+      if (
+        !flightGroup.allFlightsInSameDay() &&
+        synchronizationMethod === synchronizationMethods.realTime
+      ) {
+        synchronizationMethod = synchronizationMethods.takeOff;
+      }
 
-      return {
+      newState = {
         ...state,
-        ...analysis,
-        analysis,
+        settings: { ...state.settings, synchronizationMethod },
         isLoading: false,
         sideDrawer: null
       };
+
+      const analysis = buildAnalysisState(newState, flightGroup, task);
+      newState.analysis = analysis;
+
+      return newState;
     case ActionType.SetActiveTimestamp:
       if (!state.analysis) return state;
 
@@ -166,7 +179,7 @@ export function reducer(state: State, action: Action): State {
       };
     case ActionType.ChangeSettings:
       const { changes } = action;
-      const newState = {
+      newState = {
         ...state,
         settings: { ...state.settings, ...changes }
       };

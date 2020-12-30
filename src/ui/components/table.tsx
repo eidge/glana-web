@@ -71,18 +71,18 @@ export function Body(props: SharedProps) {
 }
 
 interface RowProps extends SharedProps {
-  onMouseOver?: (
-    event: React.MouseEvent<HTMLTableRowElement, MouseEvent>
-  ) => void;
+  onClick?: (event: React.MouseEvent<HTMLTableRowElement, MouseEvent>) => void;
 }
 
 export function Row(props: RowProps) {
+  const { onClick } = props;
   return (
     <tr
-      onMouseOver={props.onMouseOver}
+      onClick={onClick}
       className={withPropsClass(
         props,
-        "text-left text-gray-700 border-dashed border-t border-gray-200 hover:bg-gray-100"
+        `text-left text-gray-700 border-dashed border-t border-gray-200 hover:bg-gray-100 ${onClick &&
+          "cursor-pointer"}`
       )}
     >
       {props.children}

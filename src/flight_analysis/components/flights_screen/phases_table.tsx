@@ -18,11 +18,11 @@ import Stop from "glana/src/analysis/phases/stop";
 interface Props {
   unitSettings: UnitSettings;
   phases: Phase[];
-  onHoverPhase: (phase: Phase) => void;
+  onSelectPhase: (phase: Phase) => void;
 }
 
 function PhasesTable(props: Props) {
-  const { phases, onHoverPhase, unitSettings } = props;
+  const { phases, onSelectPhase, unitSettings } = props;
 
   return (
     <Table>
@@ -37,7 +37,7 @@ function PhasesTable(props: Props) {
         {phases.map(phase => (
           <Row
             key={phase.startAt.getTime()}
-            onMouseOver={() => onHoverPhase(phase)}
+            onClick={() => onSelectPhase(phase)}
           >
             <Cell>{phase.startAt.toLocaleTimeString()}</Cell>
             <Cell className="hidden lg:table-cell">{phase.type}</Cell>

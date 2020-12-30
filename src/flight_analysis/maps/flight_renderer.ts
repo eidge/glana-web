@@ -20,8 +20,8 @@ type TrackSegment = {
 };
 
 export default class FlightRenderer {
+  readonly flightDatum: FlightDatum;
   private mapRenderer: MapRenderer;
-  private flightDatum: FlightDatum;
   private renderFullTrack: boolean;
   private trackSegments: TrackSegment[];
   private trackSegmentFeatures?: Feature<LineString>[];
@@ -29,6 +29,7 @@ export default class FlightRenderer {
   private layer?: VectorLayer;
   private activeTimestamp?: Date;
   private extent: Extent;
+  private isActive: boolean;
 
   constructor(mapRenderer: MapRenderer, flightDatum: FlightDatum) {
     this.mapRenderer = mapRenderer;
@@ -36,6 +37,7 @@ export default class FlightRenderer {
     this.renderFullTrack = false;
     this.trackSegments = this.buildTrackSegments(flightDatum);
     this.extent = this.calculateExtent();
+    this.isActive = false;
   }
 
   private buildTrackSegments(flightDatum: FlightDatum) {
@@ -112,6 +114,27 @@ export default class FlightRenderer {
     this.updateMarkerPosition(datum);
   }
 
+  setActive(isActive: boolean) {
+    this.isActive = isActive;
+    this.setStyle();
+    this.setZIndex();
+  }
+
+  private setStyle() {
+    if (!this.layer) return;
+    this.layer.setStyle(this.olStyle());
+  }
+
+  private setZIndex() {
+    if (!this.layer) return;
+
+    if (this.isActive) {
+      this.layer.setZIndex(2);
+    } else {
+      this.layer.setZIndex(1);
+    }
+  }
+
   private drawFlightTrackUntil(timestamp: Date) {
     if (!this.trackSegmentFeatures) return;
 
@@ -167,11 +190,11 @@ export default class FlightRenderer {
 
     this.layer = new VectorLayer({
       source,
-      style: () => this.olStyle(this.flightDatum.color),
+      style: () => this.olStyle(),
       updateWhileAnimating: true,
       updateWhileInteracting: true
     });
-    this.layer.setZIndex(1);
+    this.setZIndex();
     this.mapRenderer.olMap.addLayer(this.layer);
   }
 
@@ -192,10 +215,11 @@ export default class FlightRenderer {
 
   private traceStyle(isEngineOn: boolean) {
     if (!isEngineOn) return;
+    const color = this.isActive ? "#FF000" : "#FF000000";
     return [
       new Style({
         stroke: new Stroke({
-          color: "#FF0000",
+          color: color,
           width: 2
         })
       })
@@ -208,17 +232,19 @@ export default class FlightRenderer {
     });
   }
 
-  private olStyle(color: string) {
+  private olStyle() {
+    const flightColor = this.flightDatum.color;
+    const traceColor = this.isActive ? flightColor : `${flightColor}66`;
     return [
       new Style({
         stroke: new Stroke({
-          color: color,
+          color: traceColor,
           width: 2
         }),
         image: new CircleStyle({
           radius: 5,
           fill: new Fill({
-            color: color
+            color: flightColor
           })
         })
       })

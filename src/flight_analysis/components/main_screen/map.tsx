@@ -121,7 +121,11 @@ function useFlightRenderers(
 
   useEffect(() => {
     if (!activeTimestamp || flightRenderers.length === 0) return;
-    flightRenderers.forEach(fr => fr.setActiveTimestamp(activeTimestamp));
+    flightRenderers.forEach(fr => {
+      fr.setActiveTimestamp(activeTimestamp);
+      fr.setActive(fr.flightDatum === followFlight);
+    });
+
     const followDatum =
       followFlight && followFlight.flight.datumAt(activeTimestamp);
     if (followDatum && !mapRenderer!.isVisible(followDatum.position)) {

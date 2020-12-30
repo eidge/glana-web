@@ -32,7 +32,7 @@ function PhasesTab(props: Props) {
   } = props;
   const followFlightData = flightDataById[followFlightId];
   const phases = followFlightData.flight.phases;
-  const onHoverPhase = (phase: Phase) => {
+  const onSelectPhase = (phase: Phase) => {
     setActiveTimestamp(phase.finishAt);
   };
 
@@ -53,7 +53,7 @@ function PhasesTab(props: Props) {
       </div>
       <PhasesTable
         phases={filteredPhases}
-        onHoverPhase={onHoverPhase}
+        onSelectPhase={onSelectPhase}
         unitSettings={unitSettings}
       />
     </div>

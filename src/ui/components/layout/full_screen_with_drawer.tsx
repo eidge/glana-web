@@ -80,7 +80,7 @@ function drawerClasses(isOpen: boolean) {
     "fixed right-0",
     "z-10 overflow-y-scroll overflow-x-hidden gl-prevent-overscroll",
     `transform transition ease-in-out ${animationDurationClass}`,
-    `shadow border-l ${outerDrawerBorderColor} text-white ${drawerBackgroundColor}`,
+    `shadow-2xl border-l ${outerDrawerBorderColor} text-white ${drawerBackgroundColor}`,
     drawerSizes,
     translateClass
   ].join(" ");
@@ -89,7 +89,7 @@ function drawerClasses(isOpen: boolean) {
 function drawerHeaderClasses() {
   return [
     "flex flex-row sticky top-0 items-center z-10",
-    `shadow-lg border-b ${innerDrawerBorderColor} ${drawerBackgroundColor}`,
+    `shadow-md border-b ${innerDrawerBorderColor} ${drawerBackgroundColor}`,
     "py-3",
     drawerPaddingX
   ].join(" ");

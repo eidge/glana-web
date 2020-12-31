@@ -21,7 +21,7 @@ export default function ButtonGroup(props: Props) {
   const { size, color, buttons, type, isVertical } = props;
   return (
     <div
-      className={`inline-flex rounded overflow-hidden ${
+      className={`inline-flex rounded overflow-hidden shadow ${
         isVertical ? "flex-col divide-y" : "flex-row divide-x"
       }`}
     >

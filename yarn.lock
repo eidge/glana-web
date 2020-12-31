@@ -5717,10 +5717,10 @@ glana-igc-parser@^0.5.1:
   dependencies:
     flight-recorder-manufacturers "^1.0.1"
 
-glana@^0.2.21:
-  version "0.2.21"
-  resolved "https://registry.yarnpkg.com/glana/-/glana-0.2.21.tgz#af3d0bda3afcb2842ca4f853139d8dca4e65ed04"
-  integrity sha512-yICsOE0U3dAnv7DSs+Pj7c7OqAgDQ4dkw5HU6W4azfLc8oQIYkMI/vF9PL0KS/RiyjYq9t/FAyVUWMbkE+K99A==
+glana@^0.2.22:
+  version "0.2.22"
+  resolved "https://registry.yarnpkg.com/glana/-/glana-0.2.22.tgz#1485023e672696901e885cd3b129129ffa483fd2"
+  integrity sha512-PKCk52JH4fnBf8xH1XE3GBPfTeyzg7KELhB5Zwo4xqYD8FyGsFv7yJqchW0Qe2xefQcyj/i/wNGLG8kTwlFU0Q==
   dependencies:
     "@turf/turf" "^5.1.6"
     glana-igc-parser "^0.5.1"

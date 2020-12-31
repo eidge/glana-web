@@ -138,16 +138,7 @@ export default class FlightRenderer {
     if (!this.trackSegmentFeatures) return;
 
     const flight = this.flightDatum.flight;
-
-    let currentDatumIndex: number;
-
-    if (timestamp < flight.getRecordingStartedAt()) {
-      currentDatumIndex = 0;
-    } else if (timestamp > flight.getRecordingStoppedAt()) {
-      currentDatumIndex = flight.datums.length - 1;
-    } else {
-      currentDatumIndex = flight.datumIndexAt(timestamp)!;
-    }
+    let currentDatumIndex = flight.datumIndexAt(timestamp)!;
 
     this.trackSegmentFeatures.forEach((segment, index) => {
       if (currentDatumIndex === null) return;

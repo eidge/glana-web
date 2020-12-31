@@ -46,7 +46,7 @@ interface TimelineDetailProps {
 
 function TimelineDetail(props: TimelineDetailProps) {
   const { flightDatum, timestamp, isActive, onClick, unitSettings } = props;
-  const datum = datumAt(flightDatum, timestamp);
+  const datum = flightDatum.flight.datumAt(timestamp);
 
   const altitude = datum.position.altitude.convertTo(unitSettings.altitude);
   const vario =
@@ -85,19 +85,6 @@ function TimelineDetail(props: TimelineDetailProps) {
       />
     </div>
   );
-}
-
-function datumAt(flightDatum: FlightDatum, timestamp: Date) {
-  let datum = flightDatum.flight.datumAt(timestamp);
-  if (datum) return datum;
-
-  if (timestamp > flightDatum.flight.getRecordingStoppedAt()) {
-    datum = flightDatum.flight.datums[flightDatum.flight.datums.length - 1];
-  } else {
-    datum = flightDatum.flight.datums[0];
-  }
-
-  return datum;
 }
 
 interface InstrumentValueProps {

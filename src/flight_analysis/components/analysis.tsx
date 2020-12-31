@@ -7,9 +7,10 @@ import FlightsScreen from "./flights_screen";
 import SettingsScreen from "./settings_screen";
 import UploadScreen from "./upload_screen";
 import { DrawerState } from "../store/reducer";
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import IGCBlob from "../igc_blob";
 import analytics from "../../analytics";
+import React from "react";
 
 export default function Analysis() {
   const { sideDrawer, isLoading } = useFlightAnalysisState();
@@ -35,22 +36,30 @@ export default function Analysis() {
     },
     [dispatch]
   );
+  const extraAttributes = useMemo(() => {
+    return {
+      onDragEnter: preventDefault,
+      onDragOver: preventDefault,
+      onDrop: uploadFlight
+    };
+  }, [uploadFlight]);
 
   return (
     <FullScreenWithDrawer
-      main={isLoading ? <LoadingScreen /> : <MainScreen />}
+      main={<Main isLoading={isLoading} />}
       drawer={sideDrawer && <Drawer sideDrawer={sideDrawer} />}
       drawerHeader={sideDrawer && <DrawerHeader sideDrawer={sideDrawer} />}
       isDrawerOpen={!!sideDrawer}
       onClose={sideDrawer && sideDrawer.canClose && closeDrawer}
-      extraAttributes={{
-        onDragEnter: preventDefault,
-        onDragOver: preventDefault,
-        onDrop: uploadFlight
-      }}
+      extraAttributes={extraAttributes}
     />
   );
 }
+
+const Main = React.memo((props: { isLoading: boolean }) => {
+  if (props.isLoading) return <LoadingScreen />;
+  return <MainScreen />;
+});
 
 function preventDefault(e: Event) {
   e.preventDefault();

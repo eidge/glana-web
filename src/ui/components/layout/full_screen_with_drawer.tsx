@@ -20,7 +20,7 @@ const drawerBackgroundColor = "bg-gray-900";
 const innerDrawerBorderColor = "border-gray-600";
 const outerDrawerBorderColor = "border-black";
 
-export default function FullScreenWithDrawer(props: Props) {
+function FullScreenWithDrawer(props: Props) {
   usePreventWindowScroll();
   const { isDrawerOpen, drawerHeader, extraAttributes } = props;
   const height = useWindowHeight();
@@ -46,6 +46,8 @@ export default function FullScreenWithDrawer(props: Props) {
     </div>
   );
 }
+
+export default React.memo(FullScreenWithDrawer);
 
 function useShouldPushMainLeft(isDrawerOpen: boolean) {
   const [animationFinished, setAnimationFinished] = useState(false);

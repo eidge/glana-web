@@ -6,6 +6,7 @@ import TaskRenderer from "../../maps/task_renderer";
 import { createEmpty, Extent } from "ol/extent";
 import Timeline from "./timeline";
 import ButtonGroup from "../../../ui/components/button_group";
+import React from "react";
 
 const PADDING = {
   top: 40,
@@ -53,17 +54,7 @@ export default function Map(props: Props) {
     <div className="relative w-full h-full bg-gray-800">
       <div className="w-full h-full" ref={element}></div>
       <div className="absolute hidden lg:block top-0 left-0 ml-3 mt-3">
-        <ButtonGroup
-          size="lg"
-          color="white"
-          type="full"
-          isVertical={true}
-          buttons={[
-            { icon: "zoomIn", onClick: zoomIn },
-            { icon: "search", onClick: zoomToFit },
-            { icon: "zoomOut", onClick: zoomOut }
-          ]}
-        />
+        <ZoomControls zoomIn={zoomIn} zoomToFit={zoomToFit} zoomOut={zoomOut} />
       </div>
       <div className="w-full absolute bottom-0 left-0">
         {analysis && (
@@ -78,6 +69,29 @@ export default function Map(props: Props) {
     </div>
   );
 }
+
+const ZoomControls = React.memo(
+  (props: {
+    zoomIn: () => void;
+    zoomToFit: () => void;
+    zoomOut: () => void;
+  }) => {
+    const { zoomIn, zoomToFit, zoomOut } = props;
+    return (
+      <ButtonGroup
+        size="lg"
+        color="white"
+        type="full"
+        isVertical={true}
+        buttons={[
+          { icon: "zoomIn", onClick: zoomIn },
+          { icon: "search", onClick: zoomToFit },
+          { icon: "zoomOut", onClick: zoomOut }
+        ]}
+      />
+    );
+  }
+);
 
 function useMapRenderer(
   element: RefObject<HTMLElement>,

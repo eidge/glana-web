@@ -8,9 +8,12 @@ import Feature from "ol/Feature";
 import VectorLayer from "ol/layer/Vector";
 import VectorSource from "ol/source/Vector";
 import Point from "ol/geom/Point";
-import { Fill, Stroke, Style } from "ol/style";
+import { Fill, Icon, Stroke, Style } from "ol/style";
 import CircleStyle from "ol/style/Circle";
 import { Extent } from "ol/extent";
+import { glider } from "../../ui/components/icon/icons";
+// @ts-ignore
+import ReactDOMServer from "react-dom/server";
 
 type TrackSegment = {
   startIndex: number;
@@ -126,10 +129,14 @@ export default class FlightRenderer {
     if (this.isActive) {
       this.markerLayer.setZIndex(4);
       this.traceLayer.setZIndex(2);
-      this.traceLayer.setOpacity(1);
+
+      this.markerLayer.setOpacity(1);
+      this.traceLayer.setOpacity(0.8);
     } else {
       this.markerLayer.setZIndex(3);
       this.traceLayer.setZIndex(1);
+
+      this.markerLayer.setOpacity(0.8);
       this.traceLayer.setOpacity(0.4);
     }
   }
@@ -167,6 +174,14 @@ export default class FlightRenderer {
     this.positionMarkerFeature
       .getGeometry()!
       .setCoordinates(this.fixToPoint(datum));
+
+    // Type declaration is wrong below. .getStyle returns an array, not a single
+    // style.
+    // @ts-ignore
+    this.positionMarkerFeature
+      .getStyle()[0]
+      .getImage()
+      .setRotation((datum.heading.value * Math.PI) / 180);
   }
 
   render() {
@@ -218,7 +233,6 @@ export default class FlightRenderer {
     });
     this.markerLayer = new VectorLayer({
       source: markerSource,
-      style: this.markerStyle(),
       updateWhileAnimating: true,
       updateWhileInteracting: true
     });
@@ -226,20 +240,27 @@ export default class FlightRenderer {
   }
 
   private buildPositionMarkerFeature() {
-    return new Feature<Point>({
+    const feature = new Feature<Point>({
       geometry: new Point(this.fixToPoint(this.flightDatum.flight.datums[0]))
     });
+    feature.setStyle(this.markerStyle());
+    return feature;
   }
 
   private markerStyle() {
     const flightColor = this.flightDatum.color;
+    const svg = ReactDOMServer.renderToString(
+      glider({
+        width: 50,
+        height: 50,
+        color: flightColor
+      })
+    );
     return [
       new Style({
-        image: new CircleStyle({
-          radius: 5,
-          fill: new Fill({
-            color: flightColor
-          })
+        image: new Icon({
+          opacity: 1,
+          src: "data:image/svg+xml;utf8," + encodeURIComponent(svg)
         })
       })
     ];

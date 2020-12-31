@@ -34,7 +34,16 @@ export default function Map(props: Props) {
   } = props;
   const element = useRef(null);
   const mapRenderer = useMapRenderer(element, showAirspace);
-  const zoomIn = useCallback(() => mapRenderer?.zoomIn(), [mapRenderer]);
+  const zoomIn = useCallback(() => {
+    if (!mapRenderer) return;
+    if (analysis) {
+      const flight = analysis.flightDataById[analysis.followFlightId];
+      const datum = flight.flight.datumAt(analysis?.activeTimestamp);
+      mapRenderer.zoomIn(datum?.position);
+    } else {
+      mapRenderer.zoomIn();
+    }
+  }, [mapRenderer, analysis]);
   const zoomToFit = useCallback(() => mapRenderer?.zoomToFit(), [mapRenderer]);
   const zoomOut = useCallback(() => mapRenderer?.zoomOut(), [mapRenderer]);
 

@@ -26,7 +26,8 @@ export default class FlightRenderer {
   private trackSegments: TrackSegment[];
   private trackSegmentFeatures?: Feature<LineString>[];
   private positionMarkerFeature?: Feature<Point>;
-  private layer?: VectorLayer;
+  private traceLayer?: VectorLayer;
+  private markerLayer?: VectorLayer;
   private activeTimestamp?: Date;
   private extent: Extent;
   private isActive: boolean;
@@ -117,21 +118,19 @@ export default class FlightRenderer {
   setActive(isActive: boolean) {
     this.isActive = isActive;
     this.setStyle();
-    this.setZIndex();
   }
 
   private setStyle() {
-    if (!this.layer) return;
-    this.layer.setStyle(this.olStyle());
-  }
-
-  private setZIndex() {
-    if (!this.layer) return;
+    if (!this.traceLayer || !this.markerLayer) return;
 
     if (this.isActive) {
-      this.layer.setZIndex(2);
+      this.markerLayer.setZIndex(4);
+      this.traceLayer.setZIndex(2);
+      this.traceLayer.setOpacity(1);
     } else {
-      this.layer.setZIndex(1);
+      this.markerLayer.setZIndex(3);
+      this.traceLayer.setZIndex(1);
+      this.traceLayer.setOpacity(0.4);
     }
   }
 
@@ -163,7 +162,7 @@ export default class FlightRenderer {
       } else {
         positions = trackSegment.positions.slice(
           0,
-          currentDatumIndex - trackSegment.startIndex
+          currentDatumIndex - trackSegment.startIndex + 1
         );
       }
 
@@ -180,44 +179,37 @@ export default class FlightRenderer {
   }
 
   render() {
-    this.trackSegmentFeatures = this.buildTrackSegmentFeatures();
-    this.positionMarkerFeature = this.buildPositionMarkerFeature();
-    let source = new VectorSource({
-      features: this.trackSegmentFeatures.concat(
-        this.positionMarkerFeature as any
-      )
-    });
+    this.renderTrack();
+    this.renderMarker();
+    this.setStyle();
+  }
 
-    this.layer = new VectorLayer({
-      source,
-      style: () => this.olStyle(),
+  private renderTrack() {
+    this.trackSegmentFeatures = this.buildTrackSegmentFeatures();
+    let trackSource = new VectorSource({
+      features: this.trackSegmentFeatures
+    });
+    this.traceLayer = new VectorLayer({
+      source: trackSource,
       updateWhileAnimating: true,
       updateWhileInteracting: true
     });
-    this.setZIndex();
-    this.mapRenderer.olMap.addLayer(this.layer);
-  }
-
-  destroy() {
-    if (!this.layer) return;
-    this.mapRenderer.olMap.removeLayer(this.layer);
+    this.mapRenderer.olMap.addLayer(this.traceLayer);
   }
 
   private buildTrackSegmentFeatures() {
     return this.trackSegments.map(segment => {
-      const isEngineOn = segment.isEngineOn;
       const line = new LineString(segment.positions);
       const feature = new Feature<LineString>({ geometry: line });
-      if (isEngineOn) {
-        feature.setStyle(this.engineOnStyle(isEngineOn));
-      }
+      feature.setStyle(this.trackStyle(segment));
       return feature;
     });
   }
 
-  private engineOnStyle(isEngineOn: boolean) {
-    if (!isEngineOn) return;
-    const color = "#FF0000";
+  private trackStyle(segment: TrackSegment) {
+    const flightColor = this.flightDatum.color;
+    const { isEngineOn } = segment;
+    const color = isEngineOn ? "#FF0000" : flightColor;
     return [
       new Style({
         stroke: new Stroke({
@@ -228,21 +220,30 @@ export default class FlightRenderer {
     ];
   }
 
+  private renderMarker() {
+    this.positionMarkerFeature = this.buildPositionMarkerFeature();
+    let markerSource = new VectorSource({
+      features: [this.positionMarkerFeature]
+    });
+    this.markerLayer = new VectorLayer({
+      source: markerSource,
+      style: this.markerStyle(),
+      updateWhileAnimating: true,
+      updateWhileInteracting: true
+    });
+    this.mapRenderer.olMap.addLayer(this.markerLayer);
+  }
+
   private buildPositionMarkerFeature() {
     return new Feature<Point>({
       geometry: new Point(this.fixToPoint(this.flightDatum.flight.datums[0]))
     });
   }
 
-  private olStyle() {
+  private markerStyle() {
     const flightColor = this.flightDatum.color;
-    const traceColor = this.isActive ? flightColor : `${flightColor}66`;
     return [
       new Style({
-        stroke: new Stroke({
-          color: traceColor,
-          width: 2
-        }),
         image: new CircleStyle({
           radius: 5,
           fill: new Fill({
@@ -251,5 +252,14 @@ export default class FlightRenderer {
         })
       })
     ];
+  }
+
+  destroy() {
+    if (this.traceLayer) {
+      this.mapRenderer.olMap.removeLayer(this.traceLayer);
+    }
+    if (this.markerLayer) {
+      this.mapRenderer.olMap.removeLayer(this.markerLayer);
+    }
   }
 }

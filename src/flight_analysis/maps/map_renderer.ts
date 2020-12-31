@@ -1,6 +1,6 @@
 import { defaults as interactionDefaults } from "ol/interaction";
 import OlMap from "ol/Map";
-import View from "ol/View";
+import View, { AnimationOptions } from "ol/View";
 import TileLayer from "ol/layer/Tile";
 import TileImage from "ol/source/XYZ";
 import OSM from "ol/source/OSM";
@@ -70,14 +70,14 @@ export default class MapRenderer {
   }
 
   zoomIn(position?: Position) {
-    let options = {
+    let options: AnimationOptions = {
       zoom: this.olMap.getView().getZoom()! + 1,
       duration: ANIMATION_DURATION
-    } as any;
+    };
 
     if (position) {
-      const olPosition = positionToOlPoint(position);
-      options.center = this.offsetForUsableCenter(olPosition);
+      const coordinate = positionToOlPoint(position);
+      options.center = this.offsetForUsableCenter(coordinate);
     }
 
     this.olMap.getView().animate(options);

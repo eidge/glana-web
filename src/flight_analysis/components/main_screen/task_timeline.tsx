@@ -13,7 +13,7 @@ function TaskTimeline(props: Props) {
   const { flightDatum, startAt, finishAt } = props;
   const flight = flightDatum.flight;
   const task = flight.task;
-  if (!task) return null;
+  if (!task || !task.isStarted()) return null;
 
   const turnpointMarkers = task.turnpoints.map((tp, index) =>
     renderTaskLeg(flightDatum, task, tp, startAt, finishAt, index)

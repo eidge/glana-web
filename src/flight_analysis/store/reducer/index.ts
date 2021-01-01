@@ -124,7 +124,11 @@ export function reducer(state: State, action: Action): State {
 
       return {
         ...state,
-        analysis: { ...state.analysis, activeTimestamp: activeTimestamp }
+        analysis: {
+          ...state.analysis,
+          activeTimestamp: activeTimestamp,
+          isSummary: false
+        }
       };
     case ActionType.TogglePlay:
       if (!state.analysis) return state;

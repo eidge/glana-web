@@ -102,16 +102,17 @@ function useRenderFlights(
   map: mapboxgl.Map | null,
   analysis: AnalysisState | null
 ) {
-  const { followFlightId, flightDataById } = analysis || {};
+  const { followFlightId, flightDataById, activeTimestamp } = analysis || {};
   const flight = !!followFlightId && flightDataById![followFlightId];
 
   useEffect(() => {
-    console.log("koko");
     if (!map || !flight) return;
-    const geoJson = flightToGeoJson(flight);
+    const geoJson = flightToGeoJson(
+      flight,
+      flight.flight.getRecordingStoppedAt()
+    );
     const sourceId = `source-${flight.id}`;
     const layerId = `layer-${flight.id}`;
-    console.log(geoJson);
     map.addSource(sourceId, geoJson);
     map.addLayer({
       id: layerId,
@@ -132,13 +133,26 @@ function useRenderFlights(
       map.removeSource(sourceId);
     };
   }, [map, flight]);
+
+  useEffect(() => {
+    if (!map || !flight || !activeTimestamp) return;
+
+    const source = map.getSource(
+      `source-${flight.id}`
+    ) as mapboxgl.GeoJSONSource;
+    const geoJson = flightToGeoJson(flight, activeTimestamp);
+    source.setData(geoJson.data!);
+  }, [map, flight, activeTimestamp]);
 }
 
-function flightToGeoJson(flightDatum: FlightDatum): mapboxgl.AnySourceData {
-  const coordinates = flightDatum.flight.datums.map(d => [
-    d.position.longitude.value,
-    d.position.latitude.value
-  ]);
+function flightToGeoJson(
+  flightDatum: FlightDatum,
+  activeTimestamp: Date
+): mapboxgl.GeoJSONSourceRaw {
+  const index = flightDatum.flight.datumIndexAt(activeTimestamp);
+  const coordinates = flightDatum.flight.datums
+    .slice(0, index + 1)
+    .map(d => [d.position.longitude.value, d.position.latitude.value]);
   return {
     type: "geojson",
     data: {

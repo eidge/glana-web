@@ -273,7 +273,7 @@ function showWeatherInput(
           })
         }
       />
-      <span className="ml-2">Show clouds</span>
+      <span className="ml-2">Show satpic</span>
     </label>
   );
 }

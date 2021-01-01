@@ -8,9 +8,10 @@ import Feature from "ol/Feature";
 import VectorLayer from "ol/layer/Vector";
 import VectorSource from "ol/source/Vector";
 import Point from "ol/geom/Point";
-import { Fill, Stroke, Style } from "ol/style";
-import CircleStyle from "ol/style/Circle";
+import { Icon, Stroke, Style } from "ol/style";
 import { Extent } from "ol/extent";
+import ReactDOMServer from "react-dom/server";
+import { glider } from "../../ui/components/icon/icons";
 
 type TrackSegment = {
   startIndex: number;
@@ -122,7 +123,8 @@ export default class FlightRenderer {
 
   private setStyle() {
     if (!this.layer) return;
-    this.layer.setStyle(this.olStyle());
+    const style = (this.layer.getStyle() as Style[])[0];
+    style.getStroke().setColor(this.traceColor());
   }
 
   private setZIndex() {
@@ -172,11 +174,14 @@ export default class FlightRenderer {
   }
 
   private updateMarkerPosition(datum: Datum) {
-    if (!this.positionMarkerFeature) return;
+    if (!this.positionMarkerFeature || !this.layer) return;
 
     this.positionMarkerFeature
       .getGeometry()!
       .setCoordinates(this.fixToPoint(datum));
+
+    const style = (this.layer.getStyle() as Style[])[0];
+    style.getImage().setRotation((datum.heading.value * Math.PI) / 180);
   }
 
   render() {
@@ -190,7 +195,7 @@ export default class FlightRenderer {
 
     this.layer = new VectorLayer({
       source,
-      style: () => this.olStyle(),
+      style: this.olStyle(),
       updateWhileAnimating: true,
       updateWhileInteracting: true
     });
@@ -235,21 +240,31 @@ export default class FlightRenderer {
   }
 
   private olStyle() {
-    const flightColor = this.flightDatum.color;
-    const traceColor = this.isActive ? flightColor : `${flightColor}66`;
     return [
       new Style({
         stroke: new Stroke({
-          color: traceColor,
+          color: this.traceColor(),
           width: 2
         }),
-        image: new CircleStyle({
-          radius: 5,
-          fill: new Fill({
-            color: flightColor
-          })
+        image: new Icon({
+          src: this.iconSVGURLEncoded(),
+          scale: 1
         })
       })
     ];
+  }
+
+  private traceColor() {
+    const flightColor = this.flightDatum.color;
+    return this.isActive ? flightColor : `${flightColor}66`;
+  }
+
+  private iconSVGURLEncoded() {
+    const size = 42;
+    const svg = ReactDOMServer.renderToStaticMarkup(
+      glider({ color: this.flightDatum.color, width: size, height: size })
+    );
+    const encodedSVG = encodeURIComponent(svg);
+    return `data:image/svg+xml;utf8,${encodedSVG}`;
   }
 }

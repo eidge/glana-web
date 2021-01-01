@@ -77,7 +77,7 @@ export default class TaskRenderer {
     return [
       new Style({
         stroke: new Stroke({
-          color: "rgba(0, 0, 0, 0.4)",
+          color: "rgba(0, 0, 0, 0.2)",
           width: 2
         }),
         fill: new Fill({

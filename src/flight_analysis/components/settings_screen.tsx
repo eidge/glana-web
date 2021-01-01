@@ -41,6 +41,7 @@ export default function SettingsScreen() {
           {renderFollowFlightInput(settings, onChange)}
         </div>
         <div className="mt-2">{showAirspaceInput(settings, onChange)}</div>
+        <div className="mt-2">{showWeatherInput(settings, onChange)}</div>
       </div>
       {!isProduction() && (
         <div className="mt-4">
@@ -243,7 +244,7 @@ function showAirspaceInput(
     <label className="inline-flex items-center mr-6">
       <input
         type="checkbox"
-        name="followFlight"
+        name="airspace"
         checked={settings.showAirspace}
         onChange={event =>
           onChange({
@@ -252,6 +253,27 @@ function showAirspaceInput(
         }
       />
       <span className="ml-2">Show airspace</span>
+    </label>
+  );
+}
+
+function showWeatherInput(
+  settings: Settings,
+  onChange: (settings: Partial<Settings>) => void
+) {
+  return (
+    <label className="inline-flex items-center mr-6">
+      <input
+        type="checkbox"
+        name="weather"
+        checked={settings.showWeather}
+        onChange={event =>
+          onChange({
+            showWeather: event.target.checked
+          })
+        }
+      />
+      <span className="ml-2">Show clouds</span>
     </label>
   );
 }

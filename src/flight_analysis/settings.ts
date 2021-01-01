@@ -29,6 +29,7 @@ export interface Settings {
   playbackSpeed: number;
   units: UnitOption;
   showAirspace: boolean;
+  showWeather: boolean;
 }
 
 export interface UnitSettings {
@@ -60,7 +61,8 @@ export function defaultSettings(): Settings {
     followFlight: true,
     playbackSpeed: 250,
     units: "imperial",
-    showAirspace: false
+    showAirspace: false,
+    showWeather: false
   };
 }
 

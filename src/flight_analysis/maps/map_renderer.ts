@@ -22,6 +22,7 @@ export default class MapRenderer {
   private domElement: HTMLElement;
   private padding: Padding;
   private airspaceLayer!: TileLayer;
+  private weatherLayer!: TileLayer;
   private resizeObserver: ResizeObserver;
 
   readonly olApi = require("ol");
@@ -44,6 +45,14 @@ export default class MapRenderer {
 
   setAirspaceVisibility(visible: boolean) {
     this.airspaceLayer.setVisible(visible);
+  }
+
+  setCloudLayer(date: Date | null) {
+    this.weatherLayer && this.olMap.removeLayer(this.weatherLayer);
+    if (!date) return;
+
+    this.weatherLayer = this.buildWeatherLayer(date);
+    this.olMap.addLayer(this.weatherLayer);
   }
 
   isVisible(position: Position) {
@@ -174,6 +183,19 @@ export default class MapRenderer {
       opacity: 0.4,
       minZoom: 8,
       maxZoom: 14
+    });
+  }
+
+  private buildWeatherLayer(date: Date) {
+    const dateStr = date.toISOString().split("T")[0];
+    return new TileLayer({
+      visible: true,
+      preload: Infinity,
+      source: new TileImage({
+        url: `https://gibs-{a-c}.earthdata.nasa.gov/wmts/epsg3857/best/MODIS_Terra_CorrectedReflectance_TrueColor/default/${dateStr}/GoogleMapsCompatible_Level9/{z}/{y}/{x}.jpg`,
+        projection: "EPSG:3857"
+      }),
+      opacity: 0.6
     });
   }
 

@@ -48,6 +48,7 @@ export default function MainScreen() {
         setActiveTimestamp={setActiveTimestamp}
         analysis={analysis}
         showAirspace={settings.showAirspace}
+        showWeather={settings.showWeather}
         renderFullTrack={settings.renderFullTracks}
         isDebug={isDebug}
       />

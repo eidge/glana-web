@@ -22,6 +22,7 @@ interface Props {
   renderFullTrack: boolean;
   setActiveTimestamp: (ts: Date) => void;
   showAirspace: boolean;
+  showWeather: boolean;
 }
 
 export default function Map(props: Props) {
@@ -31,7 +32,8 @@ export default function Map(props: Props) {
     isPlaying,
     renderFullTrack,
     setActiveTimestamp,
-    showAirspace
+    showAirspace,
+    showWeather
   } = props;
   const element = useRef(null);
   const mapRenderer = useMapRenderer(element, showAirspace);
@@ -51,6 +53,7 @@ export default function Map(props: Props) {
   const zoomToFit = useCallback(() => mapRenderer?.zoomToFit(), [mapRenderer]);
   const zoomOut = useCallback(() => mapRenderer?.zoomOut(), [mapRenderer]);
 
+  useWeatherLayer(mapRenderer, analysis, showWeather);
   useFlightRenderers(mapRenderer, analysis, renderFullTrack);
 
   return (
@@ -119,6 +122,28 @@ function useMapRenderer(
   }, [mapRenderer, showAirspace]);
 
   return mapRenderer;
+}
+
+function useWeatherLayer(
+  mapRenderer: MapRenderer | null,
+  analysis: AnalysisState | null,
+  showWeather: boolean
+) {
+  const followFlightId = analysis?.followFlightId || null;
+  const followFlight =
+    !!followFlightId && analysis!.flightDataById[followFlightId];
+
+  useEffect(() => {
+    if (!mapRenderer) return;
+
+    if (followFlight && showWeather) {
+      mapRenderer.setCloudLayer(
+        followFlight.flight.getRecordingStartedAt(true)
+      );
+    } else {
+      mapRenderer.setCloudLayer(null);
+    }
+  }, [mapRenderer, followFlight, showWeather]);
 }
 
 function useFlightRenderers(

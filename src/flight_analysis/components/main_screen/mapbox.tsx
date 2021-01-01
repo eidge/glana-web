@@ -1,11 +1,120 @@
-import { RefObject, useEffect, useRef, useState } from "react";
+import { RefObject, useEffect, useMemo, useRef, useState } from "react";
 import { AnalysisState, FlightDatum } from "../../store/reducer";
 import Timeline from "./timeline";
 import React from "react";
+// @ts-ignore
+import { DeckGL } from "@deck.gl/react";
+// @ts-ignore
+import { LineLayer, GeoJsonLayer } from "@deck.gl/layers";
+import { StaticMap } from "react-map-gl";
 
 import mapboxgl from "mapbox-gl";
+import { meters } from "glana/src/units/length";
 mapboxgl.accessToken =
   "pk.eyJ1IjoiZWlkZ2UiLCJhIjoiNjVmYTRkMWY0NzM0NDdhZThmYmY4MzI2ZjU2Njg5NTIifQ.7IevRmRnToydZ2fJMGLZRQ";
+
+// Set your mapbox access token here
+const MAPBOX_ACCESS_TOKEN =
+  "pk.eyJ1IjoiZWlkZ2UiLCJhIjoiNjVmYTRkMWY0NzM0NDdhZThmYmY4MzI2ZjU2Njg5NTIifQ.7IevRmRnToydZ2fJMGLZRQ";
+
+// Viewport settings
+const INITIAL_VIEW_STATE = {
+  longitude: -122.41669,
+  latitude: 37.7853,
+  zoom: 13,
+  pitch: 0,
+  bearing: 0
+};
+
+// Data to be used by the LineLayer
+const data = [
+  {
+    sourcePosition: [-122.41669, 37.7853],
+    targetPosition: [-122.41669, 37.781]
+  }
+];
+
+const emptyArray: FlightDatum[] = [];
+const toRGB = (str: String) => {
+  const aRgbHex = str.slice(1).match(/.{1,2}/g);
+  if (!aRgbHex) return null;
+  return [
+    parseInt(aRgbHex[0], 16),
+    parseInt(aRgbHex[1], 16),
+    parseInt(aRgbHex[2], 16)
+  ];
+};
+
+export default function App(props: Props) {
+  const { analysis, isPlaying, setActiveTimestamp } = props;
+  const flights = analysis?.flightData || emptyArray;
+  const activeTimestamp = analysis?.activeTimestamp;
+
+  const layers = useMemo(() => {
+    const layers = flights.map(
+      fd =>
+        new GeoJsonLayer({
+          id: fd.id,
+          data: flightToGeoJson(fd, activeTimestamp).data,
+          stroked: true,
+          filled: true,
+          extruded: true,
+          getLineColor: toRGB(fd.color),
+          getFillColor: toRGB(fd.color),
+          getRadius: 100,
+          getLineWidth: 2,
+          lineWidthMinPixels: 2
+        })
+    );
+
+    if (analysis?.task) {
+      const task = {
+        type: "FeatureCollection",
+        features: analysis.task.turnpoints.map(tp => tp.toGeoJSON())
+      };
+
+      layers.push(
+        new GeoJsonLayer({
+          id: "task",
+          data: task,
+          stroked: true,
+          filled: true,
+          extruded: true,
+          getElevation: 9000,
+          getLineColor: [0, 0, 0, 120],
+          getFillColor: [0, 0, 0, 60],
+          getLineWidth: 2,
+          lineWidthMinPixels: 2
+        })
+      );
+    }
+
+    return layers;
+  }, [flights, activeTimestamp, analysis]);
+
+  return (
+    <div className="relative w-full h-full bg-gray-800">
+      <div className="w-full h-full">
+        <DeckGL
+          initialViewState={INITIAL_VIEW_STATE}
+          controller={true}
+          layers={layers}
+        >
+          <StaticMap mapboxApiAccessToken={MAPBOX_ACCESS_TOKEN} />
+        </DeckGL>
+      </div>
+      <div className="w-full absolute bottom-0 left-0">
+        {analysis && (
+          <Timeline
+            analysis={analysis}
+            isPlaying={isPlaying}
+            setActiveTimestamp={setActiveTimestamp}
+          />
+        )}
+      </div>
+    </div>
+  );
+}
 
 interface Props {
   analysis: AnalysisState | null;
@@ -17,7 +126,15 @@ interface Props {
   showWeather: boolean;
 }
 
-export default function Mapbox(props: Props) {
+const INITIAL_VIEW = {
+  latitude: 6.359724988491934,
+  longitude: 44.43421863689022,
+  pitch: 68,
+  bearing: 34,
+  zoom: 12
+};
+
+function Mapbox(props: Props) {
   const {
     analysis,
     //isDebug,
@@ -28,14 +145,46 @@ export default function Mapbox(props: Props) {
     //showWeather
   } = props;
 
-  const elementRef = useRef<HTMLDivElement | null>(null);
+  // const elementRef = useRef<HTMLDivElement | null>(null);
 
-  const map = useMap(elementRef);
-  useRenderFlights(map, analysis);
+  // const map = useMap(elementRef);
+  // useRenderFlights(map, analysis);
+  //
+  const layers = [];
+
+  if (analysis) {
+    layers.push(
+      new GeoJsonLayer({
+        id: "flight",
+        data: flightToGeoJson(analysis.flightData[0]).data,
+        filled: true,
+        pointRadiusMinPixels: 2,
+        pointRadiusScale: 2000,
+        getRadius: (f: any) => 5,
+        getFillColor: [200, 0, 80, 180],
+        // Interactive props
+        pickable: true,
+        autoHighlight: true,
+        onClick: (info: any) =>
+          info.object &&
+          alert(
+            `${info.object.properties.name} (${info.object.properties.abbrev})`
+          )
+      })
+    );
+  }
 
   return (
     <div className="relative w-full h-full bg-gray-800">
-      <div className="w-full h-full" ref={elementRef}></div>
+      <div className="w-full h-full">
+        <DeckGL
+          mapboxApiAccessToken={"123"}
+          initialViewState={INITIAL_VIEW}
+          layers={layers}
+        >
+          <StaticMap mapboxApiAccessToken="pk.eyJ1IjoiZWlkZ2UiLCJhIjoiNjVmYTRkMWY0NzM0NDdhZThmYmY4MzI2ZjU2Njg5NTIifQ.7IevRmRnToydZ2fJMGLZRQ" />
+        </DeckGL>
+      </div>
       <div className="w-full absolute bottom-0 left-0">
         {analysis && (
           <Timeline
@@ -134,11 +283,18 @@ function useRenderFlights(
   }, [map, flight]);
 }
 
-function flightToGeoJson(flightDatum: FlightDatum): mapboxgl.AnySourceData {
-  const coordinates = flightDatum.flight.datums.map(d => [
-    d.position.longitude.value,
-    d.position.latitude.value
-  ]);
+function flightToGeoJson(
+  flightDatum: FlightDatum,
+  activeTimestamp: Date
+): mapboxgl.AnySourceData {
+  const index = flightDatum.flight.datumIndexAt(activeTimestamp);
+  const coordinates = flightDatum.flight.datums
+    .slice(0, index + 1)
+    .map(d => [
+      d.position.longitude.value,
+      d.position.latitude.value,
+      d.position.altitude.convertTo(meters).value * 5
+    ]);
   return {
     type: "geojson",
     data: {

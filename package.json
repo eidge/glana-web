@@ -10,6 +10,7 @@
   "dependencies": {
     "@nivo/line": "^0.64.0",
     "@types/ol": "^6.3.1",
+    "@types/react-dom": "^17.0.0",
     "autoprefixer": "^9",
     "glana": "^0.2.22",
     "global": "^4.4.0",

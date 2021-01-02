@@ -3,11 +3,11 @@ import OlMap from "ol/Map";
 import View, { AnimationOptions } from "ol/View";
 import TileLayer from "ol/layer/Tile";
 import TileImage from "ol/source/XYZ";
-import OSM from "ol/source/OSM";
 import { extentUnion, positionToOlPoint } from "./utils";
 import Position from "glana/src/flight_computer/position";
 import { Coordinate } from "ol/coordinate";
 import { createEmpty, extend, Extent } from "ol/extent";
+import XYZ from "ol/source/XYZ";
 
 const ANIMATION_DURATION = 400;
 
@@ -164,9 +164,10 @@ export default class MapRenderer {
   private buildMapLayer() {
     return new TileLayer({
       preload: Infinity,
-      source: new OSM({
+      source: new XYZ({
         url:
-          "https://api.mapbox.com/styles/v1/mapbox/outdoors-v11/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1IjoiZWlkZ2UiLCJhIjoiNjVmYTRkMWY0NzM0NDdhZThmYmY4MzI2ZjU2Njg5NTIifQ.7IevRmRnToydZ2fJMGLZRQ"
+          "https://api.mapbox.com/styles/v1/mapbox/outdoors-v11/tiles/256/{z}/{x}/{y}@2x?access_token=pk.eyJ1IjoiZWlkZ2UiLCJhIjoiNjVmYTRkMWY0NzM0NDdhZThmYmY4MzI2ZjU2Njg5NTIifQ.7IevRmRnToydZ2fJMGLZRQ",
+        tilePixelRatio: 2
       })
     });
   }

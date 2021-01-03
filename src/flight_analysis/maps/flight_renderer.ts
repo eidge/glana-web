@@ -165,7 +165,7 @@ export default class FlightRenderer {
       } else {
         positions = trackSegment.positions.slice(
           0,
-          currentDatumIndex - trackSegment.startIndex
+          currentDatumIndex - trackSegment.startIndex + 1
         );
       }
 

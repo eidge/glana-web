@@ -33,11 +33,12 @@ export function useWindowHeight() {
       clearInterval(interval);
     };
   }, [firstRenderAt]);
+
   useEffect(() => {
     const setHeightFn = () => setHeight(window.innerHeight);
     window.addEventListener("resize", setHeightFn);
     return () => window.removeEventListener("resize", setHeightFn);
-  });
+  }, []);
 
   return height;
 }

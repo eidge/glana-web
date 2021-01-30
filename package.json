@@ -19,6 +19,7 @@
     "postcss": "^7",
     "react": "16.13.1",
     "react-dom": "16.13.1",
+    "rollbar": "^2.20.0",
     "tailwindcss": "npm:@tailwindcss/postcss7-compat"
   },
   "devDependencies": {

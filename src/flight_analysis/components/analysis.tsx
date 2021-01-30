@@ -11,6 +11,7 @@ import { useCallback, useMemo } from "react";
 import IGCBlob from "../igc_blob";
 import analytics from "../../analytics";
 import React from "react";
+import errorTracker from "../../error_tracker";
 
 export default function Analysis() {
   const { sideDrawer, isLoading } = useFlightAnalysisState();
@@ -31,7 +32,7 @@ export default function Analysis() {
         const flightGroup = await igcBlob.toFlightGroup();
         dispatch(actions.setFlightGroup(flightGroup));
       } catch (e) {
-        console.error(e);
+        await errorTracker.report(e);
       }
     },
     [dispatch]

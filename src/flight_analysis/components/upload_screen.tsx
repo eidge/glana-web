@@ -5,6 +5,7 @@ import Icon from "../../ui/components/icon";
 import { useState } from "react";
 import Image from "next/image";
 import IGCBlob from "../igc_blob";
+import errorTracker from "../../error_tracker";
 
 export default function UploadScreen() {
   const [isLoading, setIsLoading] = useState(false);
@@ -87,7 +88,7 @@ async function handleFileInput(event: React.ChangeEvent<HTMLInputElement>) {
     const igcBlob = new IGCBlob(files);
     return await igcBlob.toFlightGroup();
   } catch (e) {
-    console.error(e);
+    await errorTracker.report(e);
     return null;
   }
 }

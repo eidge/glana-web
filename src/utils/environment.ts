@@ -1,3 +1,7 @@
+export function envName() {
+  return process.env.NODE_ENV;
+}
+
 export function isProduction() {
   return process.env.NODE_ENV === "production";
 }

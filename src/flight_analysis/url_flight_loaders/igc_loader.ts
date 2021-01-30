@@ -2,6 +2,7 @@ import Loader from "./loader";
 import FlightGroup from "glana/src/analysis/flight_group";
 import IGCParser from "glana/src/igc/parser";
 import SavedFlight from "glana/src/saved_flight";
+import errorTracker from "../../error_tracker";
 
 export default class IGCLoader implements Loader {
   private urls: string[];
@@ -38,13 +39,12 @@ export default class IGCLoader implements Loader {
       if (response.ok) {
         return await response.text();
       } else {
-        console.error(
-          `Fetching "${url}" failed with ${response.status} (${response.statusText})`
-        );
+        const errorMsg = `Fetching "${url}" failed with ${response.status} (${response.statusText})`;
+        await errorTracker.report(new Error(errorMsg));
         return null;
       }
     } catch (e) {
-      console.error(e);
+      await errorTracker.report(e);
       return null;
     }
   }
@@ -55,7 +55,7 @@ export default class IGCLoader implements Loader {
         let parser = new IGCParser();
         return parser.parse(contents);
       } catch (e) {
-        console.error(e);
+        errorTracker.report(e);
         return null;
       }
     });

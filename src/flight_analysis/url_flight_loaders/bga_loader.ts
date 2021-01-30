@@ -10,6 +10,7 @@ import IGCParser from "glana/src/igc/parser";
 import SavedFlight from "glana/src/saved_flight";
 import { degrees } from "glana/src/units/angle";
 import { kilometers } from "glana/src/units/length";
+import errorTracker from "../../error_tracker";
 import Loader from "./loader";
 
 const DEFAULT_BGA_BASE_URL = new URL("https://bgaladder.net");
@@ -71,13 +72,12 @@ export default class BGALoader implements Loader {
       if (response.ok) {
         return response.json();
       } else {
-        console.error(
-          `Fetching "${url}" failed with ${response.status} (${response.statusText})`
-        );
+        const errorMsg = `Fetching "${url}" failed with ${response.status} (${response.statusText})`;
+        await errorTracker.report(new Error(errorMsg));
         return null;
       }
     } catch (e) {
-      console.error(e);
+      await errorTracker.report(e);
       return null;
     }
   }

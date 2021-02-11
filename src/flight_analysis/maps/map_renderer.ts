@@ -10,6 +10,7 @@ import { createEmpty, extend, Extent } from "ol/extent";
 import XYZ from "ol/source/XYZ";
 
 const ANIMATION_DURATION = 400;
+const MINIMUM_USABLE_SIZE_IN_PX = 200;
 
 interface Padding {
   top: number;
@@ -33,7 +34,7 @@ export default class MapRenderer {
 
   constructor(domElement: HTMLElement, padding: Padding) {
     this.domElement = domElement;
-    this.padding = padding;
+    this.padding = Object.assign({}, padding);
     this.olMap = this.buildMap();
     this.olMap.setTarget(this.domElement);
     this.resizeObserver = new ResizeObserver(this.resizeCallback.bind(this));
@@ -213,6 +214,20 @@ export default class MapRenderer {
       this.mapClientRect.width - this.padding.left - this.padding.right,
       this.mapClientRect.height - this.padding.bottom - this.padding.top
     );
+
+    if (this.usableClientRect.width < MINIMUM_USABLE_SIZE_IN_PX) {
+      this.usableClientRect.x = this.mapClientRect.x;
+      this.usableClientRect.width = this.mapClientRect.width;
+      this.padding.left = 0;
+      this.padding.right = 0;
+    }
+
+    if (this.usableClientRect.height < MINIMUM_USABLE_SIZE_IN_PX) {
+      this.usableClientRect.y = this.mapClientRect.y;
+      this.usableClientRect.height = this.mapClientRect.height;
+      this.padding.top = 0;
+      this.padding.bottom = 0;
+    }
   }
 
   private offsetForUsableCenter(coordinate: Coordinate) {

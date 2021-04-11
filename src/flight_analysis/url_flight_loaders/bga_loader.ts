@@ -116,7 +116,7 @@ export default class BGALoader implements Loader {
   private createLineTurnpoint(tp: any) {
     const line = new Line(
       new Position(degrees(tp.latitude), degrees(tp.longitude)),
-      kilometers(tp.radius1 || tp.radius2)
+      kilometers(tp.radius1 || tp.radius2).multiply(2)
     );
     return new Turnpoint(tp.code || tp.name, [line]);
   }

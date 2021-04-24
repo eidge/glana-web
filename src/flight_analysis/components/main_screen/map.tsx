@@ -7,6 +7,7 @@ import { createEmpty, Extent } from "ol/extent";
 import Timeline from "./timeline";
 import ButtonGroup from "../../../ui/components/button_group";
 import React from "react";
+import { isInIFrame } from "../../../utils/environment";
 
 const PADDING = {
   top: 40,
@@ -62,6 +63,11 @@ export default function Map(props: Props) {
       <div className="absolute hidden lg:block top-0 left-0 ml-3 mt-3">
         <ZoomControls zoomIn={zoomIn} zoomToFit={zoomToFit} zoomOut={zoomOut} />
       </div>
+      {isInIFrame() && (
+        <div className="absolute top-0 right-0 mr-3 mt-3">
+          <FramedControls />
+        </div>
+      )}
       <div className="w-full absolute bottom-0 left-0">
         {analysis && (
           <Timeline
@@ -98,6 +104,22 @@ const ZoomControls = React.memo(
     );
   }
 );
+
+function FramedControls() {
+  return (
+    <ButtonGroup
+      size="md"
+      color="white"
+      type="full"
+      isVertical={true}
+      buttons={[{ icon: "externalLink", onClick: openInNewTab }]}
+    />
+  );
+}
+
+function openInNewTab() {
+  window.open(window.location.toString());
+}
 
 function useMapRenderer(
   element: RefObject<HTMLElement>,

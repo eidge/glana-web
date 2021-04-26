@@ -68,7 +68,7 @@ function TimelineDetail(props: TimelineDetailProps) {
     >
       <FlightLabel flightDatum={flightDatum} isActive={isActive} />
       <InstrumentValue
-        label="amsl"
+        label="altitude"
         value={altitude.toString({ precision: 0, padToSize: 4 })}
       />
       <InstrumentValue

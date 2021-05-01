@@ -98,11 +98,11 @@ function closeDrawer() {
 }
 
 function changeSettings(changes: Partial<Settings>) {
-  const attribute = Object.keys(changes)[0];
-  const value = Object.values(changes)[0];
-  analytics.trackEvent("settings_changed", {
-    attribute,
-    value
+  (Object.keys(changes) as (keyof Settings)[]).forEach(attribute => {
+    analytics.trackEvent("settings_changed", {
+      attribute,
+      value: changes[attribute]
+    });
   });
 
   return {

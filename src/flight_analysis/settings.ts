@@ -1,6 +1,7 @@
 import { synchronizationMethods } from "glana/src/analysis/flight_group";
 import SynchronizationMethod from "glana/src/analysis/synchronization/method";
 import AverageVario from "glana/src/flight_computer/calculators/average_vario";
+import PressureAltitude from "glana/src/flight_computer/calculators/pressure_altitude";
 import Calculator from "glana/src/flight_computer/calculators/calculator";
 import EngineInUse from "glana/src/flight_computer/calculators/engine_in_use";
 import FlightComputer from "glana/src/flight_computer/computer";
@@ -19,6 +20,8 @@ import {
   metersPerSecond,
   Speed
 } from "glana/src/units/speed";
+import { hpa, Pressure } from "glana/src/units/pressure";
+import Quantity from "glana/src/units/quantity";
 
 export type UnitOption = "metric" | "imperial";
 
@@ -30,6 +33,7 @@ export interface Settings {
   units: UnitOption;
   showAirspace: boolean;
   showWeather: boolean;
+  qnh: Quantity<Pressure>;
 }
 
 export interface UnitSettings {
@@ -37,6 +41,7 @@ export interface UnitSettings {
   altitude: QuantityFactory<Meter>;
   speed: QuantityFactory<Speed>;
   distance: QuantityFactory<Length>;
+  pressure: QuantityFactory<Pressure>;
 }
 
 export const units: { [key in UnitOption]: UnitSettings } = {
@@ -44,13 +49,15 @@ export const units: { [key in UnitOption]: UnitSettings } = {
     vario: metersPerSecond,
     altitude: meters,
     speed: kilometersPerHour,
-    distance: kilometers
+    distance: kilometers,
+    pressure: hpa
   },
   imperial: {
     vario: knots,
     altitude: feet,
     speed: knots,
-    distance: kilometers
+    distance: kilometers,
+    pressure: hpa
   }
 };
 
@@ -62,13 +69,15 @@ export function defaultSettings(): Settings {
     playbackSpeed: 250,
     units: "imperial",
     showAirspace: false,
-    showWeather: false
+    showWeather: false,
+    qnh: hpa(1013.25)
   };
 }
 
-export function flightComputer() {
+export function flightComputer(settings: Settings) {
   return new FlightComputer(
     new Map([
+      ["pressureAltitude", new PressureAltitude(settings.qnh) as Calculator],
       ["averageVario", new AverageVario(seconds(30)) as Calculator],
       ["engineOn", new EngineInUse(0.5) as Calculator]
     ])

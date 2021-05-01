@@ -1,8 +1,8 @@
 import { synchronizationMethods } from "glana/src/analysis/flight_group";
-import { Settings, UnitOption } from "../settings";
+import { Settings, UnitOption, units } from "../settings";
 import { actions } from "../store/actions";
 import { useFlightAnalysisDispatch, useFlightAnalysisState } from "../store";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import analytics from "../../analytics";
 import { isProduction } from "../../utils/environment";
 
@@ -23,6 +23,10 @@ export default function SettingsScreen() {
       <div className="mt-4">
         <span className="text-gray-500">Units</span>
         <div className="mt-2">{unitInput(settings, onChange)}</div>
+      </div>
+      <div className="mt-4">
+        <span className="text-gray-500">QNH</span>
+        <div className="mt-2">{QNHInput(settings, onChange)}</div>
       </div>
       <div className="mt-4">
         <span className="text-gray-500">Synchronize flights by</span>
@@ -88,6 +92,37 @@ function unitInput(
       </label>
     );
   });
+}
+
+function QNHInput(
+  settings: Settings,
+  onChange: (settings: Partial<Settings>) => void
+) {
+  const [qnh, setQNH] = useState(settings.qnh.value);
+  const unitSettings = units[settings.units];
+  const makeQNH = (qnhStr: string) => unitSettings.pressure(+qnhStr);
+  const updateSettings = (event: { target: { value: string } }) => {
+    const qnh = makeQNH(event.target.value);
+    onChange({ qnh });
+  };
+
+  useEffect(() => setQNH(settings.qnh.value), [settings.qnh.value]);
+
+  return (
+    <>
+      <label className="inline-flex items-center mr-6">
+        <input
+          type="number"
+          className="bg-gray-700 px-2 rounded w-24"
+          name="pressure"
+          value={qnh}
+          onChange={event => setQNH(+event.target.value)}
+          onBlur={updateSettings}
+        />
+        <span className="ml-2">{unitSettings.pressure.unit.symbol}</span>
+      </label>
+    </>
+  );
 }
 
 const synchronizationOptions = [

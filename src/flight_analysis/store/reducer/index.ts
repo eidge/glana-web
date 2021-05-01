@@ -188,9 +188,12 @@ export function reducer(state: State, action: Action): State {
         settings: { ...state.settings, ...changes }
       };
 
+      const shouldReanalise = Object.keys(changes).includes("qnh");
+
       if (
         state.analysis &&
-        Object.keys(changes).includes("synchronizationMethod")
+        (Object.keys(changes).includes("synchronizationMethod") ||
+          shouldReanalise)
       ) {
         newState.analysis = buildAnalysisState(
           newState,
@@ -200,7 +203,8 @@ export function reducer(state: State, action: Action): State {
             followFlightId: state.analysis.followFlightId,
             activeTimestamp: state.analysis.activeTimestamp,
             isSummary: state.analysis.isSummary
-          }
+          },
+          shouldReanalise
         );
       }
 
@@ -225,7 +229,8 @@ function buildAnalysisState(
   state: State,
   flightGroup: FlightGroup,
   task: Task | null,
-  overrides: Partial<AnalysisState> = {}
+  overrides: Partial<AnalysisState> = {},
+  reanalise = false
 ) {
   const colors = new Colors();
 
@@ -240,7 +245,9 @@ function buildAnalysisState(
     return byId;
   }, {});
 
-  flightGroup.flights.forEach(f => f.analise(flightComputer()));
+  flightGroup.flights.forEach(f =>
+    f.analise(flightComputer(state.settings), reanalise)
+  );
   flightGroup.synchronize(state.settings.synchronizationMethod);
   flightGroup = Object.create(flightGroup);
 

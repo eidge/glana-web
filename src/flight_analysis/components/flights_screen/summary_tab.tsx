@@ -109,7 +109,8 @@ function taskValue(task: Task) {
 
   if (task.isFinished()) {
     const speedInKPH = task.getSpeed()!.convertTo(kilometersPerHour);
-    result += ` @ ${speedInKPH}`;
+    const duration = durationToHuman(task.getDuration()!);
+    result += ` @ ${speedInKPH} (${duration})`;
   } else {
     result += " (abandoned)";
   }

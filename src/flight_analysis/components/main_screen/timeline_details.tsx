@@ -48,7 +48,9 @@ function TimelineDetail(props: TimelineDetailProps) {
   const { flightDatum, timestamp, isActive, onClick, unitSettings } = props;
   const datum = flightDatum.flight.datumAt(timestamp);
 
-  const altitude = datum.position.altitude.convertTo(unitSettings.altitude);
+  const altitude = datum.calculatedValues["pressureAltitude"]!.convertTo(
+    unitSettings.altitude
+  );
   const vario =
     datum.calculatedValues["averageVario"]?.convertTo(unitSettings.vario) ||
     unitSettings.vario(0);

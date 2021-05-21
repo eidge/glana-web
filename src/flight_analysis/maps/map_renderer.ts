@@ -8,9 +8,26 @@ import Position from "glana/src/flight_computer/position";
 import { Coordinate } from "ol/coordinate";
 import { createEmpty, extend, Extent } from "ol/extent";
 import XYZ from "ol/source/XYZ";
+import Attribution from "ol/control/Attribution";
 
 const ANIMATION_DURATION = 400;
 const MINIMUM_USABLE_SIZE_IN_PX = 200;
+const MAPBOX_ATTRIBUTION = `
+  <div class="flex flex-row items-center space-x-2">
+    <div>
+      <a href="http://mapbox.com/about/maps" target="_blank">
+        <div class="mapbox-logo"></div>
+      </a>
+    </div>
+    <div class="leading-none">
+      © <a href="https://www.mapbox.com/about/maps/">Mapbox</a>
+      © <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>
+      <a href="https://www.mapbox.com/map-feedback/" target="_blank">
+        Improve this map
+      </a>
+    </div>
+  </div>
+`;
 
 interface Padding {
   top: number;
@@ -152,7 +169,9 @@ export default class MapRenderer {
     this.airspaceLayer = this.buildAirspaceLayer();
 
     return new OlMap({
-      controls: [],
+      controls: [
+        new Attribution({ collapsible: false, className: "gl-attribution" })
+      ],
       interactions: interactions,
       layers: [this.buildMapLayer(), this.airspaceLayer],
       view: new View({
@@ -168,7 +187,8 @@ export default class MapRenderer {
       source: new XYZ({
         url:
           "https://api.mapbox.com/styles/v1/eidge/ckbtv1rde19ee1iqsvymt93ak/tiles/256/{z}/{x}/{y}@2x?access_token=pk.eyJ1IjoiZWlkZ2UiLCJhIjoiNjVmYTRkMWY0NzM0NDdhZThmYmY4MzI2ZjU2Njg5NTIifQ.7IevRmRnToydZ2fJMGLZRQ",
-        tilePixelRatio: 2
+        tilePixelRatio: 2,
+        attributions: MAPBOX_ATTRIBUTION
       })
     });
   }

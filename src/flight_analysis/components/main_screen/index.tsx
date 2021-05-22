@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { milliseconds } from "glana/src/units/duration";
 import Menu from "./menu";
-import Map from "./map";
+import Mapbox from "./mapbox";
 import AnimationTicker from "../../animation_ticker";
 import { useFlightAnalysisDispatch, useFlightAnalysisState } from "../../store";
 import { Action, actions } from "../../store/actions";
@@ -43,7 +43,7 @@ export default function MainScreen() {
 
   return (
     <div className="flex flex-col relative w-full h-full">
-      <Map
+      <Mapbox
         isPlaying={isPlaying}
         setActiveTimestamp={setActiveTimestamp}
         analysis={analysis}

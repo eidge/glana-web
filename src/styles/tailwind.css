@@ -11,6 +11,10 @@ body, html {
   overscroll-behavior-y: none;
 }
 
+:focus {
+  outline: none;
+}
+
 .gl-prevent-overscroll {
   overscroll-behavior-y: none;
 }

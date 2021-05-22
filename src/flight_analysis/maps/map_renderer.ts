@@ -1,6 +1,7 @@
 import { defaults as interactionDefaults } from "ol/interaction";
 import OlMap from "ol/Map";
 import View, { AnimationOptions } from "ol/View";
+import VectorTileLayer from "ol/layer/VectorTile";
 import TileLayer from "ol/layer/Tile";
 import TileImage from "ol/source/XYZ";
 import { extentUnion, positionToOlPoint } from "./utils";
@@ -12,6 +13,8 @@ import Attribution from "ol/control/Attribution";
 
 const ANIMATION_DURATION = 400;
 const MINIMUM_USABLE_SIZE_IN_PX = 200;
+const MAP_URL =
+  "https://api.mapbox.com/styles/v1/eidge/ckbtv1rde19ee1iqsvymt93ak?access_token=pk.eyJ1IjoiZWlkZ2UiLCJhIjoiNjVmYTRkMWY0NzM0NDdhZThmYmY4MzI2ZjU2Njg5NTIifQ.7IevRmRnToydZ2fJMGLZRQ";
 const MAPBOX_ATTRIBUTION = `
   <div class="flex flex-row items-center space-x-2">
     <div>
@@ -152,7 +155,7 @@ export default class MapRenderer {
   }
 
   private isTileLayer(layer: any) {
-    return layer instanceof TileLayer;
+    return layer instanceof TileLayer || layer instanceof VectorTileLayer;
   }
 
   destroy() {
@@ -168,28 +171,38 @@ export default class MapRenderer {
 
     this.airspaceLayer = this.buildAirspaceLayer();
 
-    return new OlMap({
+    const map = new OlMap({
       controls: [
         new Attribution({ collapsible: false, className: "gl-attribution" })
       ],
       interactions: interactions,
-      layers: [this.buildMapLayer(), this.airspaceLayer],
+      layers: [this.airspaceLayer],
       view: new View({
         center: [0, 0],
         zoom: 0
       })
     });
+
+    this.addMapLayer(map);
+
+    return map;
   }
 
-  private buildMapLayer() {
-    return new TileLayer({
-      preload: Infinity,
-      source: new XYZ({
-        url:
-          "https://api.mapbox.com/styles/v1/eidge/ckbtv1rde19ee1iqsvymt93ak/tiles/256/{z}/{x}/{y}@2x?access_token=pk.eyJ1IjoiZWlkZ2UiLCJhIjoiNjVmYTRkMWY0NzM0NDdhZThmYmY4MzI2ZjU2Njg5NTIifQ.7IevRmRnToydZ2fJMGLZRQ",
-        tilePixelRatio: 2,
-        attributions: MAPBOX_ATTRIBUTION
-      })
+  private addMapLayer(map: OlMap) {
+    const mapboxStyle = require("ol-mapbox-style");
+    const olms = mapboxStyle.default;
+
+    olms(map, MAP_URL).then(() => {
+      // This ol-mapbox-style mutates the map directly rather than returning
+      // a layer we can operate on. So we need to find the layer it just added
+      // to set the right options on it.
+      const mapLayer = map
+        .getLayers()
+        .getArray()
+        .find(layer => layer instanceof VectorTileLayer) as VectorTileLayer;
+      mapLayer.setZIndex(-1);
+      mapLayer.setPreload(Infinity);
+      mapLayer.getSource().setAttributions(MAPBOX_ATTRIBUTION);
     });
   }
 

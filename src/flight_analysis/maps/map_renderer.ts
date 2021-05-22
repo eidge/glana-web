@@ -13,17 +13,17 @@ import Attribution from "ol/control/Attribution";
 const ANIMATION_DURATION = 400;
 const MINIMUM_USABLE_SIZE_IN_PX = 200;
 const MAPBOX_ATTRIBUTION = `
-  <div class="flex flex-row items-center space-x-2">
+  <div class="gl-attribution-container">
     <div>
-      <a href="http://mapbox.com/about/maps" target="_blank">
-        <div class="mapbox-logo"></div>
-      </a>
-    </div>
-    <div class="leading-none">
       © <a href="https://www.mapbox.com/about/maps/">Mapbox</a>
       © <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>
       <a href="https://www.mapbox.com/map-feedback/" target="_blank">
         Improve this map
+      </a>
+    </div>
+    <div>
+      <a href="http://mapbox.com/about/maps" target="_blank">
+        <div class="mapbox-logo"></div>
       </a>
     </div>
   </div>

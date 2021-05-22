@@ -6,6 +6,10 @@
   top: 0.5em;
 }
 
+.gl-attribution-container {
+  @apply flex flex-row items-center space-x-2 leading-none;
+}
+
 .gl-attribution:hover {
   background: none;
 }

@@ -1,10 +1,17 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Timeline from "./timeline";
 import ButtonGroup from "../../../ui/components/button_group";
 import React from "react";
 import { isInIFrame } from "../../../utils/environment";
 import MapRenderer from "../../mapbox_maps/renderer";
 import { AnalysisState } from "../../store/reducer";
+
+const PADDING = {
+  top: 40,
+  right: 40,
+  bottom: 135,
+  left: 40
+};
 
 interface Props {
   analysis: AnalysisState | null;
@@ -19,9 +26,11 @@ interface Props {
 export default function Map(props: Props) {
   const { analysis, isDebug, isPlaying, setActiveTimestamp } = props;
   const element = useRef<HTMLDivElement | null>(null);
-  const mapRenderer = useMapRenderer(element);
 
+  const mapRenderer = useMapRenderer(element);
+  useMapSettings(mapRenderer, props);
   useRenderFlights(mapRenderer, analysis);
+  useRenderTask(mapRenderer, analysis);
 
   //useWeatherLayer(mapRenderer, analysis, showWeather);
   //useFlightRenderers(mapRenderer, analysis, renderFullTrack);
@@ -56,7 +65,7 @@ function useMapRenderer(element: React.MutableRefObject<HTMLElement | null>) {
   useEffect(() => {
     if (!element.current) return;
 
-    const mapRenderer = new MapRenderer(element.current);
+    const mapRenderer = new MapRenderer(element.current, PADDING);
     mapRenderer.initialize().then(() => setRenderer(mapRenderer));
 
     return () => mapRenderer.destroy();
@@ -64,18 +73,63 @@ function useMapRenderer(element: React.MutableRefObject<HTMLElement | null>) {
   return renderer;
 }
 
+function useMapSettings(mapRenderer: MapRenderer | null, props: Props) {
+  const { renderFullTrack, analysis } = props;
+  const isSummary = analysis?.isSummary || false;
+
+  useEffect(() => {
+    if (!mapRenderer) return;
+    mapRenderer.setRenderFullTracks(renderFullTrack || isSummary);
+  }, [mapRenderer, renderFullTrack, isSummary]);
+}
+
 function useRenderFlights(
   mapRenderer: MapRenderer | null,
   analysis: AnalysisState | null
 ) {
-  const { flightData } = analysis || { flightData: null };
+  const flightData = analysis?.flightData;
+  const activeTimestamp = analysis?.activeTimestamp;
+  const activeFlight = getActiveFlight(analysis);
 
   useEffect(() => {
     if (!mapRenderer || !flightData) return;
     flightData.forEach(f => mapRenderer.addFlight(f));
+    mapRenderer.zoomToFit();
 
     return () => flightData.forEach(f => mapRenderer.removeFlight(f));
   }, [mapRenderer, flightData]);
+
+  useEffect(() => {
+    if (!mapRenderer || !activeTimestamp) return;
+
+    mapRenderer.setTime(activeTimestamp);
+  }, [mapRenderer, activeTimestamp]);
+
+  useEffect(() => {
+    if (!mapRenderer || !activeFlight) return;
+    mapRenderer.setActiveFlight(activeFlight);
+  }, [mapRenderer, activeFlight]);
+}
+
+function useRenderTask(
+  mapRenderer: MapRenderer | null,
+  analysis: AnalysisState | null
+) {
+  const task = analysis?.task;
+
+  useEffect(() => {
+    if (!mapRenderer || !task) return;
+    mapRenderer.addTask(task);
+    mapRenderer.zoomToFit();
+
+    return () => mapRenderer.removeTask(task);
+  }, [mapRenderer, task]);
+}
+
+function getActiveFlight(analysis: AnalysisState | null) {
+  if (!analysis || !analysis.followFlightId) return null;
+  const flight = analysis.flightDataById[analysis.followFlightId];
+  return flight || null;
 }
 
 const ZoomControls = React.memo((props: { mapRenderer: MapRenderer }) => {

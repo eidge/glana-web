@@ -2887,6 +2887,11 @@
   resolved "https://registry.yarnpkg.com/@types/geojson/-/geojson-7946.0.7.tgz#c8fa532b60a0042219cdf173ca21a975ef0666ad"
   integrity sha512-wE2v81i4C4Ol09RtsWFAqg3BUitWbHSpSlIo+bNdsCJijO9sjme+zm+73ZMCa/qMC8UEERxzGbvmr1cffo2SiQ==
 
+"@types/geojson@^7946.0.8":
+  version "7946.0.8"
+  resolved "https://registry.yarnpkg.com/@types/geojson/-/geojson-7946.0.8.tgz#30744afdb385e2945e22f3b033f897f76b1f12ca"
+  integrity sha512-1rkryxURpr6aWP7R786/UQOkJ3PcpQiWkAXBmdWc7ryFWqN6a4xfK7BtjXvFBKO9LjQ+MWQSWxYeZX1OApnArA==
+
 "@types/graceful-fs@^4.1.2":
   version "4.1.4"
   resolved "https://registry.yarnpkg.com/@types/graceful-fs/-/graceful-fs-4.1.4.tgz#4ff9f641a7c6d1a3508ff88bc3141b152772e753"
@@ -5812,10 +5817,10 @@ glana-igc-parser@^0.5.1:
   dependencies:
     flight-recorder-manufacturers "^1.0.1"
 
-glana@^0.2.24:
-  version "0.2.24"
-  resolved "https://registry.yarnpkg.com/glana/-/glana-0.2.24.tgz#50c00e6d4c7dbc18468b4c0a01dee78e04a4d3dd"
-  integrity sha512-Mea3ZsrRbUuCQdjXW7ZgtTnuY6GauShsZUCPw6aQwb159Xpy/KLCYVhzjdizSxRC4sE7IL+hBSjzgR9FO6yUUA==
+glana@^0.2.25:
+  version "0.2.25"
+  resolved "https://registry.yarnpkg.com/glana/-/glana-0.2.25.tgz#89b8710dbe77ea18be33558b842683e51a743a94"
+  integrity sha512-1nYAf1cbYKlI8I2ZEVNKE2zEgytpmpb4BFQYe347DNwkstx6SwZmAcHTbc+W7sg02nX2KIMuPIKvlydAxLYVyA==
   dependencies:
     "@turf/turf" "^5.1.6"
     glana-igc-parser "^0.5.1"

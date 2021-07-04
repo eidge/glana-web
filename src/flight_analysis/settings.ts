@@ -79,7 +79,7 @@ export function flightComputer(settings: Settings) {
     new Map([
       ["pressureAltitude", new PressureAltitude(settings.qnh) as Calculator],
       ["averageVario", new AverageVario(seconds(30)) as Calculator],
-      ["engineOn", new EngineInUse(0.5) as Calculator]
+      ["engineOn", new EngineInUse(0.4) as Calculator]
     ])
   );
 }

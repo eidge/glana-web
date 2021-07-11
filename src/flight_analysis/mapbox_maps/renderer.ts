@@ -340,7 +340,11 @@ class TaskRenderer {
   }
 
   initialize() {
-    this.map.addSource(this.sourceId, { type: "geojson", data: this.geoJSON });
+    this.map.addSource(this.sourceId, {
+      type: "geojson",
+      data: this.geoJSON,
+      tolerance: 0
+    });
     this.map.addLayer({
       id: this.layerContourId,
       source: this.sourceId,

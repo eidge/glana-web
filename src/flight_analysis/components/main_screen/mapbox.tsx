@@ -33,7 +33,6 @@ export default function Map(props: Props) {
   useRenderTask(mapRenderer, analysis);
 
   //useWeatherLayer(mapRenderer, analysis, showWeather);
-  //useFlightRenderers(mapRenderer, analysis, renderFullTrack);
 
   return (
     <div className="relative w-full h-full bg-gray-800">

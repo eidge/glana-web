@@ -4,39 +4,53 @@ import Task from "glana/src/flight_computer/tasks/task";
 import { Map, LngLatBounds } from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 
+type TaskGeoJSON = GeoJSON.FeatureCollection;
+type TrackGeoJSON = GeoJSON.Feature<GeoJSON.LineString>;
+
 export default class TaskRenderer {
   private id;
   private map: Map;
-  private sourceId: string;
-  private layerContourId: string;
+  private sourceOutlineId: string;
+  private sourceFillId: string;
+  private layerOutlineId: string;
   private layerFillId: string;
-  private geoJSON: GeoJSON.FeatureCollection;
+  private sectorsGeoJSON: TaskGeoJSON;
+  private sectorsAndTrackGeoJSON: TaskGeoJSON;
   private bounds: LngLatBounds;
 
   constructor(map: Map, task: Task) {
     this.id = this.generateId();
     this.map = map;
-    this.sourceId = `source-${this.id}`;
-    this.layerContourId = `layer-contour-${this.id}`;
+    this.sourceOutlineId = `source-outline-${this.id}`;
+    this.sourceFillId = `source-fill-${this.id}`;
+    this.layerOutlineId = `layer-contour-${this.id}`;
     this.layerFillId = `layer-fill-${this.id}`;
-    this.geoJSON = this.buildGeoJSON(task);
-    this.bounds = this.calculateBounds(this.geoJSON);
+    this.sectorsGeoJSON = this.buildTurnpointsGeoJSON(task, false);
+    this.sectorsAndTrackGeoJSON = this.buildTurnpointsGeoJSON(task, true);
+    this.bounds = this.calculateBounds(this.sectorsGeoJSON);
   }
 
   private generateId() {
     return Math.round(Math.random() * 1000000).toString();
   }
 
-  buildGeoJSON(task: Task): GeoJSON.FeatureCollection {
+  buildTurnpointsGeoJSON(
+    task: Task,
+    includeTrack: boolean
+  ): GeoJSON.FeatureCollection {
+    const features = task.turnpoints.map(tp => tp.toGeoJSON());
+
+    if (includeTrack) {
+      features.push(this.buildTrackGeoJSON(task));
+    }
+
     return {
       type: "FeatureCollection",
-      features: task.turnpoints
-        .map(tp => tp.toGeoJSON())
-        .concat([this.trackGeoJSON(task)])
+      features: features
     };
   }
 
-  private trackGeoJSON(task: Task): GeoJSON.Feature<GeoJSON.LineString> {
+  private buildTrackGeoJSON(task: Task): TrackGeoJSON {
     const coordinates = task.turnpoints.map(tp =>
       this.positionToGeoJSON(tp.center)
     );
@@ -75,14 +89,20 @@ export default class TaskRenderer {
   }
 
   initialize() {
-    this.map.addSource(this.sourceId, {
+    this.map.addSource(this.sourceOutlineId, {
       type: "geojson",
-      data: this.geoJSON,
+      data: this.sectorsAndTrackGeoJSON,
       tolerance: 0
     });
+    this.map.addSource(this.sourceFillId, {
+      type: "geojson",
+      data: this.sectorsGeoJSON,
+      tolerance: 0
+    });
+
     this.map.addLayer({
-      id: this.layerContourId,
-      source: this.sourceId,
+      id: this.layerOutlineId,
+      source: this.sourceOutlineId,
       type: "line",
       paint: {
         "line-color": "black",
@@ -92,7 +112,7 @@ export default class TaskRenderer {
     });
     this.map.addLayer({
       id: this.layerFillId,
-      source: this.sourceId,
+      source: this.sourceFillId,
       type: "fill",
       paint: {
         "fill-color": "black",
@@ -103,7 +123,8 @@ export default class TaskRenderer {
 
   destroy() {
     this.map.removeLayer(this.layerFillId);
-    this.map.removeLayer(this.layerContourId);
-    this.map.removeSource(this.sourceId);
+    this.map.removeLayer(this.layerOutlineId);
+    this.map.removeSource(this.sourceFillId);
+    this.map.removeSource(this.sourceOutlineId);
   }
 }

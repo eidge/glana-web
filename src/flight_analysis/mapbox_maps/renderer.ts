@@ -16,10 +16,10 @@ interface Padding {
   left: number;
 }
 
-export const DEFAULT_STYLE =
+const DEFAULT_STYLE =
   "mapbox://styles/eidge/ckbtv1rde19ee1iqsvymt93ak?optimize=true";
 
-export const EMPTY_STYLE = {
+const EMPTY_STYLE = {
   // No tiles, useful for working offline.
   version: 8,
   layers: [],
@@ -50,8 +50,7 @@ export default class Renderer {
   initialize() {
     this.map = new Map({
       container: this.element,
-      style: DEFAULT_STYLE,
-      //style: EMPTY_STYLE,
+      style: this.style(),
       failIfMajorPerformanceCaveat: !isProduction(),
       attributionControl: false,
       logoPosition: "top-right",
@@ -61,6 +60,14 @@ export default class Renderer {
     return new Promise(resolve => {
       this.map!.on("load", () => resolve(this));
     });
+  }
+
+  private style() {
+    if (process.env.noTiles) {
+      return EMPTY_STYLE;
+    } else {
+      return DEFAULT_STYLE;
+    }
   }
 
   destroy() {

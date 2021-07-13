@@ -1,4 +1,5 @@
 import { FeatureCollection } from "geojson";
+import Position from "glana/src/flight_computer/position";
 import Task from "glana/src/flight_computer/tasks/task";
 import { Map, LngLatBounds } from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
@@ -29,8 +30,28 @@ export default class TaskRenderer {
   buildGeoJSON(task: Task): GeoJSON.FeatureCollection {
     return {
       type: "FeatureCollection",
-      features: task.turnpoints.map(tp => tp.toGeoJSON())
+      features: task.turnpoints
+        .map(tp => tp.toGeoJSON())
+        .concat([this.trackGeoJSON(task)])
     };
+  }
+
+  private trackGeoJSON(task: Task): GeoJSON.Feature<GeoJSON.LineString> {
+    const coordinates = task.turnpoints.map(tp =>
+      this.positionToGeoJSON(tp.center)
+    );
+    return {
+      type: "Feature",
+      geometry: {
+        type: "LineString",
+        coordinates: coordinates
+      },
+      properties: {}
+    };
+  }
+
+  private positionToGeoJSON(position: Position) {
+    return [position.longitude.value, position.latitude.value];
   }
 
   getBounds() {

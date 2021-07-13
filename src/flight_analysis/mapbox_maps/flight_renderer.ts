@@ -1,21 +1,25 @@
-import { Feature, LineString } from "geojson";
 import { Map, LngLatBounds, GeoJSONSource } from "mapbox-gl";
 import { FlightDatum } from "../store/reducer";
+
+type FlightGeoJSON = GeoJSON.Feature<
+  GeoJSON.LineString,
+  NonNullable<GeoJSON.GeoJsonProperties>
+>;
+
+type PositionGeoJSON = [number, number];
 
 export default class FlightRenderer {
   private map: Map;
   private flightDatum: FlightDatum;
   private sourceId: string;
   private layerId: string;
-  private geoJSON: GeoJSON.Feature<
-    GeoJSON.LineString,
-    NonNullable<GeoJSON.GeoJsonProperties>
-  >;
+  private geoJSON: FlightGeoJSON;
   private bounds: LngLatBounds;
-  private coordinates: GeoJSON.Position[];
+  private coordinates: PositionGeoJSON[];
   private isActive: boolean;
   private shouldRenderFullTracks: boolean;
   private timestamp: Date;
+  currentPosition: PositionGeoJSON;
 
   constructor(map: Map, flightDatum: FlightDatum) {
     this.map = map;
@@ -31,14 +35,10 @@ export default class FlightRenderer {
     this.bounds = this.calculateBounds(this.geoJSON);
     this.isActive = true;
     this.shouldRenderFullTracks = true;
+    this.currentPosition = this.coordinates[0];
   }
 
-  private buildGeoJSON(
-    coordinates: GeoJSON.Position[]
-  ): GeoJSON.Feature<
-    GeoJSON.LineString,
-    NonNullable<GeoJSON.GeoJsonProperties>
-  > {
+  private buildGeoJSON(coordinates: GeoJSON.Position[]): FlightGeoJSON {
     return {
       type: "Feature",
       geometry: {
@@ -53,7 +53,7 @@ export default class FlightRenderer {
     };
   }
 
-  private calculateBounds(geoJSON: Feature<LineString>) {
+  private calculateBounds(geoJSON: FlightGeoJSON) {
     console.log(geoJSON);
     return geoJSON.geometry.coordinates.reduce(
       (bounds, coordinate: any) => bounds.extend(coordinate),
@@ -112,6 +112,7 @@ export default class FlightRenderer {
     }
 
     const source = this.map.getSource(this.sourceId) as GeoJSONSource;
+    this.currentPosition = coordinates[coordinates.length - 1];
     this.geoJSON.geometry.coordinates = coordinates;
     source.setData(this.geoJSON);
   }

@@ -1,4 +1,9 @@
+import { Datum } from "glana/src/flight_computer/computer";
+import Position from "glana/src/flight_computer/position";
+import mapboxgl from "mapbox-gl";
 import { Map, LngLatBounds, GeoJSONSource } from "mapbox-gl";
+import ReactDOMServer from "react-dom/server";
+import { glider } from "../../ui/components/icon/icons";
 import { FlightDatum } from "../store/reducer";
 
 type FlightGeoJSON = GeoJSON.Feature<
@@ -19,6 +24,7 @@ export default class FlightRenderer {
   private isActive: boolean;
   private shouldRenderFullTracks: boolean;
   private timestamp: Date;
+  private marker: mapboxgl.Marker;
   currentPosition: PositionGeoJSON;
 
   constructor(map: Map, flightDatum: FlightDatum) {
@@ -27,15 +33,23 @@ export default class FlightRenderer {
     this.timestamp = flightDatum.flight.getRecordingStartedAt();
     this.sourceId = `source-${this.flightDatum.id}`;
     this.layerId = `layer-${this.flightDatum.id}`;
-    this.coordinates = this.flightDatum.flight.datums.map(d => [
-      d.position.longitude.value,
-      d.position.latitude.value
-    ]);
+    this.coordinates = this.buildCoordinates(flightDatum);
     this.geoJSON = this.buildGeoJSON(this.coordinates);
     this.bounds = this.calculateBounds(this.geoJSON);
     this.isActive = true;
     this.shouldRenderFullTracks = true;
     this.currentPosition = this.coordinates[0];
+    this.marker = this.buildMarker(this.currentPosition);
+  }
+
+  private buildCoordinates(flightDatum: FlightDatum) {
+    return flightDatum.flight.datums.map(d =>
+      this.positionToGeoJSON(d.position)
+    );
+  }
+
+  private positionToGeoJSON(position: Position): PositionGeoJSON {
+    return [position.longitude.value, position.latitude.value];
   }
 
   private buildGeoJSON(coordinates: GeoJSON.Position[]): FlightGeoJSON {
@@ -54,7 +68,6 @@ export default class FlightRenderer {
   }
 
   private calculateBounds(geoJSON: FlightGeoJSON) {
-    console.log(geoJSON);
     return geoJSON.geometry.coordinates.reduce(
       (bounds, coordinate: any) => bounds.extend(coordinate),
       new LngLatBounds()
@@ -62,6 +75,7 @@ export default class FlightRenderer {
   }
 
   initialize() {
+    this.marker.addTo(this.map);
     this.map.addSource(this.sourceId, {
       type: "geojson",
       data: this.geoJSON
@@ -76,6 +90,28 @@ export default class FlightRenderer {
         "line-opacity": ["get", "opacity"]
       }
     });
+  }
+
+  private buildMarker(position: PositionGeoJSON) {
+    const el = document.createElement("div");
+    el.innerHTML = this.iconSVGURLEncoded();
+    const marker = new mapboxgl.Marker(el);
+    marker.setLngLat(position);
+    return marker;
+  }
+
+  private iconSVGURLEncoded() {
+    const size = 42;
+    const svg = ReactDOMServer.renderToStaticMarkup(
+      glider({ color: this.flightDatum.color, width: size, height: size })
+    );
+    return svg;
+  }
+
+  destroy() {
+    this.map.removeLayer(this.layerId);
+    this.map.removeSource(this.sourceId);
+    this.marker.remove();
   }
 
   getBounds() {
@@ -99,12 +135,19 @@ export default class FlightRenderer {
   }
 
   setTime(timestamp: Date) {
-    this.timestamp = timestamp;
+    const datumIdx = this.flightDatum.flight.datumIndexAt(timestamp);
+    const datum = this.flightDatum.flight.datums[datumIdx];
+    this.currentPosition = this.positionToGeoJSON(datum.position);
+
+    this.maybeUpdateTrack(datumIdx);
+    this.updateMarker(datum);
+  }
+
+  private maybeUpdateTrack(datumIdx: number) {
     let coordinates = this.coordinates;
 
     if (!this.shouldRenderFullTracks) {
-      const idxAt = this.flightDatum.flight.datumIndexAt(timestamp);
-      coordinates = this.coordinates.slice(0, idxAt + 1);
+      coordinates = this.coordinates.slice(0, datumIdx + 1);
     }
 
     if (this.geoJSON.geometry.coordinates === coordinates) {
@@ -112,13 +155,13 @@ export default class FlightRenderer {
     }
 
     const source = this.map.getSource(this.sourceId) as GeoJSONSource;
-    this.currentPosition = coordinates[coordinates.length - 1];
     this.geoJSON.geometry.coordinates = coordinates;
     source.setData(this.geoJSON);
   }
 
-  destroy() {
-    this.map.removeLayer(this.layerId);
-    this.map.removeSource(this.sourceId);
+  private updateMarker(datum: Datum) {
+    const coordinate = this.positionToGeoJSON(datum.position);
+    this.marker.setLngLat(coordinate);
+    this.marker.setRotation(datum.heading.value);
   }
 }

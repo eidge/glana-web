@@ -67,9 +67,20 @@ export default class Renderer {
     return new ClientRect();
   }
 
+  get activeFlight() {
+    if (!this.activeFlightId) return null;
+    return this.flightRenderers[this.activeFlightId] || null;
+  }
+
   zoomIn() {
-    this.map?.zoomIn();
-    // ZoomIn on ActiveFlight if present, otherwise just zoomIn
+    if (this.activeFlight) {
+      this.map?.flyTo({
+        center: this.activeFlight.currentPosition,
+        zoom: this.map.getZoom() + 1
+      });
+    } else {
+      this.map?.zoomIn();
+    }
   }
 
   zoomOut() {
@@ -77,6 +88,11 @@ export default class Renderer {
   }
 
   zoomToFit() {
+    const bounds = this.renderedBounds();
+    this.map?.fitBounds(bounds, { padding: this.padding });
+  }
+
+  private renderedBounds() {
     const renderers = Object.values(this.flightRenderers);
     let bounds = renderers.reduce(
       (bounds, r) => bounds.extend(r.getBounds()),
@@ -87,7 +103,7 @@ export default class Renderer {
       bounds = bounds.extend(this.taskRenderer.getBounds());
     }
 
-    this.map?.fitBounds(bounds, { padding: this.padding });
+    return bounds;
   }
 
   setDebug(isDebug: boolean) {
@@ -158,8 +174,34 @@ export default class Renderer {
   }
 
   setTime(timestamp: Date) {
+    if (!this.map) return;
+
     const renderers = Object.values(this.flightRenderers);
     renderers.forEach(r => r.setTime(timestamp));
+
+    if (
+      this.shouldFollowActiveFlight &&
+      this.activeFlight &&
+      !this.isVisible(this.activeFlight.currentPosition)
+    ) {
+      this.map.panTo(this.activeFlight.currentPosition, {
+        duration: 200,
+        essential: true
+      });
+    }
+  }
+
+  private isVisible(position: mapboxgl.LngLatLike) {
+    if (!this.map) return false;
+
+    const posXY = this.map.project(position);
+    const clientRect = this.element.getBoundingClientRect();
+    return !(
+      posXY.x < this.padding.left ||
+      posXY.y < this.padding.top ||
+      posXY.x > clientRect.width - this.padding.right ||
+      posXY.y > clientRect.height - this.padding.bottom
+    );
   }
 
   setActiveFlight(flight: FlightDatum) {
@@ -169,6 +211,23 @@ export default class Renderer {
       this.flightRenderers[id]?.setActive(id === this.activeFlightId);
     });
 
+    if (!this.fitsBounds()) {
+      this.map?.flyTo({ center: this.activeFlight!.currentPosition });
+    }
+
     console.log(`Set active flight id=${flight.id}`);
+  }
+
+  private fitsBounds() {
+    if (!this.map) return false;
+    const bounds = this.renderedBounds();
+
+    if (bounds.isEmpty()) return true;
+    const mapBounds = this.map.getBounds();
+
+    return (
+      mapBounds.contains(bounds.getNorthEast()) &&
+      mapBounds.contains(bounds.getSouthWest())
+    );
   }
 }

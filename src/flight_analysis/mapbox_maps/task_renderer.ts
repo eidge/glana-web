@@ -3,6 +3,7 @@ import Position from "glana/src/flight_computer/position";
 import Task from "glana/src/flight_computer/tasks/task";
 import { Map, LngLatBounds } from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
+import { Z_INDEX_1 } from "./renderer";
 
 type TaskGeoJSON = GeoJSON.FeatureCollection;
 type TrackGeoJSON = GeoJSON.Feature<GeoJSON.LineString>;
@@ -100,25 +101,31 @@ export default class TaskRenderer {
       tolerance: 0
     });
 
-    this.map.addLayer({
-      id: this.layerOutlineId,
-      source: this.sourceOutlineId,
-      type: "line",
-      paint: {
-        "line-color": "black",
-        "line-width": 2,
-        "line-opacity": 0.3
-      }
-    });
-    this.map.addLayer({
-      id: this.layerFillId,
-      source: this.sourceFillId,
-      type: "fill",
-      paint: {
-        "fill-color": "black",
-        "fill-opacity": 0.1
-      }
-    });
+    this.map.addLayer(
+      {
+        id: this.layerOutlineId,
+        source: this.sourceOutlineId,
+        type: "line",
+        paint: {
+          "line-color": "black",
+          "line-width": 2,
+          "line-opacity": 0.3
+        }
+      },
+      Z_INDEX_1
+    );
+    this.map.addLayer(
+      {
+        id: this.layerFillId,
+        source: this.sourceFillId,
+        type: "fill",
+        paint: {
+          "fill-color": "black",
+          "fill-opacity": 0.1
+        }
+      },
+      Z_INDEX_1
+    );
   }
 
   destroy() {

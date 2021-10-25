@@ -26,7 +26,9 @@ const EMPTY_STYLE = {
   sources: {}
 };
 
-// TODO: Replace console.log with log method. Log only if isDebug=true
+export const Z_INDEX_1 = "z-index-1";
+export const Z_INDEX_2 = "z-index-2";
+export const Z_INDEX_3 = "z-index-3";
 
 export default class Renderer {
   private map?: Map;
@@ -40,26 +42,61 @@ export default class Renderer {
   private shouldFollowActiveFlight = true;
   private shouldShowAirspace = false;
   private shouldShowClouds = false;
+  private resizeObserver: ResizeObserver;
+  private zIndexSourceId = "empty";
 
   constructor(element: HTMLElement, padding: Padding) {
     this.element = element;
     this.flightRenderers = {};
     this.padding = padding;
+    this.resizeObserver = new ResizeObserver(this.resizeCallback.bind(this));
   }
 
   initialize() {
-    this.map = new Map({
+    this.map = this.buildMap();
+
+    this.resizeObserver.observe(this.element);
+
+    return new Promise(resolve => {
+      this.map!.on("load", () => {
+        this.addZLayers(this.map!);
+        resolve(this);
+      });
+    });
+  }
+
+  private buildMap() {
+    return new Map({
       container: this.element,
       style: this.style(),
       failIfMajorPerformanceCaveat: !isProduction(),
       attributionControl: false,
       logoPosition: "top-right",
-      hash: true
+      hash: true,
+      trackResize: false
     });
+  }
 
-    return new Promise(resolve => {
-      this.map!.on("load", () => resolve(this));
+  private addZLayers(map: Map) {
+    this.addZIndexSource(map);
+    this.addZIndexLayer(map, Z_INDEX_1);
+    this.addZIndexLayer(map, Z_INDEX_2);
+    this.addZIndexLayer(map, Z_INDEX_3);
+  }
+
+  private addZIndexSource(map: Map) {
+    map.addSource(this.zIndexSourceId, {
+      type: "geojson",
+      data: { type: "FeatureCollection", features: [] }
     });
+  }
+
+  private addZIndexLayer(map: Map, layerId: string) {
+    map.addLayer({ id: layerId, type: "symbol", source: this.zIndexSourceId });
+  }
+
+  private resizeCallback() {
+    this.map?.resize();
   }
 
   private style() {
@@ -71,6 +108,8 @@ export default class Renderer {
   }
 
   destroy() {
+    this.resizeObserver.unobserve(this.element);
+
     const renderers = Object.values(this.flightRenderers);
     renderers.forEach(r => r.destroy());
     this.flightRenderers = {};

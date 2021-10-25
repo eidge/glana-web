@@ -67,7 +67,10 @@ function useMapRenderer(element: React.MutableRefObject<HTMLElement | null>) {
     const mapRenderer = new MapRenderer(element.current, PADDING);
     mapRenderer.initialize().then(() => setRenderer(mapRenderer));
 
-    return () => mapRenderer.destroy();
+    return () => {
+      mapRenderer.destroy();
+      setRenderer(null);
+    };
   }, [element]);
   return renderer;
 }

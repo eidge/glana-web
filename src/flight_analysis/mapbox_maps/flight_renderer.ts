@@ -5,6 +5,7 @@ import { Map, LngLatBounds, GeoJSONSource } from "mapbox-gl";
 import ReactDOMServer from "react-dom/server";
 import { glider } from "../../ui/components/icon/icons";
 import { FlightDatum } from "../store/reducer";
+import { Z_INDEX_2, Z_INDEX_3 } from "./renderer";
 
 type FlightGeoJSON = GeoJSON.Feature<
   GeoJSON.LineString,
@@ -80,16 +81,19 @@ export default class FlightRenderer {
       type: "geojson",
       data: this.geoJSON
     });
-    this.map.addLayer({
-      id: this.layerId,
-      source: this.sourceId,
-      type: "line",
-      paint: {
-        "line-color": ["get", "color"],
-        "line-width": 2,
-        "line-opacity": ["get", "opacity"]
-      }
-    });
+    this.map.addLayer(
+      {
+        id: this.layerId,
+        source: this.sourceId,
+        type: "line",
+        paint: {
+          "line-color": ["get", "color"],
+          "line-width": 2,
+          "line-opacity": ["get", "opacity"]
+        }
+      },
+      this.zIndex
+    );
   }
 
   private buildMarker(position: PositionGeoJSON) {
@@ -109,9 +113,9 @@ export default class FlightRenderer {
   }
 
   destroy() {
+    this.marker.remove();
     this.map.removeLayer(this.layerId);
     this.map.removeSource(this.sourceId);
-    this.marker.remove();
   }
 
   getBounds() {
@@ -120,9 +124,18 @@ export default class FlightRenderer {
 
   setActive(isActive: boolean) {
     this.isActive = isActive;
+    this.setSourceOpacity();
+    this.setLayerZIndex();
+  }
+
+  private setSourceOpacity() {
     const source = this.map.getSource(this.sourceId) as GeoJSONSource;
     this.geoJSON.properties.opacity = this.opacity;
     source.setData(this.geoJSON);
+  }
+
+  private setLayerZIndex() {
+    this.map.moveLayer(this.layerId, this.zIndex);
   }
 
   setRenderFullTracks(shouldRenderFullTracks: boolean) {
@@ -132,6 +145,10 @@ export default class FlightRenderer {
 
   private get opacity() {
     return this.isActive ? 1 : 0.4;
+  }
+
+  private get zIndex() {
+    return this.isActive ? Z_INDEX_3 : Z_INDEX_2;
   }
 
   setTime(timestamp: Date) {

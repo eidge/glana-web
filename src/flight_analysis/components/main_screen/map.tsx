@@ -59,7 +59,7 @@ export default function Map(props: Props) {
 
   return (
     <div className="relative w-full h-full bg-gray-800">
-      <div className="w-full h-full" ref={element}></div>
+      <div className="w-full h-full bg-white" ref={element}></div>
       <div className="absolute hidden lg:block top-0 left-0 ml-3 mt-3">
         <ZoomControls zoomIn={zoomIn} zoomToFit={zoomToFit} zoomOut={zoomOut} />
       </div>

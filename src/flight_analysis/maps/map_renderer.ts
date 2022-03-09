@@ -44,6 +44,7 @@ export default class MapRenderer {
   private resizeObserver: ResizeObserver;
 
   readonly olApi = require("ol");
+  readonly MapboxVectorLayer = require("ol/layer/MapboxVector").default;
   readonly olMap: OlMap;
 
   usableClientRect!: DOMRect;
@@ -152,7 +153,9 @@ export default class MapRenderer {
   }
 
   private isTileLayer(layer: any) {
-    return layer instanceof TileLayer;
+    return (
+      layer instanceof this.MapboxVectorLayer || layer instanceof TileLayer
+    );
   }
 
   destroy() {
@@ -182,14 +185,12 @@ export default class MapRenderer {
   }
 
   private buildMapLayer() {
-    return new TileLayer({
-      preload: Infinity,
-      source: new XYZ({
-        url:
-          "https://api.mapbox.com/styles/v1/eidge/ckbtv1rde19ee1iqsvymt93ak/tiles/256/{z}/{x}/{y}@2x?access_token=pk.eyJ1IjoiZWlkZ2UiLCJhIjoiNjVmYTRkMWY0NzM0NDdhZThmYmY4MzI2ZjU2Njg5NTIifQ.7IevRmRnToydZ2fJMGLZRQ",
-        tilePixelRatio: 2,
-        attributions: MAPBOX_ATTRIBUTION
-      })
+    return new this.MapboxVectorLayer({
+      styleUrl: "mapbox://styles/eidge/ckbtv1rde19ee1iqsvymt93ak",
+      accessToken:
+        "pk.eyJ1IjoiZWlkZ2UiLCJhIjoiNjVmYTRkMWY0NzM0NDdhZThmYmY4MzI2ZjU2Njg5NTIifQ.7IevRmRnToydZ2fJMGLZRQ",
+      updateWhileAnimating: true,
+      updateWhileInteraction: true
     });
   }
 

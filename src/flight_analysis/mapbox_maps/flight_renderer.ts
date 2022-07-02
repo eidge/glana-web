@@ -16,7 +16,6 @@ type PositionGeoJSON = [number, number];
 
 export default class FlightRenderer {
   private map: Map;
-  private flightDatum: FlightDatum;
   private sourceId: string;
   private layerId: string;
   private geoJSON: FlightGeoJSON;
@@ -26,6 +25,8 @@ export default class FlightRenderer {
   private shouldRenderFullTracks: boolean;
   private timestamp: Date;
   private marker: mapboxgl.Marker;
+
+  flightDatum: FlightDatum;
   currentPosition: PositionGeoJSON;
 
   constructor(map: Map, flightDatum: FlightDatum) {

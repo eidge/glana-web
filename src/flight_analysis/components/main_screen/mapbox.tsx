@@ -15,7 +15,6 @@ const PADDING = {
 
 interface Props {
   analysis: AnalysisState | null;
-  isDebug: boolean;
   isPlaying: boolean;
   renderFullTrack: boolean;
   setActiveTimestamp: (ts: Date) => void;
@@ -24,7 +23,13 @@ interface Props {
 }
 
 export default function Map(props: Props) {
-  const { analysis, isDebug, isPlaying, setActiveTimestamp } = props;
+  const {
+    analysis,
+    isPlaying,
+    setActiveTimestamp,
+    showAirspace,
+    showWeather
+  } = props;
   const element = useRef<HTMLDivElement | null>(null);
 
   const mapRenderer = useMapRenderer(element);
@@ -32,7 +37,8 @@ export default function Map(props: Props) {
   useRenderFlights(mapRenderer, analysis);
   useRenderTask(mapRenderer, analysis);
 
-  //useWeatherLayer(mapRenderer, analysis, showWeather);
+  useWeatherLayer(mapRenderer, analysis, showWeather);
+  useAirspaceLayer(mapRenderer, analysis, showAirspace);
 
   return (
     <div className="relative w-full h-full bg-gray-800">
@@ -54,7 +60,6 @@ export default function Map(props: Props) {
           />
         )}
       </div>
-      <UseableClientRectDebug isDebug={isDebug} mapRenderer={mapRenderer} />
     </div>
   );
 }
@@ -128,6 +133,28 @@ function useRenderTask(
   }, [mapRenderer, task]);
 }
 
+function useWeatherLayer(
+  mapRenderer: MapRenderer | null,
+  analysis: AnalysisState | null,
+  showWeather: boolean
+) {
+  useEffect(() => {
+    if (!mapRenderer) return;
+    mapRenderer.setCloudVisibility(showWeather);
+  }, [mapRenderer, analysis?.flightGroup, showWeather]);
+}
+
+function useAirspaceLayer(
+  mapRenderer: MapRenderer | null,
+  analysis: AnalysisState | null,
+  showAirspace: boolean
+) {
+  useEffect(() => {
+    if (!mapRenderer) return;
+    mapRenderer.setAirspaceVisibility(showAirspace);
+  }, [mapRenderer, analysis?.flightGroup, showAirspace]);
+}
+
 function getActiveFlight(analysis: AnalysisState | null) {
   if (!analysis || !analysis.followFlightId) return null;
   const flight = analysis.flightDataById[analysis.followFlightId];
@@ -165,29 +192,4 @@ function FramedControls() {
 
 function openInNewTab() {
   window.open(window.location.toString());
-}
-
-function UseableClientRectDebug(props: {
-  isDebug: boolean;
-  mapRenderer: MapRenderer | null;
-}) {
-  const { isDebug, mapRenderer } = props;
-  if (!isDebug || !mapRenderer) return null;
-
-  const clientRect = mapRenderer.usableClientRect;
-  const usableClientRectStyle = {
-    top: clientRect.top,
-    left: clientRect.left,
-    width: clientRect.width,
-    height: clientRect.height
-  };
-
-  return (
-    <div
-      className="absolute bg-white bg-opacity-60 flex flex-row items-center justify-center"
-      style={usableClientRectStyle}
-    >
-      <div className="h-6 w-6 rounded-full border-2 border-success border-opacity-50"></div>
-    </div>
-  );
 }

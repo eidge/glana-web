@@ -30,7 +30,7 @@ export default class FlightRenderer {
   private layer?: VectorLayer;
   private activeTimestamp?: Date;
   private extent: Extent;
-  private isActive: boolean;
+  public isActive: boolean;
 
   constructor(mapRenderer: MapRenderer, flightDatum: FlightDatum) {
     this.mapRenderer = mapRenderer;

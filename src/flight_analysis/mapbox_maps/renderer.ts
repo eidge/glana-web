@@ -4,6 +4,7 @@ import "mapbox-gl/dist/mapbox-gl.css";
 import { isProduction } from "../../utils/environment";
 import { FlightDatum } from "../store/reducer";
 import FlightRenderer from "./flight_renderer";
+import { AIRSPACE_LAYERS, AIRSPACE_SOURCE } from "./opeanaip_layers";
 import TaskRenderer from "./task_renderer";
 
 mapboxgl.accessToken =
@@ -16,6 +17,8 @@ interface Padding {
   left: number;
 }
 
+const OPENAIP_TOKEN = "33c125b3916beb39dc3835be89882a09";
+const OPENAIP_HOST = "https://api.tiles.openaip.net";
 const DEFAULT_STYLE =
   "mapbox://styles/eidge/ckbtv1rde19ee1iqsvymt93ak?optimize=true";
 
@@ -38,12 +41,11 @@ export default class Renderer {
   private activeFlightId?: string;
   private shouldRenderFullTracks = false;
   private taskRenderer: TaskRenderer | null = null;
-  private isDebug = false;
   private shouldFollowActiveFlight = true;
-  private shouldShowAirspace = false;
-  private shouldShowClouds = false;
   private resizeObserver: ResizeObserver;
-  private zIndexSourceId = "empty";
+  private zIndexSourceId = "source-empty";
+  private cloudLayerId = "layer-cloud";
+  private cloudSourceId = "source-cloud";
 
   constructor(element: HTMLElement, padding: Padding) {
     this.element = element;
@@ -59,6 +61,7 @@ export default class Renderer {
 
     return new Promise(resolve => {
       this.map!.on("load", () => {
+        this.addAirspaceSource(this.map!);
         this.addZLayers(this.map!);
         resolve(this);
       });
@@ -73,7 +76,17 @@ export default class Renderer {
       attributionControl: false,
       logoPosition: "top-right",
       hash: true,
-      trackResize: false
+      trackResize: false,
+      transformRequest: url => {
+        if (url.startsWith(OPENAIP_HOST)) {
+          return {
+            url,
+            headers: { "x-openaip-client-id": OPENAIP_TOKEN }
+          };
+        } else {
+          return { url };
+        }
+      }
     });
   }
 
@@ -82,6 +95,10 @@ export default class Renderer {
     this.addZIndexLayer(map, Z_INDEX_1);
     this.addZIndexLayer(map, Z_INDEX_2);
     this.addZIndexLayer(map, Z_INDEX_3);
+  }
+
+  private addAirspaceSource(map: Map) {
+    map.addSource(AIRSPACE_SOURCE.id, AIRSPACE_SOURCE as any);
   }
 
   private addZIndexSource(map: Map) {
@@ -164,19 +181,71 @@ export default class Renderer {
     return bounds;
   }
 
-  setDebug(isDebug: boolean) {
-    this.isDebug = isDebug;
-    console.log(`Set debug=${this.isDebug}`);
+  setCloudVisibility(isVisible: boolean) {
+    if (isVisible) {
+      this.addCloudLayer();
+    } else {
+      this.removeCloudLayer();
+    }
+    console.log(`Set shouldShowCloud=${isVisible}`);
   }
 
-  setCloudVisibility(isVisible: boolean) {
-    this.shouldShowClouds = isVisible;
-    console.log(`Set shouldShowClouds=${this.shouldShowClouds}`);
+  private addCloudLayer() {
+    if (!this.map) return;
+
+    this.map.addSource(this.cloudSourceId, {
+      type: "raster",
+      tiles: this.cloudTileLayerUrls()
+    });
+
+    this.map.addLayer({
+      id: this.cloudLayerId,
+      type: "raster",
+      source: this.cloudSourceId
+    });
+
+    this.map.moveLayer(this.cloudLayerId, Z_INDEX_1);
+  }
+
+  private cloudTileLayerUrls() {
+    const dateStr =
+      this.cloudLayerTimestamp()
+        .toISOString()
+        .split(".")[0] + "Z";
+
+    return ["a", "b", "c"].map(
+      server =>
+        `https://gibs-${server}.earthdata.nasa.gov/wmts/epsg3857/best/MODIS_Terra_CorrectedReflectance_TrueColor/default/${dateStr}/GoogleMapsCompatible_Level9/{z}/{y}/{x}.jpg`
+    );
+  }
+
+  private cloudLayerTimestamp() {
+    const takeoffAt = this.activeFlight?.flightDatum.flight.getTakeoffAt(true);
+    const cloudTimestamp = takeoffAt || new Date();
+    cloudTimestamp.setMinutes(0, 0, 0);
+    return cloudTimestamp;
+  }
+
+  private removeCloudLayer() {
+    if (!this.map) return;
+    const layer = this.map.getLayer(this.cloudLayerId);
+    if (layer) {
+      this.map.removeLayer(this.cloudLayerId);
+      this.map.removeSource(this.cloudSourceId);
+    }
   }
 
   setAirspaceVisibility(isVisible: boolean) {
-    this.shouldShowAirspace = isVisible;
-    console.log(`Set shouldShowAirspace=${this.shouldShowAirspace}`);
+    if (!this.map) return;
+
+    if (isVisible) {
+      AIRSPACE_LAYERS.forEach((l: any) => this.map!.addLayer(l));
+    } else {
+      AIRSPACE_LAYERS.forEach(
+        l => this.map!.getLayer(l.id) && this.map!.removeLayer(l.id)
+      );
+    }
+    console.log(`Set shouldShowAirspace=${isVisible}`);
   }
 
   setRenderFullTracks(shouldRenderFullTracks: boolean) {

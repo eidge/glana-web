@@ -148,23 +148,31 @@ export default class Renderer {
   }
 
   zoomIn() {
+    if (!this.map) return;
+
     if (this.activeFlight) {
-      this.map?.flyTo({
+      this.map.flyTo({
         center: this.activeFlight.currentPosition,
         zoom: this.map.getZoom() + 1
       });
     } else {
-      this.map?.zoomIn();
+      this.map.zoomIn();
     }
   }
 
   zoomOut() {
-    this.map?.zoomOut();
+    if (!this.map) return;
+
+    this.map.zoomOut();
   }
 
   zoomToFit() {
+    if (!this.map) return;
+
     const bounds = this.renderedBounds();
-    this.map?.fitBounds(bounds, { padding: this.padding });
+
+    if (bounds.isEmpty()) return;
+    this.map.fitBounds(bounds, { padding: this.padding });
   }
 
   private renderedBounds() {

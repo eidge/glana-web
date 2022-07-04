@@ -15,8 +15,7 @@ export default function MainScreen() {
     sideDrawer,
     isPlaying,
     settings,
-    analysis,
-    isDebug
+    analysis
   } = useFlightAnalysisState();
   const dispatch = useFlightAnalysisDispatch();
 
@@ -50,7 +49,6 @@ export default function MainScreen() {
         showAirspace={settings.showAirspace}
         showWeather={settings.showWeather}
         renderFullTrack={settings.renderFullTracks}
-        isDebug={isDebug}
       />
       <div className="relative">
         {analysis && (

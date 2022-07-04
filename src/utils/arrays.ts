@@ -43,3 +43,26 @@ export function splitWhen<T>(
 
   return groups;
 }
+
+interface ChunkOptions {
+  includeLastValueInBothGroups?: boolean; // Will result in chunks being chunkSize + 1
+}
+
+export function chunk<T>(
+  array: T[],
+  chunkSize: number,
+  options: ChunkOptions = {}
+) {
+  let acc: T[][] = [];
+
+  for (let i = 0; i < array.length; i += chunkSize) {
+    const startIdx = i;
+    const endIdx = options.includeLastValueInBothGroups
+      ? i + chunkSize + 1
+      : i + chunkSize;
+    const chunk = array.slice(startIdx, endIdx);
+    acc.push(chunk);
+  }
+
+  return acc;
+}

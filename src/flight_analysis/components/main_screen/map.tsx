@@ -101,7 +101,8 @@ function useRenderFlights(
   useEffect(() => {
     if (!mapRenderer || !flightData) return;
     flightData.forEach(f => mapRenderer.addFlight(f));
-    mapRenderer.zoomToFit();
+    // Give the UI time to hide the sidebar if it's open.
+    setTimeout(() => mapRenderer.zoomToFit(), 1000);
 
     return () => flightData.forEach(f => mapRenderer.removeFlight(f));
   }, [mapRenderer, flightData]);

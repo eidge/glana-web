@@ -6,7 +6,7 @@ import AnimationTicker from "../../animation_ticker";
 import { useFlightAnalysisDispatch, useFlightAnalysisState } from "../../store";
 import { Action, actions } from "../../store/actions";
 import { Settings, units } from "../../settings";
-import { FlightDatum } from "../../store/reducer";
+import { FlightDatum } from "../../store/models/flight_datum";
 import TimelineDetails from "./timeline_details";
 import analytics from "../../../analytics";
 

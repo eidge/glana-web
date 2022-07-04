@@ -1,4 +1,4 @@
-import { FlightDatum } from "../../store/reducer";
+import { FlightDatum } from "../../store/models/flight_datum";
 import FlightLabel from "../../../ui/components/flight_label";
 import Icon from "../../../ui/components/icon";
 import Button from "../../../ui/components/button";

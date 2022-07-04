@@ -4,13 +4,13 @@ import LoadingScreen from "../src/flight_analysis/components/loading_screen";
 import FullScreenWithDrawer from "../src/ui/components/layout/full_screen_with_drawer";
 import BGALoader from "../src/flight_analysis/url_flight_loaders/bga_loader";
 import IGCLoader from "../src/flight_analysis/url_flight_loaders/igc_loader";
-import FlightGroup from "glana/src/analysis/flight_group";
+import { FlightDatum } from "../src/flight_analysis/store/models/flight_datum";
 
 const LOADER_CLASSES = [BGALoader, IGCLoader];
 
 interface State {
   isLoading: boolean;
-  flightGroup?: FlightGroup;
+  flightData?: FlightDatum[];
 }
 
 export default function Index() {
@@ -24,7 +24,7 @@ export default function Index() {
   return state.isLoading ? (
     <Loading />
   ) : (
-    <FlightAnalysis flightGroup={state.flightGroup} />
+    <FlightAnalysis flightData={state.flightData} />
   );
 }
 
@@ -36,14 +36,14 @@ async function maybeLoadFlightsFromURL(setState: any) {
   const loader = loaders.find(l => l.willHandle());
 
   if (loader) {
-    const flightGroup = await loader.loadFlightGroup();
-    if (flightGroup.flights.length < 1) {
+    const flightData = await loader.loadFlightGroup();
+    if (flightData.length < 1) {
       window.location.href = "/failed_to_load_flight";
     }
     setState((s: State) => ({
       ...s,
       isLoading: false,
-      flightGroup: flightGroup
+      flightData: flightData
     }));
   } else {
     setState((s: State) => ({ ...s, isLoading: false }));

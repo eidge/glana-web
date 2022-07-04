@@ -13,10 +13,10 @@ export default function UploadScreen() {
   const onFileInput = async (event: React.ChangeEvent<HTMLInputElement>) => {
     event.preventDefault();
     setIsLoading(true);
-    const flightGroup = await handleFileInput(event);
-    if (flightGroup) {
+    const flightData = await handleFileInput(event);
+    if (flightData.length > 0) {
       dispatch(actions.closeDrawer());
-      dispatch(actions.setFlightGroup(flightGroup));
+      dispatch(actions.setFlightData(flightData));
     } else {
       setIsLoading(false);
     }
@@ -79,16 +79,16 @@ export default function UploadScreen() {
 }
 
 async function handleFileInput(event: React.ChangeEvent<HTMLInputElement>) {
-  if (!event.target.files) return;
+  if (!event.target.files) return [];
 
   const files = Array.from(event.target.files) as Blob[];
-  if (files.length < 1) return;
+  if (files.length < 1) return [];
 
   try {
     const igcBlob = new IGCBlob(files);
-    return await igcBlob.toFlightGroup();
+    return await igcBlob.toFlightData();
   } catch (e) {
     await errorTracker.report(e);
-    return null;
+    return [];
   }
 }

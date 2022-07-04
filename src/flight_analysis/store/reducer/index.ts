@@ -2,10 +2,10 @@ import FlightGroup, {
   synchronizationMethods
 } from "glana/src/analysis/flight_group";
 import Task from "glana/src/flight_computer/tasks/task";
-import SavedFlight from "glana/src/saved_flight";
 import { Colors } from "../../colors";
 import { defaultSettings, flightComputer, Settings } from "../../settings";
 import { ActionType, Action } from "../actions";
+import { FlightDatum } from "../models/flight_datum";
 
 export type DrawerView = "settings" | "flights" | "upload_flight";
 
@@ -14,10 +14,10 @@ export type DrawerState = {
   canClose: boolean;
 };
 
-export type FlightDatum = {
-  id: string;
-  flight: SavedFlight;
-  color: string;
+export type Picture = {
+  title: string;
+  url: string;
+  takenAt: Date;
 };
 
 export type FlightDataById = { [key: string]: FlightDatum };
@@ -58,33 +58,8 @@ export function reducer(state: State, action: Action): State {
   let newSideDrawer: DrawerState | null;
 
   switch (action.type) {
-    case ActionType.SetFlightGroup:
-      const { flightGroup } = action;
-      const task = flightGroup.flights.map(f => f.task).find(t => !!t) || null;
-
-      if (task) {
-        flightGroup.flights.forEach(f => (f.task = new Task(task.turnpoints)));
-      }
-
-      let synchronizationMethod = state.settings.synchronizationMethod;
-      if (
-        !flightGroup.allFlightsInSameDay() &&
-        synchronizationMethod === synchronizationMethods.realTime
-      ) {
-        synchronizationMethod = synchronizationMethods.takeOff;
-      }
-
-      newState = {
-        ...state,
-        settings: { ...state.settings, synchronizationMethod },
-        isLoading: false,
-        sideDrawer: null
-      };
-
-      const analysis = buildAnalysisState(newState, flightGroup, task);
-      newState.analysis = analysis;
-
-      return newState;
+    case ActionType.SetFlightData:
+      return handleSetFlightData(state, action);
     case ActionType.SetActiveTimestamp:
       if (!state.analysis) return state;
 
@@ -225,6 +200,39 @@ export function reducer(state: State, action: Action): State {
   }
 }
 
+function handleSetFlightData(state: State, action: Action) {
+  if (action.type !== ActionType.SetFlightData) return state; // hack to get types to work
+
+  const { flightData } = action;
+  const task = flightData.map(f => f.task).find(t => !!t) || null;
+
+  if (task) {
+    flightData.forEach(f => (f.flight.task = new Task(task!.turnpoints)));
+  }
+
+  const flightGroup = new FlightGroup(flightData.map(f => f.flight));
+
+  let synchronizationMethod = state.settings.synchronizationMethod;
+  if (
+    !flightGroup.allFlightsInSameDay() &&
+    synchronizationMethod === synchronizationMethods.realTime
+  ) {
+    synchronizationMethod = synchronizationMethods.takeOff;
+  }
+
+  const newState = {
+    ...state,
+    settings: { ...state.settings, synchronizationMethod },
+    isLoading: false,
+    sideDrawer: null
+  };
+
+  const analysis = buildAnalysisState(newState, flightGroup, task);
+  newState.analysis = analysis;
+
+  return newState;
+}
+
 function buildAnalysisState(
   state: State,
   flightGroup: FlightGroup,
@@ -234,11 +242,11 @@ function buildAnalysisState(
 ) {
   const colors = new Colors();
 
-  const flightData = flightGroup.flights.map(flight => ({
-    id: flight.id,
-    flight: flight,
-    color: colors.nextColor()
-  }));
+  const flightData = flightGroup.flights.map(flight => {
+    const flightDatum = new FlightDatum(flight);
+    flightDatum.color = colors.nextColor();
+    return flightDatum;
+  });
 
   const flightDataById = flightData.reduce((byId: FlightDataById, data) => {
     byId[data.id] = data;

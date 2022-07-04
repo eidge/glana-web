@@ -2,7 +2,7 @@ import Task from "glana/src/flight_computer/tasks/task";
 import mapboxgl, { Map, LngLatBounds } from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { isProduction } from "../../utils/environment";
-import { FlightDatum } from "../store/reducer";
+import { FlightDatum } from "../store/models/flight_datum";
 import FlightRenderer from "./flight_renderer";
 import { AIRSPACE_LAYERS, AIRSPACE_SOURCE } from "./opeanaip_layers";
 import TaskRenderer from "./task_renderer";
@@ -296,6 +296,7 @@ export default class Renderer {
     const flightRenderer = this.flightRenderers[flightDatum.id];
     if (!flightRenderer) return;
     flightRenderer.destroy();
+    delete this.flightRenderers[flightDatum.id];
 
     console.log(`Flight removed id=${flightDatum.id}`);
   }

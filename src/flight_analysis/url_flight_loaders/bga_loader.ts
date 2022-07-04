@@ -1,4 +1,3 @@
-import FlightGroup from "glana/src/analysis/flight_group";
 import Position from "glana/src/flight_computer/position";
 import Task from "glana/src/flight_computer/tasks/task";
 import Line from "glana/src/flight_computer/tasks/turnpoints/segments/line";
@@ -11,6 +10,7 @@ import SavedFlight from "glana/src/saved_flight";
 import { degrees } from "glana/src/units/angle";
 import { kilometers } from "glana/src/units/length";
 import errorTracker from "../../error_tracker";
+import { FlightDatum } from "../store/models/flight_datum";
 import Loader from "./loader";
 
 const DEFAULT_BGA_BASE_URL = new URL("https://bgaladder.net");
@@ -29,7 +29,7 @@ export default class BGALoader implements Loader {
 
   async loadFlightGroup() {
     const flightDetailsResponses = await this.loadFlightDetails();
-    const savedFlights = flightDetailsResponses
+    return flightDetailsResponses
       .map(response => {
         try {
           return this.parseFlightDetails(response);
@@ -37,9 +37,7 @@ export default class BGALoader implements Loader {
           return null;
         }
       })
-      .filter(sf => !!sf) as SavedFlight[];
-
-    return new FlightGroup(savedFlights);
+      .filter(sf => !!sf) as FlightDatum[];
   }
 
   private parseBaseURL(query: URLSearchParams) {
@@ -85,7 +83,8 @@ export default class BGALoader implements Loader {
   private parseFlightDetails(json: any) {
     let parser = new IGCParser();
     const flight = parser.parse(json.igcContents);
-    return this.enrichFlightData(flight, json);
+    this.enrichFlightData(flight, json);
+    return new FlightDatum(flight);
   }
 
   private enrichFlightData(flight: SavedFlight, bgaData: any) {

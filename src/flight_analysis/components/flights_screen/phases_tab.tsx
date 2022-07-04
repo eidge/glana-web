@@ -1,5 +1,5 @@
 import ButtonGroup from "../../../ui/components/button_group";
-import { FlightDataById, FlightDatum } from "../../store/reducer";
+import { FlightDataById } from "../../store/reducer";
 import FlightLabel from "../../../ui/components/flight_label";
 import { GliderState } from "glana/src/flight_computer/state_machine";
 import { useEffect, useMemo, useState } from "react";
@@ -8,6 +8,7 @@ import PhasesTable from "./phases_table";
 import React from "react";
 import { UnitSettings } from "../../settings";
 import Phase from "glana/src/analysis/phases/phase";
+import { FlightDatum } from "../../store/models/flight_datum";
 
 interface Props {
   flightData: FlightDatum[];

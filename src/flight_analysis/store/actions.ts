@@ -1,12 +1,11 @@
-import FlightGroup from "glana/src/analysis/flight_group";
 import { Duration, milliseconds } from "glana/src/units/duration";
 import Quantity from "glana/src/units/quantity";
 import analytics from "../../analytics";
 import { Settings } from "../settings";
-import { FlightDatum } from "./reducer";
+import { FlightDatum } from "./models/flight_datum";
 
 export enum ActionType {
-  SetFlightGroup = "SET_FLIGHT_GROUP",
+  SetFlightData = "SET_FLIGHT_DATA",
   SetActiveTimestamp = "SET_ACTIVE_TIMESTAMP",
   TogglePlay = "TOGGLE_PLAY",
   ToggleFlights = "TOGGLE_FLIGHTS",
@@ -20,7 +19,7 @@ export enum ActionType {
 }
 
 export const actions = {
-  setFlightGroup,
+  setFlightData,
   setActiveTimestamp,
   advanceActiveTimestamp,
   togglePlay,
@@ -43,13 +42,13 @@ type ElementType<T extends ReadonlyArray<unknown>> = T extends ReadonlyArray<
 
 export type Action = ReturnType<ElementType<typeof actionFns>>;
 
-function setFlightGroup(flightGroup: FlightGroup) {
+function setFlightData(flightData: FlightDatum[]) {
   analytics.trackEvent("loaded_flights", {
-    count: flightGroup.flights.length
+    count: flightData.length
   });
   return {
-    type: ActionType.SetFlightGroup as ActionType.SetFlightGroup,
-    flightGroup: flightGroup
+    type: ActionType.SetFlightData as ActionType.SetFlightData,
+    flightData: flightData
   };
 }
 

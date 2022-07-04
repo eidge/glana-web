@@ -1,8 +1,7 @@
 import Loader from "./loader";
-import FlightGroup from "glana/src/analysis/flight_group";
 import IGCParser from "glana/src/igc/parser";
-import SavedFlight from "glana/src/saved_flight";
 import errorTracker from "../../error_tracker";
+import { FlightDatum } from "../store/models/flight_datum";
 
 export default class IGCLoader implements Loader {
   private urls: string[];
@@ -18,8 +17,7 @@ export default class IGCLoader implements Loader {
   async loadFlightGroup() {
     const igcs = await this.loadIGCs();
     const nonEmptyIgcs = igcs.filter(igc => !!igc) as string[];
-    const flights = this.parseIGCs(nonEmptyIgcs);
-    return new FlightGroup(flights.filter(f => !!f) as SavedFlight[]);
+    return this.parseIGCs(nonEmptyIgcs);
   }
 
   private parseQueryString(query: URLSearchParams) {
@@ -52,12 +50,13 @@ export default class IGCLoader implements Loader {
   private parseIGCs(fileContents: string[]) {
     return fileContents.map(contents => {
       try {
-        let parser = new IGCParser();
-        return parser.parse(contents);
+        const parser = new IGCParser();
+        const flight = parser.parse(contents);
+        return new FlightDatum(flight);
       } catch (e) {
         errorTracker.report(e);
         return null;
       }
-    });
+    }) as FlightDatum[];
   }
 }

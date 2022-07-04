@@ -1,6 +1,6 @@
 import Task, { TaskTurnpoint } from "glana/src/flight_computer/tasks/task";
 import React from "react";
-import { FlightDatum } from "../../store/reducer";
+import { FlightDatum } from "../../store/models/flight_datum";
 import { relativeTo } from "../../utils/time";
 
 interface Props {

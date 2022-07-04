@@ -1,5 +1,5 @@
 import SavedFlight from "glana/src/saved_flight";
-import { FlightDatum } from "../../flight_analysis/store/reducer";
+import { FlightDatum } from "../../flight_analysis/store/models/flight_datum";
 
 interface Props {
   flightDatum: FlightDatum;

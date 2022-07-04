@@ -1,5 +1,5 @@
 import IGCParser from "glana/src/igc/parser";
-import FlightGroup from "glana/src/analysis/flight_group";
+import { FlightDatum } from "./store/models/flight_datum";
 
 export default class IGCBlob {
   private blobs: Blob[];
@@ -8,7 +8,7 @@ export default class IGCBlob {
     this.blobs = blobs;
   }
 
-  async toFlightGroup() {
+  async toFlightData() {
     let blobContents = await this.readBlobs(this.blobs);
     return this.parseIGCs(blobContents);
   }
@@ -29,12 +29,10 @@ export default class IGCBlob {
   }
 
   private parseIGCs(blobContents: string[]) {
-    let savedFlights = blobContents.map(contents => {
+    return blobContents.map(contents => {
       let parser = new IGCParser();
       const flight = parser.parse(contents);
-      return flight;
+      return new FlightDatum(flight);
     });
-
-    return new FlightGroup(savedFlights);
   }
 }

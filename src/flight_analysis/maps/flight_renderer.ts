@@ -5,7 +5,7 @@ import { Map, LngLatBounds, GeoJSONSource } from "mapbox-gl";
 import ReactDOMServer from "react-dom/server";
 import { glider } from "../../ui/components/icon/icons";
 import { chunk, splitWhen } from "../../utils/arrays";
-import { FlightDatum } from "../store/reducer";
+import { FlightDatum } from "../store/models/flight_datum";
 import { Z_INDEX_2, Z_INDEX_3 } from "./renderer";
 
 const MAX_SEGMENT_SIZE = 200;
@@ -38,6 +38,7 @@ export default class FlightRenderer {
   private timestamp: Date;
   private marker: mapboxgl.Marker;
   private trackSegments: TrackSegment[];
+  private isDestroyed: boolean = false;
 
   flightDatum: FlightDatum;
   currentPosition: LngLatLike;
@@ -46,8 +47,8 @@ export default class FlightRenderer {
     this.map = map;
     this.flightDatum = flightDatum;
     this.timestamp = flightDatum.flight.getRecordingStartedAt();
-    this.sourceId = `source-${this.flightDatum.id}`;
-    this.layerId = `layer-${this.flightDatum.id}`;
+    this.sourceId = `source-flight-${this.flightDatum.id}`;
+    this.layerId = `layer-flight-${this.flightDatum.id}`;
     this.trackSegments = this.buildTrackSegments(flightDatum);
     this.geoJSON = this.buildGeoJSON(this.trackSegments);
     this.bounds = this.calculateBounds(this.geoJSON);
@@ -168,6 +169,10 @@ export default class FlightRenderer {
   }
 
   destroy() {
+    if (this.isDestroyed) return;
+
+    this.isDestroyed = true;
+
     this.marker.remove();
     this.map.removeLayer(this.layerId);
     this.map.removeSource(this.sourceId);
@@ -178,6 +183,8 @@ export default class FlightRenderer {
   }
 
   setActive(isActive: boolean) {
+    if (this.isDestroyed) return;
+
     this.isActive = isActive;
     this.setSourceOpacity();
     this.setLayerZIndex();
@@ -188,7 +195,7 @@ export default class FlightRenderer {
     this.geoJSON.features.forEach(f => {
       f.properties.opacity = this.opacity;
     });
-    source.setData(this.geoJSON);
+    source && source.setData(this.geoJSON);
   }
 
   private setLayerZIndex() {
@@ -209,6 +216,8 @@ export default class FlightRenderer {
   }
 
   setTime(timestamp: Date) {
+    if (this.isDestroyed) return;
+
     const datumIdx = this.flightDatum.flight.datumIndexAt(timestamp);
     const datum = this.flightDatum.flight.datums[datumIdx];
     this.currentPosition = this.positionToGeoJSON(datum.position);
@@ -244,7 +253,7 @@ export default class FlightRenderer {
     });
 
     const source = this.map.getSource(this.sourceId) as GeoJSONSource;
-    source.setData(this.geoJSON);
+    source && source.setData(this.geoJSON);
   }
 
   private updateMarker(datum: Datum) {

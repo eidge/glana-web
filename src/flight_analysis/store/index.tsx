@@ -2,21 +2,22 @@ import React, { ReactNode, useContext, useEffect, useReducer } from "react";
 import { initialState, reducer } from "./reducer";
 import { Action, actions } from "./actions";
 import FlightGroup from "glana/src/analysis/flight_group";
+import { FlightDatum } from "./models/flight_datum";
 
 const StateContext = React.createContext(initialState());
 const DispatchContent = React.createContext<React.Dispatch<Action>>(() => {});
 
 interface ProviderProps {
-  flightGroup?: FlightGroup;
+  flightData?: FlightDatum[];
   children: ReactNode;
 }
 
 export function StoreProvider(props: ProviderProps) {
-  const { flightGroup } = props;
+  const { flightData } = props;
   const [state, dispatch] = useReducer(reducer, initialState());
   useEffect(() => {
-    if (flightGroup) {
-      dispatch(actions.setFlightGroup(flightGroup));
+    if (flightData) {
+      dispatch(actions.setFlightData(flightData));
     } else {
       dispatch(actions.showFlightUploader());
     }
@@ -27,7 +28,7 @@ export function StoreProvider(props: ProviderProps) {
         setDebug: (isDebug: boolean) => dispatch(actions.setDebug(isDebug))
       };
     }
-  }, [flightGroup]);
+  }, [flightData]);
   return (
     <DispatchContent.Provider value={dispatch}>
       <StateContext.Provider value={state}>

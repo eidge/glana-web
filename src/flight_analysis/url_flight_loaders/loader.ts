@@ -1,6 +1,6 @@
-import FlightGroup from "glana/src/analysis/flight_group";
+import { FlightDatum } from "../store/models/flight_datum";
 
 export default interface Loader {
   willHandle(): boolean;
-  loadFlightGroup(): Promise<FlightGroup>;
+  loadFlightGroup(): Promise<FlightDatum[]>;
 }

@@ -4,7 +4,7 @@ import SummaryTab from "./summary_tab";
 import PhasesTab from "./phases_tab";
 import { useFlightAnalysisDispatch, useFlightAnalysisState } from "../../store";
 import { actions } from "../../store/actions";
-import { FlightDatum } from "../../store/reducer";
+import { FlightDatum } from "../../store/models/flight_datum";
 import { units } from "../../settings";
 
 type Tab = "Summary" | "Phases" | "More";

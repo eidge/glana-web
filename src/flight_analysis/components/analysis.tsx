@@ -29,8 +29,8 @@ export default function Analysis() {
 
       try {
         const igcBlob = new IGCBlob(files);
-        const flightGroup = await igcBlob.toFlightGroup();
-        dispatch(actions.setFlightGroup(flightGroup));
+        const flightData = await igcBlob.toFlightData();
+        dispatch(actions.setFlightData(flightData));
       } catch (e) {
         await errorTracker.report(e);
       }

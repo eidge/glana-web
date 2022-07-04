@@ -28,8 +28,7 @@ export const actions = {
   showFlightUploader,
   closeDrawer,
   changeSettings,
-  setFollowFlight,
-  setDebug
+  setFollowFlight
 };
 
 // Magic to produce a union type of all return values of our action functions.
@@ -114,12 +113,5 @@ function setFollowFlight(flightDatum: FlightDatum) {
   return {
     type: ActionType.SetFollowFlight as ActionType.SetFollowFlight,
     flightDatum
-  };
-}
-
-function setDebug(isDebug: boolean) {
-  return {
-    type: ActionType.SetDebug as ActionType.SetDebug,
-    isDebug
   };
 }

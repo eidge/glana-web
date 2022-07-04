@@ -1,8 +1,8 @@
 import React, { ReactNode, useContext, useEffect, useReducer } from "react";
 import { initialState, reducer } from "./reducer";
 import { Action, actions } from "./actions";
-import FlightGroup from "glana/src/analysis/flight_group";
 import { FlightDatum } from "./models/flight_datum";
+import { isProduction } from "../../utils/environment";
 
 const StateContext = React.createContext(initialState());
 const DispatchContent = React.createContext<React.Dispatch<Action>>(() => {});
@@ -22,11 +22,14 @@ export function StoreProvider(props: ProviderProps) {
       dispatch(actions.showFlightUploader());
     }
 
-    if (typeof window !== "undefined") {
+    if (typeof window !== "undefined" && !isProduction()) {
       //@ts-ignore
       window.glana = {
-        setDebug: (isDebug: boolean) => dispatch(actions.setDebug(isDebug))
+        dispatch,
+        actions
       };
+      //@ts-ignore
+      console.log("Debug object created on `window.glana`: ", window.glana);
     }
   }, [flightData]);
   return (

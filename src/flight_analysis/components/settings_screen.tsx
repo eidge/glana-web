@@ -4,16 +4,12 @@ import { actions } from "../store/actions";
 import { useFlightAnalysisDispatch, useFlightAnalysisState } from "../store";
 import { useEffect, useState } from "react";
 import analytics from "../../analytics";
-import { isProduction } from "../../utils/environment";
 
 export default function SettingsScreen() {
-  const { settings, isDebug } = useFlightAnalysisState();
+  const { settings } = useFlightAnalysisState();
   const dispatch = useFlightAnalysisDispatch();
   const onChange = (changes: Partial<Settings>) => {
     dispatch(actions.changeSettings(changes));
-  };
-  const changeDebug = (isDebug: boolean) => {
-    dispatch(actions.setDebug(isDebug));
   };
 
   useEffect(() => analytics.trackEvent("settings_opened"), []);
@@ -47,12 +43,6 @@ export default function SettingsScreen() {
         <div className="mt-2">{showAirspaceInput(settings, onChange)}</div>
         <div className="mt-2">{showWeatherInput(settings, onChange)}</div>
       </div>
-      {!isProduction() && (
-        <div className="mt-4">
-          <span className="text-gray-500">Development</span>
-          <div className="mt-2">{isDebugInput(isDebug, changeDebug)}</div>
-        </div>
-      )}
     </div>
   );
 }
@@ -309,20 +299,6 @@ function showWeatherInput(
         }
       />
       <span className="ml-2">Show satpic</span>
-    </label>
-  );
-}
-
-function isDebugInput(isDebug: boolean, onChange: (isDebug: boolean) => void) {
-  return (
-    <label className="inline-flex items-center mr-6">
-      <input
-        type="checkbox"
-        name="followFlight"
-        checked={isDebug}
-        onChange={event => onChange(event.target.checked)}
-      />
-      <span className="ml-2">Debug tools</span>
     </label>
   );
 }

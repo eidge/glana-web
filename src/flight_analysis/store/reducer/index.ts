@@ -52,155 +52,208 @@ export function initialState(): State {
   };
 }
 
-export function reducer(state: State, action: Action): State {
+function handleSetActiveTimestamp(state: State, action: Action): State {
+  if (action.type !== ActionType.SetActiveTimestamp) return state; // hack to get types to work
+  if (!state.analysis) return state;
+
+  return {
+    ...state,
+    analysis: {
+      ...state.analysis,
+      activeTimestamp: action.timestamp,
+      isSummary: false
+    }
+  };
+}
+
+function handleAdvanceActiveTimestamp(state: State, action: Action): State {
+  if (action.type !== ActionType.AdvanceActiveTimestamp) return state; // hack to get types to work
+  if (!state.analysis) return state;
+
+  let {
+    analysis: { activeTimestamp }
+  } = state;
+
+  if (!activeTimestamp) {
+    activeTimestamp = state.analysis.flightDataById[
+      state.analysis.followFlightId
+    ].flight.getRecordingStartedAt();
+  } else if (activeTimestamp > state.analysis.flightGroup.latestDatumAt) {
+    return {
+      ...state,
+      analysis: {
+        ...state.analysis,
+        activeTimestamp: state.analysis.flightGroup.latestDatumAt
+      },
+      isPlaying: false
+    };
+  } else {
+    activeTimestamp = new Date(
+      activeTimestamp.getTime() + action.deltaInMillis
+    );
+  }
+
+  return {
+    ...state,
+    analysis: {
+      ...state.analysis,
+      activeTimestamp: activeTimestamp,
+      isSummary: false
+    }
+  };
+}
+
+function handleTogglePlay(state: State, action: Action): State {
+  if (action.type !== ActionType.TogglePlay) return state; // hack to get types to work
+  if (!state.analysis) return state;
+
+  if (
+    state.analysis.activeTimestamp >=
+      state.analysis.flightGroup!.latestDatumAt &&
+    !state.isPlaying
+  ) {
+    return {
+      ...state,
+      isPlaying: !state.isPlaying,
+      analysis: {
+        ...state.analysis,
+        activeTimestamp: state.analysis.flightGroup.earliestDatumAt
+      }
+    };
+  }
+  return { ...state, isPlaying: !state.isPlaying };
+}
+
+function handleToggleFlights(state: State, action: Action): State {
+  if (action.type !== ActionType.ToggleFlights) return state; // hack to get types to work
+
   const { sideDrawer } = state;
-  let newState: State;
   let newSideDrawer: DrawerState | null;
 
+  if (!sideDrawer || sideDrawer.view !== "flights") {
+    newSideDrawer = { view: "flights", canClose: true };
+  } else {
+    newSideDrawer = null;
+  }
+  return {
+    ...state,
+    sideDrawer: newSideDrawer
+  };
+}
+
+function handleToggleSettings(state: State, action: Action): State {
+  if (action.type !== ActionType.ToggleSettings) return state; // hack to get types to work
+
+  const { sideDrawer } = state;
+  let newSideDrawer: DrawerState | null;
+
+  if (!sideDrawer || sideDrawer.view !== "settings") {
+    newSideDrawer = { view: "settings", canClose: true };
+  } else {
+    newSideDrawer = null;
+  }
+  return {
+    ...state,
+    sideDrawer: newSideDrawer
+  };
+}
+
+function handleShowFlightUploader(state: State, action: Action): State {
+  if (action.type !== ActionType.ShowFlightUploader) return state; // hack to get types to work
+
+  return {
+    ...state,
+    sideDrawer: { view: "upload_flight", canClose: !!state.analysis },
+    isLoading: false
+  };
+}
+
+function handleCloseDrawer(state: State, action: Action): State {
+  if (action.type !== ActionType.CloseDrawer) return state; // hack to get types to work
+
+  return {
+    ...state,
+    sideDrawer: null
+  };
+}
+
+function handleChangeSettings(state: State, action: Action): State {
+  if (action.type !== ActionType.ChangeSettings) return state; // hack to get types to work
+
+  const { changes } = action;
+  let newState = {
+    ...state,
+    settings: { ...state.settings, ...changes }
+  };
+
+  const shouldReanalise = Object.keys(changes).includes("qnh");
+
+  if (
+    state.analysis &&
+    (Object.keys(changes).includes("synchronizationMethod") || shouldReanalise)
+  ) {
+    newState.analysis = buildAnalysisState(
+      newState,
+      state.analysis.flightGroup,
+      state.analysis.task,
+      {
+        followFlightId: state.analysis.followFlightId,
+        activeTimestamp: state.analysis.activeTimestamp,
+        isSummary: state.analysis.isSummary
+      },
+      shouldReanalise
+    );
+  }
+
+  return newState;
+}
+
+function handleSetFollowFlight(state: State, action: Action): State {
+  if (action.type !== ActionType.SetFollowFlight) return state; // hack to get types to work
+
+  if (!state.analysis) return state;
+
+  return {
+    ...state,
+    analysis: { ...state.analysis, followFlightId: action.flightDatum.id }
+  };
+}
+
+export function reducer(state: State, action: Action): State {
   switch (action.type) {
     case ActionType.SetFlightData:
       return handleSetFlightData(state, action);
+
     case ActionType.SetActiveTimestamp:
-      if (!state.analysis) return state;
+      return handleSetActiveTimestamp(state, action);
 
-      return {
-        ...state,
-        analysis: {
-          ...state.analysis,
-          activeTimestamp: action.timestamp,
-          isSummary: false
-        }
-      };
     case ActionType.AdvanceActiveTimestamp:
-      if (!state.analysis) return state;
+      return handleAdvanceActiveTimestamp(state, action);
 
-      let {
-        analysis: { activeTimestamp }
-      } = state;
-
-      if (!activeTimestamp) {
-        activeTimestamp = state.analysis.flightDataById[
-          state.analysis.followFlightId
-        ].flight.getRecordingStartedAt();
-      } else if (activeTimestamp > state.analysis.flightGroup.latestDatumAt) {
-        return {
-          ...state,
-          analysis: {
-            ...state.analysis,
-            activeTimestamp: state.analysis.flightGroup.latestDatumAt
-          },
-          isPlaying: false
-        };
-      } else {
-        activeTimestamp = new Date(
-          activeTimestamp.getTime() + action.deltaInMillis
-        );
-      }
-
-      return {
-        ...state,
-        analysis: {
-          ...state.analysis,
-          activeTimestamp: activeTimestamp,
-          isSummary: false
-        }
-      };
     case ActionType.TogglePlay:
-      if (!state.analysis) return state;
+      return handleTogglePlay(state, action);
 
-      if (
-        state.analysis.activeTimestamp >=
-          state.analysis.flightGroup!.latestDatumAt &&
-        !state.isPlaying
-      ) {
-        return {
-          ...state,
-          isPlaying: !state.isPlaying,
-          analysis: {
-            ...state.analysis,
-            activeTimestamp: state.analysis.flightGroup.earliestDatumAt
-          }
-        };
-      }
-      return { ...state, isPlaying: !state.isPlaying };
     case ActionType.ToggleFlights:
-      if (!sideDrawer || sideDrawer.view !== "flights") {
-        newSideDrawer = { view: "flights", canClose: true };
-      } else {
-        newSideDrawer = null;
-      }
-      return {
-        ...state,
-        sideDrawer: newSideDrawer
-      };
-    case ActionType.ToggleSettings:
-      if (!sideDrawer || sideDrawer.view !== "settings") {
-        newSideDrawer = { view: "settings", canClose: true };
-      } else {
-        newSideDrawer = null;
-      }
+      return handleToggleFlights(state, action);
 
-      return {
-        ...state,
-        sideDrawer: newSideDrawer
-      };
+    case ActionType.ToggleSettings:
+      return handleToggleSettings(state, action);
 
     case ActionType.ShowFlightUploader:
-      return {
-        ...state,
-        sideDrawer: { view: "upload_flight", canClose: !!state.analysis },
-        isLoading: false
-      };
+      return handleShowFlightUploader(state, action);
+
     case ActionType.CloseDrawer:
-      return {
-        ...state,
-        sideDrawer: null
-      };
+      return handleCloseDrawer(state, action);
+
     case ActionType.ChangeSettings:
-      const { changes } = action;
-      newState = {
-        ...state,
-        settings: { ...state.settings, ...changes }
-      };
+      return handleChangeSettings(state, action);
 
-      const shouldReanalise = Object.keys(changes).includes("qnh");
-
-      if (
-        state.analysis &&
-        (Object.keys(changes).includes("synchronizationMethod") ||
-          shouldReanalise)
-      ) {
-        newState.analysis = buildAnalysisState(
-          newState,
-          state.analysis.flightGroup,
-          state.analysis.task,
-          {
-            followFlightId: state.analysis.followFlightId,
-            activeTimestamp: state.analysis.activeTimestamp,
-            isSummary: state.analysis.isSummary
-          },
-          shouldReanalise
-        );
-      }
-
-      return newState;
     case ActionType.SetFollowFlight:
-      if (!state.analysis) return state;
-
-      return {
-        ...state,
-        analysis: { ...state.analysis, followFlightId: action.flightDatum.id }
-      };
-
-    case ActionType.SetDebug:
-      return {
-        ...state,
-        isDebug: action.isDebug
-      };
+      return handleSetFollowFlight(state, action);
   }
 }
 
-function handleSetFlightData(state: State, action: Action) {
+function handleSetFlightData(state: State, action: Action): State {
   if (action.type !== ActionType.SetFlightData) return state; // hack to get types to work
 
   const { flightData } = action;

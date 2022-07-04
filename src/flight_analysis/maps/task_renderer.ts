@@ -1,89 +1,137 @@
-import Task, { TaskTurnpoint } from "glana/src/flight_computer/tasks/task";
-import MapRenderer from "./map_renderer";
-import VectorSource from "ol/source/Vector";
-import VectorLayer from "ol/layer/Vector";
-import LineString from "ol/geom/LineString";
-import { Fill, Stroke, Style } from "ol/style";
-import { extentUnion, positionToOlPoint } from "./utils";
-import GeoJSON from "ol/format/GeoJSON";
-import { Feature } from "ol";
-import { Extent } from "ol/extent";
+import { FeatureCollection } from "geojson";
+import Position from "glana/src/flight_computer/position";
+import Task from "glana/src/flight_computer/tasks/task";
+import { Map, LngLatBounds } from "mapbox-gl";
+import "mapbox-gl/dist/mapbox-gl.css";
+import { Z_INDEX_1 } from "./renderer";
+
+type TaskGeoJSON = GeoJSON.FeatureCollection;
+type TrackGeoJSON = GeoJSON.Feature<GeoJSON.LineString>;
 
 export default class TaskRenderer {
-  private map: MapRenderer;
-  private layer: any;
-  private task: Task;
-  private extent: Extent;
+  private id;
+  private map: Map;
+  private sourceOutlineId: string;
+  private sourceFillId: string;
+  private layerOutlineId: string;
+  private layerFillId: string;
+  private sectorsGeoJSON: TaskGeoJSON;
+  private sectorsAndTrackGeoJSON: TaskGeoJSON;
+  private bounds: LngLatBounds;
 
-  constructor(map: MapRenderer, task: Task) {
+  constructor(map: Map, task: Task) {
+    this.id = this.generateId();
     this.map = map;
-    this.task = task;
-    this.extent = this.calculateExtent();
+    this.sourceOutlineId = `source-outline-${this.id}`;
+    this.sourceFillId = `source-fill-${this.id}`;
+    this.layerOutlineId = `layer-contour-${this.id}`;
+    this.layerFillId = `layer-fill-${this.id}`;
+    this.sectorsGeoJSON = this.buildTurnpointsGeoJSON(task, false);
+    this.sectorsAndTrackGeoJSON = this.buildTurnpointsGeoJSON(task, true);
+    this.bounds = this.calculateBounds(this.sectorsGeoJSON);
   }
 
-  private calculateExtent() {
-    let features = this.buildFeatures(this.task);
-    const extents = features.map(f => f.getGeometry()!.getExtent());
-    return extentUnion(...extents);
+  private generateId() {
+    return Math.round(Math.random() * 1000000).toString();
   }
 
-  getExtent() {
-    return this.extent;
+  buildTurnpointsGeoJSON(
+    task: Task,
+    includeTrack: boolean
+  ): GeoJSON.FeatureCollection {
+    const features = task.turnpoints.map(tp => tp.toGeoJSON());
+
+    if (includeTrack) {
+      features.push(this.buildTrackGeoJSON(task));
+    }
+
+    return {
+      type: "FeatureCollection",
+      features: features
+    };
   }
 
-  render() {
-    let features = this.buildFeatures(this.task);
-    let source = new VectorSource({ features });
-    let style = () => this.olStyle();
-    let layer = new VectorLayer({
-      source,
-      style,
-      updateWhileAnimating: true,
-      updateWhileInteracting: true
+  private buildTrackGeoJSON(task: Task): TrackGeoJSON {
+    const coordinates = task.turnpoints.map(tp =>
+      this.positionToGeoJSON(tp.center)
+    );
+    return {
+      type: "Feature",
+      geometry: {
+        type: "LineString",
+        coordinates: coordinates
+      },
+      properties: {}
+    };
+  }
+
+  private positionToGeoJSON(position: Position) {
+    return [position.longitude.value, position.latitude.value];
+  }
+
+  getBounds() {
+    return this.bounds;
+  }
+
+  private calculateBounds(geoJSON: FeatureCollection) {
+    const coordinates = geoJSON.features.flatMap(f => {
+      if (f.geometry.type === "Polygon") {
+        return f.geometry.coordinates[0];
+      } else if (f.geometry.type === "LineString") {
+        return f.geometry.coordinates;
+      } else {
+        return [];
+      }
+    });
+    return coordinates.reduce(
+      (bounds, coordinate: any) => bounds.extend(coordinate),
+      new LngLatBounds()
+    );
+  }
+
+  initialize() {
+    this.map.addSource(this.sourceOutlineId, {
+      type: "geojson",
+      data: this.sectorsAndTrackGeoJSON,
+      tolerance: 0
+    });
+    this.map.addSource(this.sourceFillId, {
+      type: "geojson",
+      data: this.sectorsGeoJSON,
+      tolerance: 0
     });
 
-    this.layer = layer;
-    this.map.olMap.addLayer(layer);
+    this.map.addLayer(
+      {
+        id: this.layerOutlineId,
+        source: this.sourceOutlineId,
+        type: "line",
+        paint: {
+          "line-color": "black",
+          "line-width": 2,
+          "line-opacity": 0.3
+        }
+      },
+      Z_INDEX_1
+    );
+    this.map.addLayer(
+      {
+        id: this.layerFillId,
+        source: this.sourceFillId,
+        type: "fill",
+        paint: {
+          "fill-color": "black",
+          "fill-opacity": 0.1
+        }
+      },
+      Z_INDEX_1
+    );
   }
 
   destroy() {
-    if (this.layer) {
-      this.map.olMap.removeLayer(this.layer);
-    }
-  }
-
-  private buildFeatures(task: Task) {
-    return [...this.buildTurnpoints(task), ...this.buildTrack(task)];
-  }
-
-  private buildTurnpoints(task: Task) {
-    return task.turnpoints.flatMap(tp => this.buildFeature(tp));
-  }
-
-  private buildFeature(turnpoint: TaskTurnpoint) {
-    let format = new GeoJSON();
-    let features = format.readFeatures(turnpoint.toGeoJSON());
-    features.forEach(f => f.getGeometry()?.transform("EPSG:4326", "EPSG:3857"));
-    return features;
-  }
-
-  private buildTrack(task: Task) {
-    let points = task.turnpoints.map(tp => positionToOlPoint(tp.center));
-    let track = new LineString(points);
-    return [new Feature({ geometry: track })];
-  }
-
-  private olStyle() {
-    return [
-      new Style({
-        stroke: new Stroke({
-          color: "rgba(0, 0, 0, 0.2)",
-          width: 2
-        }),
-        fill: new Fill({
-          color: "rgba(0, 0, 0, 0.1)"
-        })
-      })
-    ];
+    this.map.removeLayer(this.layerFillId);
+    this.map.removeLayer(this.layerOutlineId);
+    this.map.removeSource(this.sourceFillId);
+    this.map.removeSource(this.sourceOutlineId);
   }
 }

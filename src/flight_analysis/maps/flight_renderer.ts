@@ -1,49 +1,76 @@
 import { Datum } from "glana/src/flight_computer/computer";
-import { splitWhen } from "../../utils/arrays";
-import { FlightDatum } from "../store/reducer";
-import MapRenderer from "./map_renderer";
-import { extentUnion, positionToOlPoint } from "./utils";
-import LineString from "ol/geom/LineString";
-import Feature from "ol/Feature";
-import VectorLayer from "ol/layer/Vector";
-import VectorSource from "ol/source/Vector";
-import Point from "ol/geom/Point";
-import { Icon, Stroke, Style } from "ol/style";
-import { Extent } from "ol/extent";
+import Position from "glana/src/flight_computer/position";
+import mapboxgl, { LngLatLike } from "mapbox-gl";
+import { Map, LngLatBounds, GeoJSONSource } from "mapbox-gl";
 import ReactDOMServer from "react-dom/server";
 import { glider } from "../../ui/components/icon/icons";
+import { chunk, splitWhen } from "../../utils/arrays";
+import { FlightDatum } from "../store/reducer";
+import { Z_INDEX_2, Z_INDEX_3 } from "./renderer";
 
-type TrackSegment = {
+const MAX_SEGMENT_SIZE = 200;
+
+type FlightGeoJSON = GeoJSON.FeatureCollection<
+  GeoJSON.LineString,
+  TrackProperties
+>;
+
+type TrackProperties = {
+  title: string;
+  opacity: number;
+  trackCoordinates: LngLatLike[];
+  color: string;
   startIndex: number;
   endIndex: number;
   isEngineOn: boolean;
-  positions: number[][];
 };
 
-export default class FlightRenderer {
-  readonly flightDatum: FlightDatum;
-  private mapRenderer: MapRenderer;
-  private renderFullTrack: boolean;
-  private trackSegments: TrackSegment[];
-  private trackSegmentFeatures?: Feature<LineString>[];
-  private positionMarkerFeature?: Feature<Point>;
-  private layer?: VectorLayer;
-  private activeTimestamp?: Date;
-  private extent: Extent;
-  public isActive: boolean;
+type TrackSegment = GeoJSON.Feature<GeoJSON.LineString, TrackProperties>;
 
-  constructor(mapRenderer: MapRenderer, flightDatum: FlightDatum) {
-    this.mapRenderer = mapRenderer;
+export default class FlightRenderer {
+  private map: Map;
+  private sourceId: string;
+  private layerId: string;
+  private geoJSON: FlightGeoJSON;
+  private bounds: LngLatBounds;
+  private isActive: boolean;
+  private shouldRenderFullTracks: boolean;
+  private timestamp: Date;
+  private marker: mapboxgl.Marker;
+  private trackSegments: TrackSegment[];
+
+  flightDatum: FlightDatum;
+  currentPosition: LngLatLike;
+
+  constructor(map: Map, flightDatum: FlightDatum) {
+    this.map = map;
     this.flightDatum = flightDatum;
-    this.renderFullTrack = false;
+    this.timestamp = flightDatum.flight.getRecordingStartedAt();
+    this.sourceId = `source-${this.flightDatum.id}`;
+    this.layerId = `layer-${this.flightDatum.id}`;
     this.trackSegments = this.buildTrackSegments(flightDatum);
-    this.extent = this.calculateExtent();
-    this.isActive = false;
+    this.geoJSON = this.buildGeoJSON(this.trackSegments);
+    this.bounds = this.calculateBounds(this.geoJSON);
+    this.isActive = true;
+    this.shouldRenderFullTracks = true;
+    this.currentPosition = this.trackSegments[0].geometry.coordinates[0] as any;
+    this.marker = this.buildMarker(this.currentPosition);
   }
 
-  private buildTrackSegments(flightDatum: FlightDatum) {
+  private positionToGeoJSON(position: Position): LngLatLike {
+    return [position.longitude.value, position.latitude.value];
+  }
+
+  private buildGeoJSON(trackSegments: TrackSegment[]): FlightGeoJSON {
+    return {
+      type: "FeatureCollection",
+      features: trackSegments
+    };
+  }
+
+  private buildTrackSegments(flightDatum: FlightDatum): TrackSegment[] {
     const flight = flightDatum.flight;
-    const datumSlices = splitWhen(
+    let datumSlices = splitWhen(
       flight.datums,
       datum => this.isEngineOn(datum),
       {
@@ -51,16 +78,36 @@ export default class FlightRenderer {
       }
     );
 
+    // Split features so we can update smaller segments rather than one larger
+    // one. An even better approach for performance would be to have completely
+    // different sources.
+    datumSlices = datumSlices.flatMap(ds =>
+      chunk(ds, MAX_SEGMENT_SIZE, { includeLastValueInBothGroups: true })
+    );
+
     let startIndex = 0;
     return datumSlices.map(datums => {
       const isEngineOn = this.isEngineOn(datums[0]);
-      const positions = datums.map((datum: Datum) => this.fixToPoint(datum));
-      const endIndex = startIndex + positions.length - 1;
-      const segment = {
-        startIndex: startIndex,
-        endIndex: endIndex,
-        positions: positions,
-        isEngineOn: isEngineOn
+      const coordinates = datums.map((datum: Datum) =>
+        this.positionToGeoJSON(datum.position)
+      );
+      const endIndex = startIndex + coordinates.length - 1;
+      const color = isEngineOn ? "#FF0000" : this.flightDatum.color;
+      const segment: TrackSegment = {
+        type: "Feature",
+        geometry: {
+          type: "LineString",
+          coordinates: coordinates as any
+        },
+        properties: {
+          title: this.flightDatum.flight.id,
+          opacity: this.opacity,
+          trackCoordinates: Array.from(coordinates),
+          color,
+          startIndex,
+          endIndex,
+          isEngineOn
+        }
       };
 
       startIndex = endIndex;
@@ -73,190 +120,43 @@ export default class FlightRenderer {
     return datum.calculatedValues.engineOn?.value === 1;
   }
 
-  private fixToPoint(datum: Datum) {
-    return [...positionToOlPoint(datum.position), datum.timestamp.getTime()];
-  }
-
-  private calculateExtent() {
-    const features = this.buildTrackSegmentFeatures();
-    const extents = features.map(f => f.getGeometry()!.getExtent());
-    return extentUnion(...extents);
-  }
-
-  getExtent() {
-    return this.extent;
-  }
-
-  setRenderFullTrack(renderFullTrack: boolean) {
-    this.renderFullTrack = renderFullTrack;
-    let timestamp;
-    if (this.renderFullTrack) {
-      timestamp = this.flightDatum.flight.getRecordingStoppedAt();
-    } else {
-      timestamp =
-        this.activeTimestamp || this.flightDatum.flight.getRecordingStartedAt();
-    }
-    this.drawFlightTrackUntil(timestamp);
-  }
-
-  setActiveTimestamp(timestamp: Date) {
-    this.activeTimestamp = timestamp;
-
-    const flight = this.flightDatum.flight;
-    let datum = flight.datumAt(timestamp);
-    if (!datum) {
-      datum = flight.datums[0];
-    }
-
-    if (!this.renderFullTrack) {
-      this.drawFlightTrackUntil(timestamp);
-    }
-
-    this.updateMarkerPosition(datum);
-  }
-
-  setActive(isActive: boolean) {
-    this.isActive = isActive;
-    this.setStyle();
-    this.setZIndex();
-  }
-
-  private setStyle() {
-    if (!this.layer) return;
-    const style = (this.layer.getStyle() as Style[])[0];
-    style.getStroke().setColor(this.traceColor());
-  }
-
-  private setZIndex() {
-    if (!this.layer) return;
-
-    if (this.isActive) {
-      this.layer.setZIndex(2);
-    } else {
-      this.layer.setZIndex(1);
-    }
-  }
-
-  private drawFlightTrackUntil(timestamp: Date) {
-    if (!this.trackSegmentFeatures) return;
-
-    const flight = this.flightDatum.flight;
-
-    let currentDatumIndex: number;
-
-    if (timestamp < flight.getRecordingStartedAt()) {
-      currentDatumIndex = 0;
-    } else if (timestamp > flight.getRecordingStoppedAt()) {
-      currentDatumIndex = flight.datums.length - 1;
-    } else {
-      currentDatumIndex = flight.datumIndexAt(timestamp)!;
-    }
-
-    this.trackSegmentFeatures.forEach((segment, index) => {
-      if (currentDatumIndex === null) return;
-
-      const trackSegment = this.trackSegments[index];
-      let positions: number[][];
-
-      if (currentDatumIndex < trackSegment.startIndex) {
-        positions = [];
-      } else if (currentDatumIndex >= trackSegment.endIndex) {
-        positions = trackSegment.positions;
-      } else {
-        positions = trackSegment.positions.slice(
-          0,
-          currentDatumIndex - trackSegment.startIndex + 1
-        );
-      }
-
-      segment.getGeometry()!.setCoordinates(positions);
+  private calculateBounds(geoJSON: FlightGeoJSON) {
+    const bounds = new LngLatBounds();
+    geoJSON.features.forEach(f => {
+      f.geometry.coordinates.forEach((coordinate: any) =>
+        bounds.extend(coordinate)
+      );
     });
+    return bounds;
   }
 
-  private updateMarkerPosition(datum: Datum) {
-    if (!this.positionMarkerFeature || !this.layer) return;
-
-    this.positionMarkerFeature
-      .getGeometry()!
-      .setCoordinates(this.fixToPoint(datum));
-
-    const style = (this.layer.getStyle() as Style[])[0];
-    style.getImage().setRotation((datum.heading.value * Math.PI) / 180);
-  }
-
-  render() {
-    this.trackSegmentFeatures = this.buildTrackSegmentFeatures();
-    this.positionMarkerFeature = this.buildPositionMarkerFeature();
-    let source = new VectorSource({
-      features: this.trackSegmentFeatures.concat(
-        this.positionMarkerFeature as any
-      )
+  initialize() {
+    this.marker.addTo(this.map);
+    this.map.addSource(this.sourceId, {
+      type: "geojson",
+      data: this.geoJSON
     });
-
-    this.layer = new VectorLayer({
-      source,
-      style: this.olStyle(),
-      updateWhileAnimating: true,
-      updateWhileInteracting: true
-    });
-    this.setZIndex();
-    this.mapRenderer.olMap.addLayer(this.layer);
+    this.map.addLayer(
+      {
+        id: this.layerId,
+        source: this.sourceId,
+        type: "line",
+        paint: {
+          "line-color": ["get", "color"],
+          "line-width": 2,
+          "line-opacity": ["get", "opacity"]
+        }
+      },
+      this.zIndex
+    );
   }
 
-  destroy() {
-    if (!this.layer) return;
-    this.mapRenderer.olMap.removeLayer(this.layer);
-  }
-
-  private buildTrackSegmentFeatures() {
-    return this.trackSegments.map(segment => {
-      const isEngineOn = segment.isEngineOn;
-      const line = new LineString(segment.positions);
-      const feature = new Feature<LineString>({ geometry: line });
-      if (isEngineOn) {
-        feature.setStyle(this.engineOnStyle(isEngineOn));
-      }
-      return feature;
-    });
-  }
-
-  private engineOnStyle(isEngineOn: boolean) {
-    if (!isEngineOn) return;
-    const color = "#FF0000";
-    return [
-      new Style({
-        stroke: new Stroke({
-          color: color,
-          width: 2
-        })
-      })
-    ];
-  }
-
-  private buildPositionMarkerFeature() {
-    return new Feature<Point>({
-      geometry: new Point(this.fixToPoint(this.flightDatum.flight.datums[0]))
-    });
-  }
-
-  private olStyle() {
-    return [
-      new Style({
-        stroke: new Stroke({
-          color: this.traceColor(),
-          width: 2
-        }),
-        image: new Icon({
-          src: this.iconSVGURLEncoded(),
-          scale: 1
-        })
-      })
-    ];
-  }
-
-  private traceColor() {
-    const flightColor = this.flightDatum.color;
-    return this.isActive ? flightColor : `${flightColor}66`;
+  private buildMarker(position: LngLatLike) {
+    const el = document.createElement("div");
+    el.innerHTML = this.iconSVGURLEncoded();
+    const marker = new mapboxgl.Marker(el);
+    marker.setLngLat(position);
+    return marker;
   }
 
   private iconSVGURLEncoded() {
@@ -264,7 +164,92 @@ export default class FlightRenderer {
     const svg = ReactDOMServer.renderToStaticMarkup(
       glider({ color: this.flightDatum.color, width: size, height: size })
     );
-    const encodedSVG = encodeURIComponent(svg);
-    return `data:image/svg+xml;utf8,${encodedSVG}`;
+    return svg;
+  }
+
+  destroy() {
+    this.marker.remove();
+    this.map.removeLayer(this.layerId);
+    this.map.removeSource(this.sourceId);
+  }
+
+  getBounds() {
+    return this.bounds;
+  }
+
+  setActive(isActive: boolean) {
+    this.isActive = isActive;
+    this.setSourceOpacity();
+    this.setLayerZIndex();
+  }
+
+  private setSourceOpacity() {
+    const source = this.map.getSource(this.sourceId) as GeoJSONSource;
+    this.geoJSON.features.forEach(f => {
+      f.properties.opacity = this.opacity;
+    });
+    source.setData(this.geoJSON);
+  }
+
+  private setLayerZIndex() {
+    this.map.moveLayer(this.layerId, this.zIndex);
+  }
+
+  setRenderFullTracks(shouldRenderFullTracks: boolean) {
+    this.shouldRenderFullTracks = shouldRenderFullTracks;
+    this.setTime(this.timestamp);
+  }
+
+  private get opacity() {
+    return this.isActive ? 1 : 0.4;
+  }
+
+  private get zIndex() {
+    return this.isActive ? Z_INDEX_3 : Z_INDEX_2;
+  }
+
+  setTime(timestamp: Date) {
+    const datumIdx = this.flightDatum.flight.datumIndexAt(timestamp);
+    const datum = this.flightDatum.flight.datums[datumIdx];
+    this.currentPosition = this.positionToGeoJSON(datum.position);
+
+    this.maybeUpdateTrack(datumIdx);
+    this.updateMarker(datum);
+  }
+
+  private maybeUpdateTrack(datumIdx: number) {
+    this.geoJSON.features.forEach(trackSegment => {
+      const startIdx = 0;
+      let endIdx: number;
+
+      if (
+        datumIdx >= trackSegment.properties.endIndex ||
+        this.shouldRenderFullTracks
+      ) {
+        endIdx = trackSegment.properties.trackCoordinates.length;
+      } else if (datumIdx < trackSegment.properties.startIndex) {
+        endIdx = 0;
+      } else {
+        endIdx = datumIdx - trackSegment.properties.startIndex + 1;
+      }
+
+      if (endIdx - startIdx !== trackSegment.geometry.coordinates.length) {
+        // For performance reasons, only update the rendering object if it has actually changed
+        const coordinates = trackSegment.properties.trackCoordinates.slice(
+          startIdx,
+          endIdx
+        );
+        trackSegment.geometry.coordinates = coordinates as any;
+      }
+    });
+
+    const source = this.map.getSource(this.sourceId) as GeoJSONSource;
+    source.setData(this.geoJSON);
+  }
+
+  private updateMarker(datum: Datum) {
+    const coordinate = this.positionToGeoJSON(datum.position);
+    this.marker.setLngLat(coordinate);
+    this.marker.setRotation(datum.heading.value);
   }
 }

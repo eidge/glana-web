@@ -14,12 +14,6 @@ export type DrawerState = {
   canClose: boolean;
 };
 
-export type Picture = {
-  title: string;
-  url: string;
-  takenAt: Date;
-};
-
 export type FlightDataById = { [key: string]: FlightDatum };
 
 export interface AnalysisState {

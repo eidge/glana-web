@@ -10,7 +10,7 @@ const PADDING = {
   top: 40,
   right: 40,
   bottom: 135,
-  left: 40,
+  left: 40
 };
 
 interface Props {
@@ -28,7 +28,7 @@ export default function Map(props: Props) {
     isPlaying,
     setActiveTimestamp,
     showAirspace,
-    showWeather,
+    showWeather
   } = props;
   const element = useRef<HTMLDivElement | null>(null);
 
@@ -104,11 +104,11 @@ function useRenderFlights(
 
   useEffect(() => {
     if (!mapRenderer || !flightData) return;
-    flightData.forEach((f) => mapRenderer.addFlight(f));
+    flightData.forEach(f => mapRenderer.addFlight(f));
     // Give the UI time to hide the sidebar if it's open.
     setTimeout(() => mapRenderer.zoomToFit(), 1000);
 
-    return () => flightData.forEach((f) => mapRenderer.removeFlight(f));
+    return () => flightData.forEach(f => mapRenderer.removeFlight(f));
   }, [mapRenderer, flightData]);
 
   useEffect(() => {
@@ -177,7 +177,7 @@ const ZoomControls = React.memo((props: { mapRenderer: MapRenderer }) => {
       buttons={[
         { icon: "zoomIn", onClick: () => mapRenderer.zoomIn() },
         { icon: "search", onClick: () => mapRenderer.zoomToFit() },
-        { icon: "zoomOut", onClick: () => mapRenderer.zoomOut() },
+        { icon: "zoomOut", onClick: () => mapRenderer.zoomOut() }
       ]}
     />
   );

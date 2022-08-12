@@ -10,8 +10,9 @@ import SavedFlight from "glana/src/saved_flight";
 import { degrees } from "glana/src/units/angle";
 import { kilometers } from "glana/src/units/length";
 import errorTracker from "../../error_tracker";
-import { FlightDatum } from "../store/models/flight_datum";
+import { FlightDatum, Picture } from "../store/models/flight_datum";
 import Loader from "./loader";
+import { DateTime } from "luxon";
 
 const DEFAULT_BGA_BASE_URL = new URL("https://bgaladder.net");
 
@@ -75,6 +76,7 @@ export default class BGALoader implements Loader {
         return null;
       }
     } catch (e) {
+      console.error(e);
       await errorTracker.report(e);
       return null;
     }
@@ -83,8 +85,9 @@ export default class BGALoader implements Loader {
   private parseFlightDetails(json: any) {
     let parser = new IGCParser();
     const flight = parser.parse(json.igcContents);
+    const pictures = this.parsePictures(json);
     this.enrichFlightData(flight, json);
-    return new FlightDatum(flight);
+    return new FlightDatum(flight, { pictures: pictures });
   }
 
   private enrichFlightData(flight: SavedFlight, bgaData: any) {
@@ -92,6 +95,32 @@ export default class BGALoader implements Loader {
       bgaData?.glider.registration || flight.metadata.registration;
     flight.task = this.parseTask(bgaData);
     return flight;
+  }
+
+  private parsePictures(bgaResponse: any) {
+    const pictures: Picture[] = [];
+    bgaResponse.photos.forEach((photo: any) => {
+      if (!photo.timestamp || !photo.photourl) return;
+
+      const takenAt = DateTime.fromFormat(
+        photo.timestamp,
+        "yyyy:MM:dd hh:mm:ss"
+      );
+      if (!takenAt.isValid) {
+        console.error(
+          `Invalid EXIF timestamp, skipping photo "${photo.title}"`,
+          photo
+        );
+        return;
+      }
+
+      pictures.push({
+        title: photo.title || null,
+        url: photo.photourl,
+        takenAt: takenAt.toJSDate()
+      });
+    });
+    return pictures;
   }
 
   private parseTask(bgaData: any) {

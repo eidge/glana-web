@@ -2,7 +2,7 @@ import Task from "glana/src/flight_computer/tasks/task";
 import mapboxgl, { Map, LngLatBounds } from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { isProduction } from "../../utils/environment";
-import { FlightDatum } from "../store/models/flight_datum";
+import { FlightDatum, Picture } from "../store/models/flight_datum";
 import FlightRenderer from "./flight_renderer";
 import { AIRSPACE_LAYERS, AIRSPACE_SOURCE } from "./opeanaip_layers";
 import TaskRenderer from "./task_renderer";
@@ -17,6 +17,10 @@ interface Padding {
   left: number;
 }
 
+interface Callbacks {
+  onOpenPicture?: (picture: Picture) => void;
+}
+
 const OPENAIP_TOKEN = "33c125b3916beb39dc3835be89882a09";
 const OPENAIP_HOST = "https://api.tiles.openaip.net";
 const DEFAULT_STYLE =
@@ -26,7 +30,7 @@ const EMPTY_STYLE = {
   // No tiles, useful for working offline.
   version: 8,
   layers: [],
-  sources: {}
+  sources: {},
 };
 
 export const Z_INDEX_1 = "z-index-1";
@@ -46,12 +50,18 @@ export default class Renderer {
   private zIndexSourceId = "source-empty";
   private cloudLayerId = "layer-cloud";
   private cloudSourceId = "source-cloud";
+  private callbacks: Callbacks;
 
-  constructor(element: HTMLElement, padding: Padding) {
+  constructor(
+    element: HTMLElement,
+    padding: Padding,
+    callbacks: Callbacks = {}
+  ) {
     this.element = element;
     this.flightRenderers = {};
     this.padding = padding;
     this.resizeObserver = new ResizeObserver(this.resizeCallback.bind(this));
+    this.callbacks = callbacks;
   }
 
   initialize() {
@@ -59,7 +69,7 @@ export default class Renderer {
 
     this.resizeObserver.observe(this.element);
 
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       this.map!.on("load", () => {
         this.addAirspaceSource(this.map!);
         this.addZLayers(this.map!);
@@ -77,16 +87,16 @@ export default class Renderer {
       logoPosition: "top-right",
       hash: true,
       trackResize: false,
-      transformRequest: url => {
+      transformRequest: (url) => {
         if (url.startsWith(OPENAIP_HOST)) {
           return {
             url,
-            headers: { "x-openaip-client-id": OPENAIP_TOKEN }
+            headers: { "x-openaip-client-id": OPENAIP_TOKEN },
           };
         } else {
           return { url };
         }
-      }
+      },
     });
   }
 
@@ -104,7 +114,7 @@ export default class Renderer {
   private addZIndexSource(map: Map) {
     map.addSource(this.zIndexSourceId, {
       type: "geojson",
-      data: { type: "FeatureCollection", features: [] }
+      data: { type: "FeatureCollection", features: [] },
     });
   }
 
@@ -128,7 +138,7 @@ export default class Renderer {
     this.resizeObserver.unobserve(this.element);
 
     const renderers = Object.values(this.flightRenderers);
-    renderers.forEach(r => r.destroy());
+    renderers.forEach((r) => r.destroy());
     this.flightRenderers = {};
 
     if (this.taskRenderer) {
@@ -153,7 +163,7 @@ export default class Renderer {
     if (this.activeFlight) {
       this.map.flyTo({
         center: this.activeFlight.currentPosition,
-        zoom: this.map.getZoom() + 1
+        zoom: this.map.getZoom() + 1,
       });
     } else {
       this.map.zoomIn();
@@ -203,13 +213,13 @@ export default class Renderer {
 
     this.map.addSource(this.cloudSourceId, {
       type: "raster",
-      tiles: this.cloudTileLayerUrls()
+      tiles: this.cloudTileLayerUrls(),
     });
 
     this.map.addLayer({
       id: this.cloudLayerId,
       type: "raster",
-      source: this.cloudSourceId
+      source: this.cloudSourceId,
     });
 
     this.map.moveLayer(this.cloudLayerId, Z_INDEX_1);
@@ -217,12 +227,10 @@ export default class Renderer {
 
   private cloudTileLayerUrls() {
     const dateStr =
-      this.cloudLayerTimestamp()
-        .toISOString()
-        .split(".")[0] + "Z";
+      this.cloudLayerTimestamp().toISOString().split(".")[0] + "Z";
 
     return ["a", "b", "c"].map(
-      server =>
+      (server) =>
         `https://gibs-${server}.earthdata.nasa.gov/wmts/epsg3857/best/MODIS_Terra_CorrectedReflectance_TrueColor/default/${dateStr}/GoogleMapsCompatible_Level9/{z}/{y}/{x}.jpg`
     );
   }
@@ -250,7 +258,7 @@ export default class Renderer {
       AIRSPACE_LAYERS.forEach((l: any) => this.map!.addLayer(l));
     } else {
       AIRSPACE_LAYERS.forEach(
-        l => this.map!.getLayer(l.id) && this.map!.removeLayer(l.id)
+        (l) => this.map!.getLayer(l.id) && this.map!.removeLayer(l.id)
       );
     }
     console.log(`Set shouldShowAirspace=${isVisible}`);
@@ -259,7 +267,7 @@ export default class Renderer {
   setRenderFullTracks(shouldRenderFullTracks: boolean) {
     this.shouldRenderFullTracks = shouldRenderFullTracks;
     const renderers = Object.values(this.flightRenderers);
-    renderers.forEach(r => r.setRenderFullTracks(shouldRenderFullTracks));
+    renderers.forEach((r) => r.setRenderFullTracks(shouldRenderFullTracks));
   }
 
   setShouldFollowActiveFlight(shouldFollow: boolean) {
@@ -287,7 +295,11 @@ export default class Renderer {
   addFlight(flightDatum: FlightDatum) {
     if (!this.map) throw new Error("Renderer is not initialized.");
 
-    const flightRenderer = new FlightRenderer(this.map, flightDatum);
+    const flightRenderer = new FlightRenderer(
+      this.map,
+      flightDatum,
+      this.callbacks
+    );
     this.flightRenderers[flightDatum.id] = flightRenderer;
     flightRenderer.initialize();
     flightRenderer.setRenderFullTracks(this.shouldRenderFullTracks);
@@ -313,7 +325,7 @@ export default class Renderer {
     if (!this.map) return;
 
     const renderers = Object.values(this.flightRenderers);
-    renderers.forEach(r => r.setTime(timestamp));
+    renderers.forEach((r) => r.setTime(timestamp));
 
     if (
       this.shouldFollowActiveFlight &&
@@ -322,7 +334,7 @@ export default class Renderer {
     ) {
       this.map.panTo(this.activeFlight.currentPosition, {
         duration: 200,
-        essential: true
+        essential: true,
       });
     }
   }
@@ -343,7 +355,7 @@ export default class Renderer {
   setActiveFlight(flight: FlightDatum) {
     this.activeFlightId = flight.id;
 
-    Object.keys(this.flightRenderers).forEach(id => {
+    Object.keys(this.flightRenderers).forEach((id) => {
       this.flightRenderers[id]?.setActive(id === this.activeFlightId);
     });
 

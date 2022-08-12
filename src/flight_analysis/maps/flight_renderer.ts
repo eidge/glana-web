@@ -1,11 +1,12 @@
 import { Datum } from "glana/src/flight_computer/computer";
 import Position from "glana/src/flight_computer/position";
+import { degrees } from "glana/src/units/angle";
 import mapboxgl, { LngLatLike } from "mapbox-gl";
 import { Map, LngLatBounds, GeoJSONSource } from "mapbox-gl";
 import ReactDOMServer from "react-dom/server";
-import { glider } from "../../ui/components/icon/icons";
+import { glider, photo } from "../../ui/components/icon/icons";
 import { chunk, splitWhen } from "../../utils/arrays";
-import { FlightDatum } from "../store/models/flight_datum";
+import { FlightDatum, Picture } from "../store/models/flight_datum";
 import { Z_INDEX_2, Z_INDEX_3 } from "./renderer";
 
 const MAX_SEGMENT_SIZE = 200;
@@ -27,6 +28,10 @@ type TrackProperties = {
 
 type TrackSegment = GeoJSON.Feature<GeoJSON.LineString, TrackProperties>;
 
+interface Callbacks {
+  onOpenPicture?: (picture: Picture) => void;
+}
+
 export default class FlightRenderer {
   private map: Map;
   private sourceId: string;
@@ -39,13 +44,16 @@ export default class FlightRenderer {
   private marker: mapboxgl.Marker;
   private trackSegments: TrackSegment[];
   private isDestroyed: boolean = false;
+  private pictureMarkers: mapboxgl.Marker[] = [];
+  private callbacks: Callbacks;
 
   flightDatum: FlightDatum;
   currentPosition: LngLatLike;
 
-  constructor(map: Map, flightDatum: FlightDatum) {
+  constructor(map: Map, flightDatum: FlightDatum, callbacks: Callbacks = {}) {
     this.map = map;
     this.flightDatum = flightDatum;
+    this.callbacks = callbacks;
     this.timestamp = flightDatum.flight.getRecordingStartedAt();
     this.sourceId = `source-flight-${this.flightDatum.id}`;
     this.layerId = `layer-flight-${this.flightDatum.id}`;
@@ -65,7 +73,7 @@ export default class FlightRenderer {
   private buildGeoJSON(trackSegments: TrackSegment[]): FlightGeoJSON {
     return {
       type: "FeatureCollection",
-      features: trackSegments
+      features: trackSegments,
     };
   }
 
@@ -73,21 +81,21 @@ export default class FlightRenderer {
     const flight = flightDatum.flight;
     let datumSlices = splitWhen(
       flight.datums,
-      datum => this.isEngineOn(datum),
+      (datum) => this.isEngineOn(datum),
       {
-        includeLastValueInBothGroups: true
+        includeLastValueInBothGroups: true,
       }
     );
 
     // Split features so we can update smaller segments rather than one larger
     // one. An even better approach for performance would be to have completely
     // different sources.
-    datumSlices = datumSlices.flatMap(ds =>
+    datumSlices = datumSlices.flatMap((ds) =>
       chunk(ds, MAX_SEGMENT_SIZE, { includeLastValueInBothGroups: true })
     );
 
     let startIndex = 0;
-    return datumSlices.map(datums => {
+    return datumSlices.map((datums) => {
       const isEngineOn = this.isEngineOn(datums[0]);
       const coordinates = datums.map((datum: Datum) =>
         this.positionToGeoJSON(datum.position)
@@ -98,7 +106,7 @@ export default class FlightRenderer {
         type: "Feature",
         geometry: {
           type: "LineString",
-          coordinates: coordinates as any
+          coordinates: coordinates as any,
         },
         properties: {
           title: this.flightDatum.flight.id,
@@ -107,8 +115,8 @@ export default class FlightRenderer {
           color,
           startIndex,
           endIndex,
-          isEngineOn
-        }
+          isEngineOn,
+        },
       };
 
       startIndex = endIndex;
@@ -123,7 +131,7 @@ export default class FlightRenderer {
 
   private calculateBounds(geoJSON: FlightGeoJSON) {
     const bounds = new LngLatBounds();
-    geoJSON.features.forEach(f => {
+    geoJSON.features.forEach((f) => {
       f.geometry.coordinates.forEach((coordinate: any) =>
         bounds.extend(coordinate)
       );
@@ -135,7 +143,7 @@ export default class FlightRenderer {
     this.marker.addTo(this.map);
     this.map.addSource(this.sourceId, {
       type: "geojson",
-      data: this.geoJSON
+      data: this.geoJSON,
     });
     this.map.addLayer(
       {
@@ -145,11 +153,56 @@ export default class FlightRenderer {
         paint: {
           "line-color": ["get", "color"],
           "line-width": 2,
-          "line-opacity": ["get", "opacity"]
-        }
+          "line-opacity": ["get", "opacity"],
+        },
       },
       this.zIndex
     );
+    this.renderPictures();
+  }
+
+  private renderPictures() {
+    this.flightDatum.pictures.forEach((picture) => {
+      const marker = this.buildPictureMarker(picture);
+      marker.addTo(this.map);
+      this.pictureMarkers.push(marker);
+    });
+  }
+
+  private buildPictureMarker(picture: Picture) {
+    const el = this.buildPictureMarkerDomElement(picture);
+
+    const datum = this.flightDatum.flight.datumAt(picture.takenAt);
+    const lngLat = this.positionToGeoJSON(datum.position);
+    const headingRadians =
+      (datum.heading.convertTo(degrees).value * Math.PI) / 180;
+    const xOffset = -Math.cos(headingRadians) * 12;
+    const yOffset = -Math.sin(headingRadians) * 12;
+
+    const marker = new mapboxgl.Marker(el, {
+      offset: [xOffset, yOffset],
+    });
+    marker.setLngLat(lngLat);
+
+    return marker;
+  }
+
+  private buildPictureMarkerDomElement(picture: Picture) {
+    const el = document.createElement("div");
+    const size = 64;
+    const svg = ReactDOMServer.renderToStaticMarkup(
+      photo({ width: size, height: size })
+    );
+    el.innerHTML = svg;
+    el.setAttribute(
+      "style",
+      `cursor: pointer; color: ${this.flightDatum.color}`
+    );
+    el.onclick = () => {
+      if (!this.callbacks.onOpenPicture) return;
+      this.callbacks.onOpenPicture(picture);
+    };
+    return el;
   }
 
   private buildMarker(position: LngLatLike) {
@@ -174,6 +227,7 @@ export default class FlightRenderer {
     this.isDestroyed = true;
 
     this.marker.remove();
+    this.pictureMarkers.forEach((m) => m.remove());
     this.map.removeLayer(this.layerId);
     this.map.removeSource(this.sourceId);
   }
@@ -192,7 +246,7 @@ export default class FlightRenderer {
 
   private setSourceOpacity() {
     const source = this.map.getSource(this.sourceId) as GeoJSONSource;
-    this.geoJSON.features.forEach(f => {
+    this.geoJSON.features.forEach((f) => {
       f.properties.opacity = this.opacity;
     });
     source && source.setData(this.geoJSON);
@@ -227,7 +281,7 @@ export default class FlightRenderer {
   }
 
   private maybeUpdateTrack(datumIdx: number) {
-    this.geoJSON.features.forEach(trackSegment => {
+    this.geoJSON.features.forEach((trackSegment) => {
       const startIdx = 0;
       let endIdx: number;
 

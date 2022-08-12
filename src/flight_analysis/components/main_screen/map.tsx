@@ -5,6 +5,7 @@ import React from "react";
 import { isInIFrame } from "../../../utils/environment";
 import MapRenderer from "../../maps/renderer";
 import { AnalysisState } from "../../store/reducer";
+import { Picture } from "../../store/models/flight_datum";
 
 const PADDING = {
   top: 40,
@@ -20,6 +21,7 @@ interface Props {
   setActiveTimestamp: (ts: Date) => void;
   showAirspace: boolean;
   showWeather: boolean;
+  onOpenPicture: (picture: Picture) => void;
 }
 
 export default function Map(props: Props) {
@@ -29,10 +31,11 @@ export default function Map(props: Props) {
     setActiveTimestamp,
     showAirspace,
     showWeather,
+    onOpenPicture,
   } = props;
   const element = useRef<HTMLDivElement | null>(null);
 
-  const mapRenderer = useMapRenderer(element);
+  const mapRenderer = useMapRenderer(element, onOpenPicture);
   useMapSettings(mapRenderer, props);
   useRenderFlights(mapRenderer, analysis);
   useRenderTask(mapRenderer, analysis);
@@ -68,12 +71,17 @@ export default function Map(props: Props) {
   );
 }
 
-function useMapRenderer(element: React.MutableRefObject<HTMLElement | null>) {
+function useMapRenderer(
+  element: React.MutableRefObject<HTMLElement | null>,
+  onOpenPicture: (picture: Picture) => void
+) {
   const [renderer, setRenderer] = useState<MapRenderer | null>(null);
   useEffect(() => {
     if (!element.current) return;
 
-    const mapRenderer = new MapRenderer(element.current, PADDING);
+    const mapRenderer = new MapRenderer(element.current, PADDING, {
+      onOpenPicture,
+    });
     mapRenderer.initialize().then(() => setRenderer(mapRenderer));
 
     return () => {

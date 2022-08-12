@@ -1,11 +1,11 @@
 import FlightGroup, {
-  synchronizationMethods
+  synchronizationMethods,
 } from "glana/src/analysis/flight_group";
 import Task from "glana/src/flight_computer/tasks/task";
 import { Colors } from "../../colors";
 import { defaultSettings, flightComputer, Settings } from "../../settings";
 import { ActionType, Action } from "../actions";
-import { FlightDatum } from "../models/flight_datum";
+import { FlightDatum, Picture } from "../models/flight_datum";
 
 export type DrawerView = "settings" | "flights" | "upload_flight";
 
@@ -30,6 +30,7 @@ export interface State {
   analysis: AnalysisState | null;
   sideDrawer: DrawerState | null;
   settings: Settings;
+  picture: Picture | null;
   isLoading: boolean;
   isPlaying: boolean;
   isDebug: boolean;
@@ -42,7 +43,8 @@ export function initialState(): State {
     isPlaying: false,
     sideDrawer: null,
     settings: defaultSettings(),
-    isDebug: false
+    picture: null,
+    isDebug: false,
   };
 }
 
@@ -55,8 +57,8 @@ function handleSetActiveTimestamp(state: State, action: Action): State {
     analysis: {
       ...state.analysis,
       activeTimestamp: action.timestamp,
-      isSummary: false
-    }
+      isSummary: false,
+    },
   };
 }
 
@@ -65,21 +67,22 @@ function handleAdvanceActiveTimestamp(state: State, action: Action): State {
   if (!state.analysis) return state;
 
   let {
-    analysis: { activeTimestamp }
+    analysis: { activeTimestamp },
   } = state;
 
   if (!activeTimestamp) {
-    activeTimestamp = state.analysis.flightDataById[
-      state.analysis.followFlightId
-    ].flight.getRecordingStartedAt();
+    activeTimestamp =
+      state.analysis.flightDataById[
+        state.analysis.followFlightId
+      ].flight.getRecordingStartedAt();
   } else if (activeTimestamp > state.analysis.flightGroup.latestDatumAt) {
     return {
       ...state,
       analysis: {
         ...state.analysis,
-        activeTimestamp: state.analysis.flightGroup.latestDatumAt
+        activeTimestamp: state.analysis.flightGroup.latestDatumAt,
       },
-      isPlaying: false
+      isPlaying: false,
     };
   } else {
     activeTimestamp = new Date(
@@ -92,8 +95,8 @@ function handleAdvanceActiveTimestamp(state: State, action: Action): State {
     analysis: {
       ...state.analysis,
       activeTimestamp: activeTimestamp,
-      isSummary: false
-    }
+      isSummary: false,
+    },
   };
 }
 
@@ -111,8 +114,8 @@ function handleTogglePlay(state: State, action: Action): State {
       isPlaying: !state.isPlaying,
       analysis: {
         ...state.analysis,
-        activeTimestamp: state.analysis.flightGroup.earliestDatumAt
-      }
+        activeTimestamp: state.analysis.flightGroup.earliestDatumAt,
+      },
     };
   }
   return { ...state, isPlaying: !state.isPlaying };
@@ -131,7 +134,7 @@ function handleToggleFlights(state: State, action: Action): State {
   }
   return {
     ...state,
-    sideDrawer: newSideDrawer
+    sideDrawer: newSideDrawer,
   };
 }
 
@@ -148,7 +151,7 @@ function handleToggleSettings(state: State, action: Action): State {
   }
   return {
     ...state,
-    sideDrawer: newSideDrawer
+    sideDrawer: newSideDrawer,
   };
 }
 
@@ -158,7 +161,7 @@ function handleShowFlightUploader(state: State, action: Action): State {
   return {
     ...state,
     sideDrawer: { view: "upload_flight", canClose: !!state.analysis },
-    isLoading: false
+    isLoading: false,
   };
 }
 
@@ -167,7 +170,7 @@ function handleCloseDrawer(state: State, action: Action): State {
 
   return {
     ...state,
-    sideDrawer: null
+    sideDrawer: null,
   };
 }
 
@@ -177,7 +180,7 @@ function handleChangeSettings(state: State, action: Action): State {
   const { changes } = action;
   let newState = {
     ...state,
-    settings: { ...state.settings, ...changes }
+    settings: { ...state.settings, ...changes },
   };
 
   const shouldReanalise = Object.keys(changes).includes("qnh");
@@ -189,14 +192,13 @@ function handleChangeSettings(state: State, action: Action): State {
     newState.analysis = buildAnalysisState(
       newState,
       state.analysis.flightGroup,
-      state.analysis.task,
       {
         followFlightId: state.analysis.followFlightId,
         activeTimestamp: state.analysis.activeTimestamp,
-        isSummary: state.analysis.isSummary
+        isSummary: state.analysis.isSummary,
       },
       shouldReanalise
-    );
+    ) as any;
   }
 
   return newState;
@@ -209,7 +211,25 @@ function handleSetFollowFlight(state: State, action: Action): State {
 
   return {
     ...state,
-    analysis: { ...state.analysis, followFlightId: action.flightDatum.id }
+    analysis: { ...state.analysis, followFlightId: action.flightDatum.id },
+  };
+}
+
+function handleOpenPicture(state: State, action: Action): State {
+  if (action.type !== ActionType.OpenPicture) return state; // hack to get types to work
+
+  return {
+    ...state,
+    picture: action.picture,
+  };
+}
+
+function handleClosePicture(state: State, action: Action): State {
+  if (action.type !== ActionType.ClosePicture) return state; // hack to get types to work
+
+  return {
+    ...state,
+    picture: null,
   };
 }
 
@@ -244,6 +264,12 @@ export function reducer(state: State, action: Action): State {
 
     case ActionType.SetFollowFlight:
       return handleSetFollowFlight(state, action);
+
+    case ActionType.OpenPicture:
+      return handleOpenPicture(state, action);
+
+    case ActionType.ClosePicture:
+      return handleClosePicture(state, action);
   }
 }
 
@@ -251,13 +277,20 @@ function handleSetFlightData(state: State, action: Action): State {
   if (action.type !== ActionType.SetFlightData) return state; // hack to get types to work
 
   const { flightData } = action;
-  const task = flightData.map(f => f.task).find(t => !!t) || null;
+  const task = flightData.map((f) => f.task).find((t) => !!t) || null;
+  const flightDataById = flightData.reduce((byId: FlightDataById, data) => {
+    byId[data.id] = data;
+    return byId;
+  }, {});
+
+  const colors = new Colors();
+  flightData.forEach((fd) => (fd.color = colors.nextColor()));
 
   if (task) {
-    flightData.forEach(f => (f.flight.task = new Task(task!.turnpoints)));
+    flightData.forEach((f) => (f.flight.task = new Task(task!.turnpoints)));
   }
 
-  const flightGroup = new FlightGroup(flightData.map(f => f.flight));
+  const flightGroup = new FlightGroup(flightData.map((f) => f.flight));
 
   let synchronizationMethod = state.settings.synchronizationMethod;
   if (
@@ -269,13 +302,16 @@ function handleSetFlightData(state: State, action: Action): State {
 
   const newState = {
     ...state,
+    task,
+    flightData,
+    flightDataById,
     settings: { ...state.settings, synchronizationMethod },
     isLoading: false,
-    sideDrawer: null
+    sideDrawer: null,
   };
 
-  const analysis = buildAnalysisState(newState, flightGroup, task);
-  newState.analysis = analysis;
+  const analysis = buildAnalysisState(newState, flightGroup);
+  newState.analysis = analysis as any;
 
   return newState;
 }
@@ -283,37 +319,21 @@ function handleSetFlightData(state: State, action: Action): State {
 function buildAnalysisState(
   state: State,
   flightGroup: FlightGroup,
-  task: Task | null,
   overrides: Partial<AnalysisState> = {},
   reanalise = false
 ) {
-  const colors = new Colors();
-
-  const flightData = flightGroup.flights.map(flight => {
-    const flightDatum = new FlightDatum(flight);
-    flightDatum.color = colors.nextColor();
-    return flightDatum;
-  });
-
-  const flightDataById = flightData.reduce((byId: FlightDataById, data) => {
-    byId[data.id] = data;
-    return byId;
-  }, {});
-
-  flightGroup.flights.forEach(f =>
+  flightGroup.flights.forEach((f) =>
     f.analise(flightComputer(state.settings), reanalise)
   );
   flightGroup.synchronize(state.settings.synchronizationMethod);
   flightGroup = Object.create(flightGroup);
 
   return {
-    task,
+    ...state,
     flightGroup,
-    flightData,
-    flightDataById,
     followFlightId: flightGroup.flights[0].id,
     activeTimestamp: flightGroup.earliestDatumAt,
     isSummary: true,
-    ...overrides
+    ...overrides,
   };
 }

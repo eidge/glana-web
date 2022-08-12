@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import React, { useEffect } from "react";
 import { milliseconds } from "glana/src/units/duration";
 import Menu from "./menu";
 import Map from "./map";
@@ -6,17 +6,14 @@ import AnimationTicker from "../../animation_ticker";
 import { useFlightAnalysisDispatch, useFlightAnalysisState } from "../../store";
 import { Action, actions } from "../../store/actions";
 import { Settings, units } from "../../settings";
-import { FlightDatum } from "../../store/models/flight_datum";
+import { FlightDatum, Picture } from "../../store/models/flight_datum";
 import TimelineDetails from "./timeline_details";
 import analytics from "../../../analytics";
+import PictureComponent from "./picture";
 
 export default function MainScreen() {
-  const {
-    sideDrawer,
-    isPlaying,
-    settings,
-    analysis
-  } = useFlightAnalysisState();
+  const { sideDrawer, isPlaying, settings, analysis, picture } =
+    useFlightAnalysisState();
   const dispatch = useFlightAnalysisDispatch();
 
   const unitSettings = units[settings.units];
@@ -37,6 +34,12 @@ export default function MainScreen() {
   const setActiveTimestamp = (ts: Date) => {
     dispatch(actions.setActiveTimestamp(ts));
   };
+  const openPicture = (picture: Picture) => {
+    dispatch(actions.openPicture(picture));
+  };
+  const closePicture = () => {
+    dispatch(actions.closePicture());
+  };
 
   useAnimationTicker(isPlaying, dispatch, settings);
 
@@ -49,6 +52,7 @@ export default function MainScreen() {
         showAirspace={settings.showAirspace}
         showWeather={settings.showWeather}
         renderFullTrack={settings.renderFullTracks}
+        onOpenPicture={openPicture}
       />
       <div className="relative">
         {analysis && (
@@ -71,6 +75,8 @@ export default function MainScreen() {
           />
         )}
       </div>
+
+      {picture && <PictureComponent picture={picture} onClose={closePicture} />}
     </div>
   );
 }

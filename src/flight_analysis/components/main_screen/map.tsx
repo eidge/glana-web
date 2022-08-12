@@ -5,12 +5,13 @@ import React from "react";
 import { isInIFrame } from "../../../utils/environment";
 import MapRenderer from "../../maps/renderer";
 import { AnalysisState } from "../../store/reducer";
+import { Picture } from "../../store/models/flight_datum";
 
 const PADDING = {
   top: 40,
   right: 40,
   bottom: 135,
-  left: 40
+  left: 40,
 };
 
 interface Props {
@@ -20,6 +21,7 @@ interface Props {
   setActiveTimestamp: (ts: Date) => void;
   showAirspace: boolean;
   showWeather: boolean;
+  onOpenPicture: (picture: Picture) => void;
 }
 
 export default function Map(props: Props) {
@@ -28,11 +30,12 @@ export default function Map(props: Props) {
     isPlaying,
     setActiveTimestamp,
     showAirspace,
-    showWeather
+    showWeather,
+    onOpenPicture,
   } = props;
   const element = useRef<HTMLDivElement | null>(null);
 
-  const mapRenderer = useMapRenderer(element);
+  const mapRenderer = useMapRenderer(element, onOpenPicture);
   useMapSettings(mapRenderer, props);
   useRenderFlights(mapRenderer, analysis);
   useRenderTask(mapRenderer, analysis);
@@ -68,12 +71,17 @@ export default function Map(props: Props) {
   );
 }
 
-function useMapRenderer(element: React.MutableRefObject<HTMLElement | null>) {
+function useMapRenderer(
+  element: React.MutableRefObject<HTMLElement | null>,
+  onOpenPicture: (picture: Picture) => void
+) {
   const [renderer, setRenderer] = useState<MapRenderer | null>(null);
   useEffect(() => {
     if (!element.current) return;
 
-    const mapRenderer = new MapRenderer(element.current, PADDING);
+    const mapRenderer = new MapRenderer(element.current, PADDING, {
+      onOpenPicture,
+    });
     mapRenderer.initialize().then(() => setRenderer(mapRenderer));
 
     return () => {
@@ -104,11 +112,11 @@ function useRenderFlights(
 
   useEffect(() => {
     if (!mapRenderer || !flightData) return;
-    flightData.forEach(f => mapRenderer.addFlight(f));
+    flightData.forEach((f) => mapRenderer.addFlight(f));
     // Give the UI time to hide the sidebar if it's open.
     setTimeout(() => mapRenderer.zoomToFit(), 1000);
 
-    return () => flightData.forEach(f => mapRenderer.removeFlight(f));
+    return () => flightData.forEach((f) => mapRenderer.removeFlight(f));
   }, [mapRenderer, flightData]);
 
   useEffect(() => {
@@ -177,7 +185,7 @@ const ZoomControls = React.memo((props: { mapRenderer: MapRenderer }) => {
       buttons={[
         { icon: "zoomIn", onClick: () => mapRenderer.zoomIn() },
         { icon: "search", onClick: () => mapRenderer.zoomToFit() },
-        { icon: "zoomOut", onClick: () => mapRenderer.zoomOut() }
+        { icon: "zoomOut", onClick: () => mapRenderer.zoomOut() },
       ]}
     />
   );

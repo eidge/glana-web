@@ -11,14 +11,21 @@ export default function Picture(props: Props) {
   return (
     <div
       onClick={() => onClose(picture)}
-      className="absolute h-full w-full top-0 left-0"
+      className="absolute h-full w-full top-0 left-0 z-10 flex flex-row justify-center items-center cursor-pointer"
     >
       <div className="absolute top-0 left-0 h-full w-full opacity-50 bg-gray-800" />
-      <img
-        src={picture.url}
-        alt={picture.title || "In-flight picture"}
-        className="relative z-10 mx-auto h-full"
-      />
+      <div className="relative max-h-full max-w-full">
+        <img
+          src={picture.url}
+          alt={picture.title || "In-flight picture"}
+          className="block"
+        />
+        {picture.title && (
+          <div className="absolute top-0 left-0 h-12 w-full bg-gray-700 bg-opacity-30 text-white text-ellipsis text-lg overflow-hidden flex flex-nowrap justify-center items-center">
+            {picture.title}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

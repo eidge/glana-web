@@ -48,6 +48,7 @@ export default function Button(props: Props) {
 
 export function ButtonStyle(p: Props & { element: string; attributes?: {} }) {
   const props = addDefaults(p);
+  // eslint-disable-next-line react/prop-types
   const { size, icon, text, children } = props;
 
   return React.createElement(

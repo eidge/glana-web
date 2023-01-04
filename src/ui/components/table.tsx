@@ -23,6 +23,7 @@ export function Table(props: SharedProps) {
 
 function tableGlobalCSS() {
   return (
+    // eslint-disable-next-line react/no-unknown-property
     <style global jsx>
       {`
         .gl-table {

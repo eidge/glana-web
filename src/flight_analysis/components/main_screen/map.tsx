@@ -88,7 +88,7 @@ function useMapRenderer(
       mapRenderer.destroy();
       setRenderer(null);
     };
-  }, [element]);
+  }, [element, onOpenPicture]);
   return renderer;
 }
 
@@ -190,6 +190,8 @@ const ZoomControls = React.memo((props: { mapRenderer: MapRenderer }) => {
     />
   );
 });
+
+ZoomControls.displayName = "ZoomControls";
 
 function FramedControls() {
   return (

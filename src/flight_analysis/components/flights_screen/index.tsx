@@ -15,9 +15,12 @@ export default function FlightsScreen() {
   const { analysis, settings } = useFlightAnalysisState();
   const dispatch = useFlightAnalysisDispatch();
   const [tab, setTab] = useState<Tab>("Summary");
-  const selectFlight = useCallback((fd: FlightDatum) => {
-    dispatch(actions.setFollowFlight(fd));
-  }, []);
+  const selectFlight = useCallback(
+    (fd: FlightDatum) => {
+      dispatch(actions.setFollowFlight(fd));
+    },
+    [dispatch]
+  );
   const setActiveTimestamp = useCallback(
     (ts: Date) => dispatch(actions.setActiveTimestamp(ts)),
     [dispatch]
@@ -128,13 +131,11 @@ function TabLink(props: {
       >
         {tab}
       </span>
-
       {isComing && (
         <div className="gl-coming-soon animate-pulse">
           <span className="animate-pulse">soon</span>
         </div>
       )}
-
       <style jsx>{`
         .gl-tab:after {
           @apply font-bold;

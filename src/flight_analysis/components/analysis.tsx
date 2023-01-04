@@ -33,7 +33,7 @@ export default function Analysis() {
         const flightData = await igcBlob.toFlightData();
         dispatch(actions.setFlightData(flightData));
       } catch (e) {
-        await errorTracker.report(e);
+        await errorTracker.report(e as any);
       }
     },
     [dispatch]
@@ -62,6 +62,8 @@ const Main = React.memo((props: { isLoading: boolean }) => {
   if (props.isLoading) return <LoadingScreen />;
   return <MainScreen />;
 });
+
+Main.displayName = "Main";
 
 function preventDefault(e: Event) {
   e.preventDefault();

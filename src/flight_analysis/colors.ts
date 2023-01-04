@@ -6,7 +6,7 @@ export class Colors {
     colors.blue["600"],
     colors.orange["600"],
     colors.pink["500"],
-    colors.green["800"]
+    colors.green["800"],
   ];
   private index: number;
 

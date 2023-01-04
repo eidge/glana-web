@@ -12,13 +12,13 @@ import {
   kilometers,
   meters,
   Meter,
-  Length
+  Length,
 } from "glana/src/units/length";
 import {
   kilometersPerHour,
   knots,
   metersPerSecond,
-  Speed
+  Speed,
 } from "glana/src/units/speed";
 import { hpa, Pressure } from "glana/src/units/pressure";
 import Quantity from "glana/src/units/quantity";
@@ -50,15 +50,15 @@ export const units: { [key in UnitOption]: UnitSettings } = {
     altitude: meters,
     speed: kilometersPerHour,
     distance: kilometers,
-    pressure: hpa
+    pressure: hpa,
   },
   imperial: {
     vario: knots,
     altitude: feet,
     speed: knots,
     distance: kilometers,
-    pressure: hpa
-  }
+    pressure: hpa,
+  },
 };
 
 export function defaultSettings(): Settings {
@@ -70,7 +70,7 @@ export function defaultSettings(): Settings {
     units: "imperial",
     showAirspace: false,
     showWeather: false,
-    qnh: hpa(1013.25)
+    qnh: hpa(1013.25),
   };
 }
 
@@ -79,7 +79,7 @@ export function flightComputer(settings: Settings) {
     new Map([
       ["pressureAltitude", new PressureAltitude(settings.qnh) as Calculator],
       ["averageVario", new AverageVario(seconds(30)) as Calculator],
-      ["engineOn", new EngineInUse(0.4) as Calculator]
+      ["engineOn", new EngineInUse(0.4) as Calculator],
     ])
   );
 }

@@ -25,12 +25,8 @@ function PhasesTab(props: Props) {
   const [phaseFilter, setPhaseFilter] = useState<PhaseFilterOption>(null);
   useEffect(() => analytics.trackEvent("viewed_stats_phases"), []);
 
-  const {
-    followFlightId,
-    flightDataById,
-    unitSettings,
-    setActiveTimestamp
-  } = props;
+  const { followFlightId, flightDataById, unitSettings, setActiveTimestamp } =
+    props;
   const followFlightData = flightDataById[followFlightId];
   const phases = followFlightData.flight.phases;
   const onSelectPhase = (phase: Phase) => {
@@ -39,7 +35,7 @@ function PhasesTab(props: Props) {
 
   const filteredPhases = useMemo(() => {
     if (!phaseFilter) return phases;
-    return phases.filter(p => p.type === phaseFilter);
+    return phases.filter((p) => p.type === phaseFilter);
   }, [phases, phaseFilter]);
 
   return (
@@ -65,14 +61,14 @@ export default React.memo(PhasesTab);
 
 function FlightFilter(props: Props) {
   const { flightData, followFlightId, onSelectFlight } = props;
-  const buttons = flightData.map(flightDatum => {
+  const buttons = flightData.map((flightDatum) => {
     const isActive = flightDatum.id === followFlightId;
     return {
       children: <FlightLabel flightDatum={flightDatum} isActive={isActive} />,
       onClick: () => {
         onSelectFlight(flightDatum);
       },
-      isPressed: isActive
+      isPressed: isActive,
     };
   });
   return <ButtonGroup size="md" color="white" type="full" buttons={buttons} />;
@@ -93,20 +89,20 @@ function PhaseFilter(props: {
         {
           text: "show all",
           isPressed: filter === null,
-          onClick: () => setFilter(null)
+          onClick: () => setFilter(null),
         },
         {
           icon: "thermal",
           text: "thermals",
           isPressed: filter === "thermalling",
-          onClick: () => setFilter("thermalling")
+          onClick: () => setFilter("thermalling"),
         },
         {
           icon: "glide",
           text: "glides",
           isPressed: filter === "gliding",
-          onClick: () => setFilter("gliding")
-        }
+          onClick: () => setFilter("gliding"),
+        },
       ]}
     />
   );

@@ -23,7 +23,7 @@ export default function Timeline(props: Props) {
     flightDataById,
     activeTimestamp,
     followFlightId,
-    flightGroup
+    flightGroup,
   } = analysis;
 
   const followFlight = flightDataById[followFlightId];
@@ -77,7 +77,7 @@ export default function Timeline(props: Props) {
         />
       </div>
       <div>
-        {flightData.map(datum => (
+        {flightData.map((datum) => (
           <TaskTimeline
             key={datum.flight.id}
             flightDatum={datum}
@@ -132,7 +132,7 @@ function usePreventDragScroll(elementRef: React.RefObject<HTMLElement>) {
     };
 
     elm.addEventListener("touchmove", preventDefault, {
-      passive: false
+      passive: false,
     });
 
     return () => elm.removeEventListener("touchmove", preventDefault);
@@ -151,7 +151,7 @@ function TimelineMarker(props: {
     timelineStartAt,
     timelineFinishAt,
     activeTimestamp,
-    offset
+    offset,
   } = props;
 
   if (!activeTimestamp) return null;
@@ -171,7 +171,7 @@ function TimelineMarker(props: {
       className="absolute w-0 h-full left-0 bottom-0 border-l-2 border-white border-dashed shadow"
       style={{
         transform: `translate(${absoluteLeftPosition - 1}px,0px)`,
-        willChange: "transform"
+        willChange: "transform",
       }}
     >
       <div className="gl-details" style={detailsStyle}>

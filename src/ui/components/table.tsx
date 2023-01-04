@@ -81,8 +81,9 @@ export function Row(props: RowProps) {
       onClick={onClick}
       className={withPropsClass(
         props,
-        `text-left text-gray-700 border-dashed border-t border-gray-200 hover:bg-gray-100 ${onClick &&
-          "cursor-pointer"}`
+        `text-left text-gray-700 border-dashed border-t border-gray-200 hover:bg-gray-100 ${
+          onClick && "cursor-pointer"
+        }`
       )}
     >
       {props.children}

@@ -15,7 +15,7 @@ interface State {
 
 export default function Index() {
   const [state, setState] = useState<State>({
-    isLoading: true
+    isLoading: true,
   });
   useEffect(() => {
     maybeLoadFlightsFromURL(setState);
@@ -31,9 +31,9 @@ export default function Index() {
 async function maybeLoadFlightsFromURL(setState: any) {
   const queryParams = new URLSearchParams(window.location.search);
   const loaders = LOADER_CLASSES.map(
-    LoaderClass => new LoaderClass(queryParams)
+    (LoaderClass) => new LoaderClass(queryParams)
   );
-  const loader = loaders.find(l => l.willHandle());
+  const loader = loaders.find((l) => l.willHandle());
 
   if (loader) {
     const flightData = await loader.loadFlightGroup();
@@ -43,7 +43,7 @@ async function maybeLoadFlightsFromURL(setState: any) {
     setState((s: State) => ({
       ...s,
       isLoading: false,
-      flightData: flightData
+      flightData: flightData,
     }));
   } else {
     setState((s: State) => ({ ...s, isLoading: false }));

@@ -39,7 +39,7 @@ export default class TaskRenderer {
     task: Task,
     includeTrack: boolean
   ): GeoJSON.FeatureCollection {
-    const features = task.turnpoints.map(tp => tp.toGeoJSON());
+    const features = task.turnpoints.map((tp) => tp.toGeoJSON());
 
     if (includeTrack) {
       features.push(this.buildTrackGeoJSON(task));
@@ -47,21 +47,21 @@ export default class TaskRenderer {
 
     return {
       type: "FeatureCollection",
-      features: features
+      features: features,
     };
   }
 
   private buildTrackGeoJSON(task: Task): TrackGeoJSON {
-    const coordinates = task.turnpoints.map(tp =>
+    const coordinates = task.turnpoints.map((tp) =>
       this.positionToGeoJSON(tp.center)
     );
     return {
       type: "Feature",
       geometry: {
         type: "LineString",
-        coordinates: coordinates
+        coordinates: coordinates,
       },
-      properties: {}
+      properties: {},
     };
   }
 
@@ -74,7 +74,7 @@ export default class TaskRenderer {
   }
 
   private calculateBounds(geoJSON: FeatureCollection) {
-    const coordinates = geoJSON.features.flatMap(f => {
+    const coordinates = geoJSON.features.flatMap((f) => {
       if (f.geometry.type === "Polygon") {
         return f.geometry.coordinates[0];
       } else if (f.geometry.type === "LineString") {
@@ -93,12 +93,12 @@ export default class TaskRenderer {
     this.map.addSource(this.sourceOutlineId, {
       type: "geojson",
       data: this.sectorsAndTrackGeoJSON,
-      tolerance: 0
+      tolerance: 0,
     });
     this.map.addSource(this.sourceFillId, {
       type: "geojson",
       data: this.sectorsGeoJSON,
-      tolerance: 0
+      tolerance: 0,
     });
 
     this.map.addLayer(
@@ -109,8 +109,8 @@ export default class TaskRenderer {
         paint: {
           "line-color": "black",
           "line-width": 2,
-          "line-opacity": 0.3
-        }
+          "line-opacity": 0.3,
+        },
       },
       Z_INDEX_1
     );
@@ -121,8 +121,8 @@ export default class TaskRenderer {
         type: "fill",
         paint: {
           "fill-color": "black",
-          "fill-opacity": 0.1
-        }
+          "fill-opacity": 0.1,
+        },
       },
       Z_INDEX_1
     );

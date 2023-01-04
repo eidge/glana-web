@@ -16,9 +16,10 @@ import errorTracker from "../../error_tracker";
 export default function Analysis() {
   const { sideDrawer, isLoading } = useFlightAnalysisState();
   const dispatch = useFlightAnalysisDispatch();
-  const closeDrawer = useCallback(() => dispatch(actions.closeDrawer()), [
-    dispatch
-  ]);
+  const closeDrawer = useCallback(
+    () => dispatch(actions.closeDrawer()),
+    [dispatch]
+  );
   const uploadFlight = useCallback(
     async (event: any) => {
       event.preventDefault();
@@ -41,7 +42,7 @@ export default function Analysis() {
     return {
       onDragEnter: preventDefault,
       onDragOver: preventDefault,
-      onDrop: uploadFlight
+      onDrop: uploadFlight,
     };
   }, [uploadFlight]);
 

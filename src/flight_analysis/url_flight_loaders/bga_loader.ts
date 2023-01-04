@@ -3,7 +3,7 @@ import Task from "glana/src/flight_computer/tasks/task";
 import Line from "glana/src/flight_computer/tasks/turnpoints/segments/line";
 import Sector from "glana/src/flight_computer/tasks/turnpoints/segments/sector";
 import Turnpoint, {
-  TurnpointSegment
+  TurnpointSegment,
 } from "glana/src/flight_computer/tasks/turnpoints/turnpoint";
 import IGCParser from "glana/src/igc/parser";
 import SavedFlight from "glana/src/saved_flight";
@@ -31,14 +31,14 @@ export default class BGALoader implements Loader {
   async loadFlightGroup() {
     const flightDetailsResponses = await this.loadFlightDetails();
     return flightDetailsResponses
-      .map(response => {
+      .map((response) => {
         try {
           return this.parseFlightDetails(response);
         } catch (e) {
           return null;
         }
       })
-      .filter(sf => !!sf) as FlightDatum[];
+      .filter((sf) => !!sf) as FlightDatum[];
   }
 
   private parseBaseURL(query: URLSearchParams) {
@@ -56,13 +56,13 @@ export default class BGALoader implements Loader {
   }
 
   private buildFlightURL(baseURL: string, bgaIdAttr: string) {
-    return bgaIdAttr.split(",").map(id => `${baseURL}/api/flightinfo/${id}`);
+    return bgaIdAttr.split(",").map((id) => `${baseURL}/api/flightinfo/${id}`);
   }
 
   private async loadFlightDetails() {
-    let promises = this.flightURLs.map(url => this.fetchJSON(url));
+    let promises = this.flightURLs.map((url) => this.fetchJSON(url));
     let jsonResponses = await Promise.all(promises);
-    return jsonResponses.filter(r => !!r);
+    return jsonResponses.filter((r) => !!r);
   }
 
   private async fetchJSON(url: string) {
@@ -117,7 +117,7 @@ export default class BGALoader implements Loader {
       pictures.push({
         title: photo.title || null,
         url: photo.photourl,
-        takenAt: takenAt.toJSDate()
+        takenAt: takenAt.toJSDate(),
       });
     });
     return pictures;

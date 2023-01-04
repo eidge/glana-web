@@ -12,8 +12,9 @@ export function durationToHuman(
     result += `${Math.floor(durationInHours.value)}h`;
   }
 
-  const remainingMinutes = hours(durationInHours.value % 1).convertTo(minutes)
-    .value;
+  const remainingMinutes = hours(durationInHours.value % 1).convertTo(
+    minutes
+  ).value;
 
   if (showSeconds) {
     result += padded(Math.floor(remainingMinutes), "m");

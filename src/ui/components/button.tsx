@@ -29,7 +29,7 @@ function addDefaults(props: Props): Required<Props> {
     type: props.type || "simple",
     className: props.className || "",
     isPressed: props.isPressed || false,
-    onClick: props.onClick || NoOp
+    onClick: props.onClick || NoOp,
   };
 }
 
@@ -55,7 +55,7 @@ export function ButtonStyle(p: Props & { element: string; attributes?: {} }) {
     {
       className: buttonContainerClasses(props),
       ...p.attributes,
-      style: { fontSize: 0 }
+      style: { fontSize: 0 },
     },
     <>
       {children}
@@ -74,7 +74,7 @@ function buttonContainerClasses(props: Required<Props>) {
     "focus:outline-none",
     inButtonGroup ? "align-middle" : "rounded shadow hover:shadow-inner",
     styleClasses(props),
-    props.className
+    props.className,
   ].join(" ");
 }
 
@@ -82,23 +82,23 @@ const styles = {
   simple: {
     white: {
       normal: "text-white hover:bg-white hover:bg-opacity-10",
-      pressed: "text-white bg-white bg-opacity-20"
+      pressed: "text-white bg-white bg-opacity-20",
     },
     primary: {
       normal: "text-primary hover:bg-primary hover:bg-opacity-10",
-      pressed: "text-primary bg-white bg-opacity-20"
-    }
+      pressed: "text-primary bg-white bg-opacity-20",
+    },
   },
   full: {
     white: {
       normal: "text-black bg-white hover:bg-gray-200",
-      pressed: "text-black bg-gray-300"
+      pressed: "text-black bg-gray-300",
     },
     primary: {
       normal: "text-white bg-primary hover:bg-primary-600",
-      pressed: "text-white bg-primary-700"
-    }
-  }
+      pressed: "text-white bg-primary-700",
+    },
+  },
 };
 
 function styleClasses(props: Required<Props>) {
@@ -113,12 +113,12 @@ function styleClasses(props: Required<Props>) {
 const textSizeClasses = {
   md: {
     text: "text-base",
-    iconPadding: "pl-1"
+    iconPadding: "pl-1",
   },
   lg: {
     text: "text-2xl",
-    iconPadding: "pl-2"
-  }
+    iconPadding: "pl-2",
+  },
 };
 
 function buttonTextClasses(props: Required<Props>) {

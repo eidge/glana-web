@@ -51,20 +51,20 @@ const unitOptions = [
   {
     label: "Imperial",
     value: "imperial" as UnitOption,
-    stringValue: "imperial"
+    stringValue: "imperial",
   },
   {
     label: "Metric",
     value: "metric" as UnitOption,
-    stringValue: "metric"
-  }
+    stringValue: "metric",
+  },
 ];
 
 function unitInput(
   settings: Settings,
   onChange: (settings: Partial<Settings>) => void
 ) {
-  return unitOptions.map(option => {
+  return unitOptions.map((option) => {
     return (
       <label className="inline-flex items-center mr-6" key={option.stringValue}>
         <input
@@ -74,7 +74,7 @@ function unitInput(
           checked={settings.units === option.value}
           onChange={() =>
             onChange({
-              units: option.value
+              units: option.value,
             })
           }
         />
@@ -106,7 +106,7 @@ function QNHInput(
           className="bg-gray-700 px-2 rounded w-24"
           name="pressure"
           value={qnh}
-          onChange={event => setQNH(+event.target.value)}
+          onChange={(event) => setQNH(+event.target.value)}
           onBlur={updateSettings}
         />
         <span className="ml-2">{unitSettings.pressure.unit.symbol}</span>
@@ -119,25 +119,25 @@ const synchronizationOptions = [
   {
     label: "Real-time",
     value: synchronizationMethods.realTime,
-    stringValue: "realTime"
+    stringValue: "realTime",
   },
   {
     label: "Takeoff time",
     value: synchronizationMethods.takeOff,
-    stringValue: "takeoffTime"
+    stringValue: "takeoffTime",
   },
   {
     label: "Task started",
     value: synchronizationMethods.taskStarted,
-    stringValue: "taskStarted"
-  }
+    stringValue: "taskStarted",
+  },
 ];
 
 function synchronizationMethodInput(
   settings: Settings,
   onChange: (settings: Partial<Settings>) => void
 ) {
-  return synchronizationOptions.map(option => {
+  return synchronizationOptions.map((option) => {
     return (
       <label className="inline-flex items-center mr-6" key={option.stringValue}>
         <input
@@ -147,7 +147,7 @@ function synchronizationMethodInput(
           checked={settings.synchronizationMethod === option.value}
           onChange={() =>
             onChange({
-              synchronizationMethod: option.value
+              synchronizationMethod: option.value,
             })
           }
         />
@@ -161,45 +161,45 @@ const playbackSpeedOptions = [
   {
     label: "10x",
     value: 10,
-    stringValue: "10"
+    stringValue: "10",
   },
   {
     label: "25x",
     value: 25,
-    stringValue: "25"
+    stringValue: "25",
   },
   {
     label: "50x",
     value: 50,
-    stringValue: "50"
+    stringValue: "50",
   },
   {
     label: "100x",
     value: 100,
-    stringValue: "100"
+    stringValue: "100",
   },
   {
     label: "250x",
     value: 250,
-    stringValue: "250"
+    stringValue: "250",
   },
   {
     label: "500x",
     value: 500,
-    stringValue: "500"
+    stringValue: "500",
   },
   {
     label: "1000x",
     value: 1000,
-    stringValue: "1000"
-  }
+    stringValue: "1000",
+  },
 ];
 
 function playbackSpeedInput(
   settings: Settings,
   onChange: (settings: Partial<Settings>) => void
 ) {
-  return playbackSpeedOptions.map(option => {
+  return playbackSpeedOptions.map((option) => {
     return (
       <label className="inline-flex items-center mr-6" key={option.stringValue}>
         <input
@@ -209,7 +209,7 @@ function playbackSpeedInput(
           checked={settings.playbackSpeed === option.value}
           onChange={() =>
             onChange({
-              playbackSpeed: option.value
+              playbackSpeed: option.value,
             })
           }
         />
@@ -229,9 +229,9 @@ function renderFullTracksInput(
         type="checkbox"
         name="renderFullTracks"
         checked={settings.renderFullTracks}
-        onChange={event =>
+        onChange={(event) =>
           onChange({
-            renderFullTracks: event.target.checked
+            renderFullTracks: event.target.checked,
           })
         }
       />
@@ -250,9 +250,9 @@ function renderFollowFlightInput(
         type="checkbox"
         name="followFlight"
         checked={settings.followFlight}
-        onChange={event =>
+        onChange={(event) =>
           onChange({
-            followFlight: event.target.checked
+            followFlight: event.target.checked,
           })
         }
       />
@@ -271,9 +271,9 @@ function showAirspaceInput(
         type="checkbox"
         name="airspace"
         checked={settings.showAirspace}
-        onChange={event =>
+        onChange={(event) =>
           onChange({
-            showAirspace: event.target.checked
+            showAirspace: event.target.checked,
           })
         }
       />
@@ -292,9 +292,9 @@ function showWeatherInput(
         type="checkbox"
         name="weather"
         checked={settings.showWeather}
-        onChange={event =>
+        onChange={(event) =>
           onChange({
-            showWeather: event.target.checked
+            showWeather: event.target.checked,
           })
         }
       />

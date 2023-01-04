@@ -135,7 +135,7 @@ function useRenderTask(
   mapRenderer: MapRenderer | null,
   analysis: AnalysisState | null
 ) {
-  const task = analysis?.task;
+  const task = analysis?.activeTask;
 
   useEffect(() => {
     if (!mapRenderer || !task) return;

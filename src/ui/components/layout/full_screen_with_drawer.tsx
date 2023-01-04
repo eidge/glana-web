@@ -31,7 +31,7 @@ function FullScreenWithDrawer(props: Props) {
     {
       className: containerClasses(),
       style: { height },
-      ...extraAttributes
+      ...extraAttributes,
     },
     <div className={mainClasses()}>{props.main}</div>,
     shouldPushMainLeft && (
@@ -84,7 +84,7 @@ function drawerClasses(isOpen: boolean) {
     `transform transition ease-in-out ${animationDurationClass}`,
     `shadow-2xl border-l ${outerDrawerBorderColor} text-white ${drawerBackgroundColor}`,
     drawerSizes,
-    translateClass
+    translateClass,
   ].join(" ");
 }
 
@@ -93,7 +93,7 @@ function drawerHeaderClasses() {
     "flex flex-row sticky top-0 items-center z-10",
     `shadow-md border-b ${innerDrawerBorderColor} ${drawerBackgroundColor}`,
     "py-3",
-    drawerPaddingX
+    drawerPaddingX,
   ].join(" ");
 }
 

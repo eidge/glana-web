@@ -6,8 +6,10 @@ import { useFlightAnalysisDispatch, useFlightAnalysisState } from "../../store";
 import { actions } from "../../store/actions";
 import { FlightDatum } from "../../store/models/flight_datum";
 import { units } from "../../settings";
+import TaskTab from "./task_tab";
+import Task from "glana/src/flight_computer/tasks/task";
 
-type Tab = "Summary" | "Phases" | "More";
+type Tab = "Summary" | "Task" | "Phases" | "More";
 
 export default function FlightsScreen() {
   const { analysis, settings } = useFlightAnalysisState();
@@ -27,12 +29,24 @@ export default function FlightsScreen() {
     () => dispatch(actions.showFlightUploader()),
     [dispatch]
   );
+  const selectTask = useCallback(
+    (task: Task) => {
+      dispatch(actions.setActiveTask(task));
+    },
+    [dispatch]
+  );
 
   useEffect(() => analytics.trackEvent("viewed_stats"), []);
 
   if (!analysis) return null;
 
-  const { flightData, flightDataById, followFlightId } = analysis;
+  const {
+    flightData,
+    flightDataById,
+    followFlightId,
+    availableTasks,
+    activeTask,
+  } = analysis;
 
   return (
     <>
@@ -40,6 +54,12 @@ export default function FlightsScreen() {
         <TabLink
           tab="Summary"
           isActive={tab === "Summary"}
+          onClick={setTab}
+          isComing={false}
+        />
+        <TabLink
+          tab="Task"
+          isActive={tab === "Task"}
           onClick={setTab}
           isComing={false}
         />
@@ -64,6 +84,13 @@ export default function FlightsScreen() {
             followFlightId={followFlightId}
             onSelectFlight={selectFlight}
             showFlightUploader={showFlightUploader}
+          />
+        )}
+        {tab === "Task" && (
+          <TaskTab
+            activeTask={activeTask}
+            availableTasks={availableTasks}
+            onSelectTask={selectTask}
           />
         )}
         {tab === "Phases" && (
@@ -104,13 +131,11 @@ function TabLink(props: {
       >
         {tab}
       </span>
-
       {isComing && (
         <div className="gl-coming-soon animate-pulse">
           <span className="animate-pulse">soon</span>
         </div>
       )}
-
       <style jsx>{`
         .gl-tab:after {
           @apply font-bold;

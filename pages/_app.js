@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 import "../src/styles/tailwind.css";
 import Head from "next/head";
 

@@ -17,17 +17,13 @@ interface Props {
 }
 
 export default function SummaryTab(props: Props) {
-  const {
-    flightData,
-    followFlightId,
-    onSelectFlight,
-    showFlightUploader
-  } = props;
+  const { flightData, followFlightId, onSelectFlight, showFlightUploader } =
+    props;
   useEffect(() => analytics.trackEvent("viewed_stats_summary"), []);
 
   return (
     <div className="space-y-3">
-      {flightData.map(fd => (
+      {flightData.map((fd) => (
         <FlightSummary
           key={fd.id}
           flightDatum={fd}
@@ -63,11 +59,12 @@ function FlightSummary(props: FlightSummaryProps) {
     onClick(flightDatum);
   };
 
+  let containerClasses =
+    "rounded border border-gray-600 p-3 shadow hover:border-primary cursor-pointer";
+  if (isActive) containerClasses += " border-primary";
+
   return (
-    <div
-      className="rounded border border-gray-600 p-3 shadow hover:border-primary cursor-pointer"
-      onClick={onClickFlight}
-    >
+    <div className={containerClasses} onClick={onClickFlight}>
       <div className="flex flex-row leading-none">
         <FlightLabel flightDatum={flightDatum} isActive={isActive} />
         {pilotName && <span className="ml-3">{pilotName}</span>}
@@ -102,10 +99,7 @@ function FlightSummary(props: FlightSummaryProps) {
 }
 
 function taskValue(task: Task) {
-  let result = task
-    .getDistance()
-    .convertTo(kilometers)
-    .toString();
+  let result = task.getDistance().convertTo(kilometers).toString();
 
   if (task.isFinished()) {
     const speedInKPH = task.getSpeed()!.convertTo(kilometersPerHour);

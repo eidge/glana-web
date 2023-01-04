@@ -88,7 +88,7 @@ function useMapRenderer(
       mapRenderer.destroy();
       setRenderer(null);
     };
-  }, [element]);
+  }, [element, onOpenPicture]);
   return renderer;
 }
 
@@ -135,7 +135,7 @@ function useRenderTask(
   mapRenderer: MapRenderer | null,
   analysis: AnalysisState | null
 ) {
-  const task = analysis?.task;
+  const task = analysis?.activeTask;
 
   useEffect(() => {
     if (!mapRenderer || !task) return;
@@ -190,6 +190,8 @@ const ZoomControls = React.memo((props: { mapRenderer: MapRenderer }) => {
     />
   );
 });
+
+ZoomControls.displayName = "ZoomControls";
 
 function FramedControls() {
   return (

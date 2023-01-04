@@ -6,8 +6,8 @@ class ErrorTracker {
 
   report(error: Error) {
     console.error(error);
-    return new Promise(resolve => {
-      this.rollbarClient().error(error, reportError => {
+    return new Promise((resolve) => {
+      this.rollbarClient().error(error, (reportError) => {
         if (reportError) {
           console.warn("Rollbar failed to report error.");
           // We do not reject the promise here as we do not want to raise
@@ -26,7 +26,7 @@ class ErrorTracker {
       accessToken: accessToken,
       environment: envName(),
       captureUncaught: true,
-      captureUnhandledRejections: true
+      captureUnhandledRejections: true,
     });
     return this.rollbar;
   }

@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useCallback, useEffect } from "react";
 import { milliseconds } from "glana/src/units/duration";
 import Menu from "./menu";
 import Map from "./map";
@@ -18,28 +18,37 @@ export default function MainScreen() {
 
   const unitSettings = units[settings.units];
 
-  const toggleFlights = () => {
+  const toggleFlights = useCallback(() => {
     dispatch(actions.toggleFlights());
-  };
-  const togglePlay = () => {
+  }, [dispatch]);
+  const togglePlay = useCallback(() => {
     dispatch(actions.togglePlay());
-  };
-  const toggleSettings = () => {
+  }, [dispatch]);
+  const toggleSettings = useCallback(() => {
     if (!isPlaying) analytics.trackEvent("play_flight");
     dispatch(actions.toggleSettings());
-  };
-  const setFollowFlight = (fd: FlightDatum) => {
-    dispatch(actions.setFollowFlight(fd));
-  };
-  const setActiveTimestamp = (ts: Date) => {
-    dispatch(actions.setActiveTimestamp(ts));
-  };
-  const openPicture = (picture: Picture) => {
-    dispatch(actions.openPicture(picture));
-  };
-  const closePicture = () => {
+  }, [dispatch, isPlaying]);
+  const setFollowFlight = useCallback(
+    (fd: FlightDatum) => {
+      dispatch(actions.setFollowFlight(fd));
+    },
+    [dispatch]
+  );
+  const setActiveTimestamp = useCallback(
+    (ts: Date) => {
+      dispatch(actions.setActiveTimestamp(ts));
+    },
+    [dispatch]
+  );
+  const openPicture = useCallback(
+    (picture: Picture) => {
+      dispatch(actions.openPicture(picture));
+    },
+    [dispatch]
+  );
+  const closePicture = useCallback(() => {
     dispatch(actions.closePicture());
-  };
+  }, [dispatch]);
 
   useAnimationTicker(isPlaying, dispatch, settings);
 

@@ -18,7 +18,7 @@ export default function Menu(props: Props) {
     isSettingsOpen,
     toggleFlights,
     togglePlay,
-    toggleSettings
+    toggleSettings,
   } = props;
 
   return (
@@ -77,7 +77,7 @@ function menuItemClasses(props: MenuItemProps) {
   const classes = [
     "transition ease-in-out duration-200",
     "flex flex-col items-center justify-center w-20 p-2",
-    "text-gray-400 leading-none focus:outline-none hover:bg-gray-900"
+    "text-gray-400 leading-none focus:outline-none hover:bg-gray-900",
   ];
 
   if (props.isActive) {

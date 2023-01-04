@@ -6,6 +6,7 @@ import { Colors } from "../../colors";
 import { defaultSettings, flightComputer, Settings } from "../../settings";
 import { ActionType, Action } from "../actions";
 import { FlightDatum, Picture } from "../models/flight_datum";
+import { uniqWith } from "lodash";
 
 export type DrawerView = "settings" | "flights" | "upload_flight";
 
@@ -18,7 +19,8 @@ export type FlightDataById = { [key: string]: FlightDatum };
 
 export interface AnalysisState {
   isSummary: boolean;
-  task: Task | null;
+  availableTasks: Task[];
+  activeTask: Task | null;
   flightGroup: FlightGroup;
   flightDataById: FlightDataById;
   flightData: FlightDatum[];
@@ -270,6 +272,9 @@ export function reducer(state: State, action: Action): State {
 
     case ActionType.ClosePicture:
       return handleClosePicture(state, action);
+
+    case ActionType.SetActiveTask:
+      return handleSetActiveTask(state, action);
   }
 }
 
@@ -277,7 +282,9 @@ function handleSetFlightData(state: State, action: Action): State {
   if (action.type !== ActionType.SetFlightData) return state; // hack to get types to work
 
   const { flightData } = action;
-  const task = flightData.map((f) => f.task).find((t) => !!t) || null;
+  const allTasks = flightData.map((f) => f.task).filter((t) => !!t) as Task[];
+  const availableTasks = uniqWith(allTasks, (l, r) => l.isEqual(r));
+  const activeTask = availableTasks[0] || null;
   const flightDataById = flightData.reduce((byId: FlightDataById, data) => {
     byId[data.id] = data;
     return byId;
@@ -286,8 +293,10 @@ function handleSetFlightData(state: State, action: Action): State {
   const colors = new Colors();
   flightData.forEach((fd) => (fd.color = colors.nextColor()));
 
-  if (task) {
-    flightData.forEach((f) => (f.flight.task = new Task(task!.turnpoints)));
+  if (activeTask) {
+    flightData.forEach(
+      (f) => (f.flight.task = new Task(activeTask!.turnpoints))
+    );
   }
 
   const flightGroup = new FlightGroup(flightData.map((f) => f.flight));
@@ -302,7 +311,8 @@ function handleSetFlightData(state: State, action: Action): State {
 
   const newState = {
     ...state,
-    task,
+    availableTasks,
+    activeTask,
     flightData,
     flightDataById,
     settings: { ...state.settings, synchronizationMethod },
@@ -336,4 +346,46 @@ function buildAnalysisState(
     isSummary: true,
     ...overrides,
   };
+}
+
+function handleSetActiveTask(state: State, action: Action): State {
+  if (action.type !== ActionType.SetActiveTask) return state; // hack to get types to work
+  if (!state.analysis) return state;
+
+  const flightData = state.analysis.flightData.map((f) => {
+    let task: Task | null = null;
+
+    if (action.task) {
+      task = new Task(action.task.turnpoints);
+    }
+
+    f.flight.task = task;
+
+    return Object.create(f);
+  });
+
+  const flightGroup = new FlightGroup(flightData.map((f) => f.flight));
+
+  const flightDataById = flightData.reduce((byId: FlightDataById, data) => {
+    byId[data.id] = data;
+    return byId;
+  }, {});
+
+  const newState = {
+    ...state,
+    flightData,
+    flightDataById,
+    activeTask: action.task,
+  };
+
+  const analysis = buildAnalysisState(
+    newState,
+    flightGroup,
+    { activeTask: action.task },
+    true
+  ) as any;
+
+  newState.analysis = analysis;
+
+  return newState;
 }

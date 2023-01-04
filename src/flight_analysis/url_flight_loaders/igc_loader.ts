@@ -16,18 +16,18 @@ export default class IGCLoader implements Loader {
 
   async loadFlightGroup() {
     const igcs = await this.loadIGCs();
-    const nonEmptyIgcs = igcs.filter(igc => !!igc) as string[];
+    const nonEmptyIgcs = igcs.filter((igc) => !!igc) as string[];
     return this.parseIGCs(nonEmptyIgcs);
   }
 
   private parseQueryString(query: URLSearchParams) {
     const igcURLs = query.getAll("igcUrl");
     if (igcURLs.length < 1) return [];
-    return igcURLs.flatMap(url => url.split(","));
+    return igcURLs.flatMap((url) => url.split(","));
   }
 
   private loadIGCs() {
-    let responsePromises = this.urls.map(url => this.fetchText(url));
+    let responsePromises = this.urls.map((url) => this.fetchText(url));
     return Promise.all(responsePromises);
   }
 
@@ -48,7 +48,7 @@ export default class IGCLoader implements Loader {
   }
 
   private parseIGCs(fileContents: string[]) {
-    return fileContents.map(contents => {
+    return fileContents.map((contents) => {
       try {
         const parser = new IGCParser();
         const flight = parser.parse(contents);

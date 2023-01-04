@@ -14,7 +14,7 @@ export default class AnimationTicker {
   }
 
   private scheduleTick() {
-    window.requestAnimationFrame(ts => this.tick(ts));
+    window.requestAnimationFrame((ts) => this.tick(ts));
   }
 
   stop() {

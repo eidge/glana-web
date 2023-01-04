@@ -26,7 +26,7 @@ export function StoreProvider(props: ProviderProps) {
       //@ts-ignore
       window.glana = {
         dispatch,
-        actions
+        actions,
       };
       //@ts-ignore
       console.log("Debug object created on `window.glana`: ", window.glana);

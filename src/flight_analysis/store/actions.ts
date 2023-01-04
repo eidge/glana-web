@@ -1,3 +1,4 @@
+import Task from "glana/src/flight_computer/tasks/task";
 import { Duration, milliseconds } from "glana/src/units/duration";
 import Quantity from "glana/src/units/quantity";
 import analytics from "../../analytics";
@@ -5,34 +6,36 @@ import { Settings } from "../settings";
 import { FlightDatum, Picture } from "./models/flight_datum";
 
 export enum ActionType {
-  SetFlightData = "SET_FLIGHT_DATA",
-  SetActiveTimestamp = "SET_ACTIVE_TIMESTAMP",
-  TogglePlay = "TOGGLE_PLAY",
-  ToggleFlights = "TOGGLE_FLIGHTS",
-  ToggleSettings = "TOGGLE_SETTINGS",
-  ShowFlightUploader = "SHOW_FLIGHT_UPLOADER",
-  CloseDrawer = "CLOSE_DRAWER",
   AdvanceActiveTimestamp = "ADVANCE_ACTIVE_TIMESTAMP",
   ChangeSettings = "CHANGE_SETTINGS",
-  SetFollowFlight = "SET_FOLLOW_FLIGHT",
-  SetDebug = "SET_DEBUG",
-  OpenPicture = "OPEN_PICTURE",
+  CloseDrawer = "CLOSE_DRAWER",
   ClosePicture = "CLOSE_PICTURE",
+  OpenPicture = "OPEN_PICTURE",
+  SetActiveTask = "SET_ACTIVE_TASK",
+  SetActiveTimestamp = "SET_ACTIVE_TIMESTAMP",
+  SetDebug = "SET_DEBUG",
+  SetFlightData = "SET_FLIGHT_DATA",
+  SetFollowFlight = "SET_FOLLOW_FLIGHT",
+  ShowFlightUploader = "SHOW_FLIGHT_UPLOADER",
+  ToggleFlights = "TOGGLE_FLIGHTS",
+  TogglePlay = "TOGGLE_PLAY",
+  ToggleSettings = "TOGGLE_SETTINGS",
 }
 
 export const actions = {
-  setFlightData,
-  setActiveTimestamp,
   advanceActiveTimestamp,
-  togglePlay,
-  toggleFlights,
-  toggleSettings,
-  showFlightUploader,
-  closeDrawer,
   changeSettings,
-  setFollowFlight,
-  openPicture,
+  closeDrawer,
   closePicture,
+  openPicture,
+  setActiveTask,
+  setActiveTimestamp,
+  setFlightData,
+  setFollowFlight,
+  showFlightUploader,
+  toggleFlights,
+  togglePlay,
+  toggleSettings,
 };
 
 // Magic to produce a union type of all return values of our action functions.
@@ -59,6 +62,13 @@ function setActiveTimestamp(timestamp: Date) {
   return {
     type: ActionType.SetActiveTimestamp as ActionType.SetActiveTimestamp,
     timestamp: timestamp,
+  };
+}
+
+function setActiveTask(task: Task) {
+  return {
+    type: ActionType.SetActiveTask as ActionType.SetActiveTask,
+    task: task,
   };
 }
 

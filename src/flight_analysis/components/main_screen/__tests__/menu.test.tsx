@@ -7,7 +7,7 @@ const props = {
   toggleSettings: () => null,
   isFlightsOpen: false,
   isPlaying: false,
-  isSettingsOpen: false
+  isSettingsOpen: false,
 };
 
 describe("Menu", () => {

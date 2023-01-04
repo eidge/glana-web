@@ -8,7 +8,7 @@ import {
   HeadCell,
   Body,
   Row,
-  Cell
+  Cell,
 } from "../../../ui/components/table";
 import Icon from "../../../ui/components/icon";
 import Thermal from "glana/src/analysis/phases/thermal";
@@ -34,7 +34,7 @@ function PhasesTable(props: Props) {
         </HeadRow>
       </Head>
       <Body>
-        {phases.map(phase => (
+        {phases.map((phase) => (
           <Row
             key={phase.startAt.getTime()}
             onClick={() => onSelectPhase(phase)}

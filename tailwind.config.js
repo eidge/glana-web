@@ -5,7 +5,7 @@ module.exports = {
     "./src/**/*.css",
     "./src/**/*.jsx",
     "./src/**/*.tsx",
-    "./pages/**/*.tsx"
+    "./pages/**/*.tsx",
   ],
   darkMode: false,
   theme: {
@@ -15,16 +15,16 @@ module.exports = {
       black: colors.black,
       primary: { ...colors.teal, DEFAULT: colors.teal["500"] },
       failure: { ...colors.red, DEFAULT: colors.red["600"] },
-      success: { ...colors.green, DEFAULT: colors.green["600"] }
+      success: { ...colors.green, DEFAULT: colors.green["600"] },
     },
     extend: {
       cursor: {
-        crosshair: "crosshair"
-      }
-    }
+        crosshair: "crosshair",
+      },
+    },
   },
   variants: {
-    extend: {}
+    extend: {},
   },
-  plugins: []
+  plugins: [],
 };

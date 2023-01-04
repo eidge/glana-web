@@ -6,7 +6,7 @@ type SizeOptions = "lg" | "md";
 
 const iconSizeClasses: { [key in SizeOptions]: string } = {
   lg: "w-8 h-8",
-  md: "w-4 h-4"
+  md: "w-4 h-4",
 };
 
 interface Props {

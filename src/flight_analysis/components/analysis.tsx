@@ -16,9 +16,10 @@ import errorTracker from "../../error_tracker";
 export default function Analysis() {
   const { sideDrawer, isLoading } = useFlightAnalysisState();
   const dispatch = useFlightAnalysisDispatch();
-  const closeDrawer = useCallback(() => dispatch(actions.closeDrawer()), [
-    dispatch
-  ]);
+  const closeDrawer = useCallback(
+    () => dispatch(actions.closeDrawer()),
+    [dispatch]
+  );
   const uploadFlight = useCallback(
     async (event: any) => {
       event.preventDefault();
@@ -32,7 +33,7 @@ export default function Analysis() {
         const flightData = await igcBlob.toFlightData();
         dispatch(actions.setFlightData(flightData));
       } catch (e) {
-        await errorTracker.report(e);
+        await errorTracker.report(e as any);
       }
     },
     [dispatch]
@@ -41,7 +42,7 @@ export default function Analysis() {
     return {
       onDragEnter: preventDefault,
       onDragOver: preventDefault,
-      onDrop: uploadFlight
+      onDrop: uploadFlight,
     };
   }, [uploadFlight]);
 
@@ -61,6 +62,8 @@ const Main = React.memo((props: { isLoading: boolean }) => {
   if (props.isLoading) return <LoadingScreen />;
   return <MainScreen />;
 });
+
+Main.displayName = "Main";
 
 function preventDefault(e: Event) {
   e.preventDefault();

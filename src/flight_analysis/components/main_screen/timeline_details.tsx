@@ -12,17 +12,12 @@ interface Props {
 }
 
 export default function TimelineDetails(props: Props) {
-  const {
-    flightData,
-    followFlightId,
-    onClick,
-    timestamp,
-    unitSettings
-  } = props;
+  const { flightData, followFlightId, onClick, timestamp, unitSettings } =
+    props;
 
   return (
     <div className="flex flex-row flex-wrap w-full justify-around bg-gray-700">
-      {flightData.map(fd => (
+      {flightData.map((fd) => (
         <TimelineDetail
           key={fd.id}
           flightDatum={fd}
@@ -78,7 +73,7 @@ function TimelineDetail(props: TimelineDetailProps) {
         value={vario?.toString({
           precision: 1,
           padToSize: 3,
-          alwaysShowSign: true
+          alwaysShowSign: true,
         })}
       />
       <InstrumentValue

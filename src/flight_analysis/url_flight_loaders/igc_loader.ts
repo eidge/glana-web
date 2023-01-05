@@ -42,7 +42,7 @@ export default class IGCLoader implements Loader {
         return null;
       }
     } catch (e) {
-      await errorTracker.report(e);
+      await errorTracker.report(e as any);
       return null;
     }
   }
@@ -54,7 +54,7 @@ export default class IGCLoader implements Loader {
         const flight = parser.parse(contents);
         return new FlightDatum(flight);
       } catch (e) {
-        errorTracker.report(e);
+        errorTracker.report(e as any);
         return null;
       }
     }) as FlightDatum[];

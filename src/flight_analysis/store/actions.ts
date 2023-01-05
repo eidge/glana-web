@@ -32,6 +32,7 @@ export const actions = {
   setActiveTimestamp,
   setFlightData,
   setFollowFlight,
+  setDebug,
   showFlightUploader,
   toggleFlights,
   togglePlay,
@@ -127,6 +128,13 @@ function setFollowFlight(flightDatum: FlightDatum) {
   return {
     type: ActionType.SetFollowFlight as ActionType.SetFollowFlight,
     flightDatum,
+  };
+}
+
+function setDebug(isDebug: boolean) {
+  return {
+    type: ActionType.SetDebug as ActionType.SetDebug,
+    isDebug,
   };
 }
 

@@ -88,7 +88,7 @@ async function handleFileInput(event: React.ChangeEvent<HTMLInputElement>) {
     const igcBlob = new IGCBlob(files);
     return await igcBlob.toFlightData();
   } catch (e) {
-    await errorTracker.report(e);
+    await errorTracker.report(e as any);
     return [];
   }
 }

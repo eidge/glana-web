@@ -77,7 +77,7 @@ export default class BGALoader implements Loader {
       }
     } catch (e) {
       console.error(e);
-      await errorTracker.report(e);
+      await errorTracker.report(e as any);
       return null;
     }
   }

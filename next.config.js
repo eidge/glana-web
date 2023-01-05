@@ -1,4 +1,4 @@
-const withTM = require("next-transpile-modules")(["glana", "ol"]);
+const withTM = require("next-transpile-modules")(["glana"]);
 
 module.exports = withTM({
   reactStrictMode: true,

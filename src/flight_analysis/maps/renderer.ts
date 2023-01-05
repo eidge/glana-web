@@ -148,10 +148,6 @@ export default class Renderer {
     this.map?.remove();
   }
 
-  get usableClientRect() {
-    return new ClientRect();
-  }
-
   get activeFlight() {
     if (!this.activeFlightId) return null;
     return this.flightRenderers[this.activeFlightId] || null;

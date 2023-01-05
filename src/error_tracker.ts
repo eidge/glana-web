@@ -14,7 +14,7 @@ class ErrorTracker {
           // an exception if the error reporting fails.
           resolve(reportError);
         }
-        resolve();
+        resolve(reportError);
       });
     });
   }

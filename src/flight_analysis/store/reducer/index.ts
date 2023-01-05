@@ -275,31 +275,39 @@ export function reducer(state: State, action: Action): State {
 
     case ActionType.SetActiveTask:
       return handleSetActiveTask(state, action);
+
+    case ActionType.SetDebug:
+      return handleSetDebug(state, action);
   }
 }
 
 function handleSetFlightData(state: State, action: Action): State {
   if (action.type !== ActionType.SetFlightData) return state; // hack to get types to work
 
-  const { flightData } = action;
+  let { flightData } = action;
   const allTasks = flightData.map((f) => f.task).filter((t) => !!t) as Task[];
   const availableTasks = uniqWith(allTasks, (l, r) => l.isEqual(r));
   const activeTask = availableTasks[0] || null;
-  const flightDataById = flightData.reduce((byId: FlightDataById, data) => {
-    byId[data.id] = data;
-    return byId;
-  }, {});
 
   const colors = new Colors();
   flightData.forEach((fd) => (fd.color = colors.nextColor()));
 
   if (activeTask) {
-    flightData.forEach(
-      (f) => (f.flight.task = new Task(activeTask!.turnpoints))
-    );
+    flightData = flightData.map((f) => {
+      if (f.flight.task === activeTask) return f;
+
+      const flightDatum = Object.create(f);
+      flightDatum.flight = Object.create(flightDatum.flight);
+      flightDatum.flight.task = new Task(activeTask!.turnpoints);
+      return flightDatum;
+    });
   }
 
   const flightGroup = new FlightGroup(flightData.map((f) => f.flight));
+  const flightDataById = flightData.reduce((byId: FlightDataById, data) => {
+    byId[data.id] = data;
+    return byId;
+  }, {});
 
   let synchronizationMethod = state.settings.synchronizationMethod;
   if (
@@ -311,16 +319,17 @@ function handleSetFlightData(state: State, action: Action): State {
 
   const newState = {
     ...state,
-    availableTasks,
-    activeTask,
-    flightData,
-    flightDataById,
     settings: { ...state.settings, synchronizationMethod },
     isLoading: false,
     sideDrawer: null,
   };
 
-  const analysis = buildAnalysisState(newState, flightGroup);
+  const analysis = buildAnalysisState(newState, flightGroup, {
+    availableTasks,
+    activeTask,
+    flightData,
+    flightDataById,
+  });
   newState.analysis = analysis as any;
 
   return newState;
@@ -331,15 +340,14 @@ function buildAnalysisState(
   flightGroup: FlightGroup,
   overrides: Partial<AnalysisState> = {},
   reanalise = false
-) {
+): AnalysisState {
   flightGroup.flights.forEach((f) =>
     f.analise(flightComputer(state.settings), reanalise)
   );
   flightGroup.synchronize(state.settings.synchronizationMethod);
-  flightGroup = Object.create(flightGroup);
 
   return {
-    ...state,
+    ...state.analysis!,
     flightGroup,
     followFlightId: flightGroup.flights[0].id,
     activeTimestamp: flightGroup.earliestDatumAt,
@@ -353,15 +361,18 @@ function handleSetActiveTask(state: State, action: Action): State {
   if (!state.analysis) return state;
 
   const flightData = state.analysis.flightData.map((f) => {
+    const flightDatum = Object.create(f);
+
     let task: Task | null = null;
 
     if (action.task) {
       task = new Task(action.task.turnpoints);
     }
 
-    f.flight.task = task;
+    flightDatum.flight = Object.create(flightDatum.flight);
+    flightDatum.flight.task = task;
 
-    return Object.create(f);
+    return flightDatum;
   });
 
   const flightGroup = new FlightGroup(flightData.map((f) => f.flight));
@@ -371,21 +382,18 @@ function handleSetActiveTask(state: State, action: Action): State {
     return byId;
   }, {});
 
-  const newState = {
-    ...state,
-    flightData,
-    flightDataById,
-    activeTask: action.task,
-  };
-
   const analysis = buildAnalysisState(
-    newState,
+    state,
     flightGroup,
-    { activeTask: action.task },
+    { activeTask: action.task, flightData, flightDataById },
     true
   ) as any;
 
-  newState.analysis = analysis;
+  return { ...state, analysis };
+}
 
-  return newState;
+function handleSetDebug(state: State, action: Action): State {
+  if (action.type !== ActionType.SetDebug) return state; // hack to get types to work
+
+  return { ...state, isDebug: action.isDebug };
 }

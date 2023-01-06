@@ -14,6 +14,7 @@ import Icon from "../../../ui/components/icon";
 import Thermal from "glana/src/analysis/phases/thermal";
 import Glide from "glana/src/analysis/phases/glide";
 import Stop from "glana/src/analysis/phases/stop";
+import Turnpoint from "glana/src/analysis/phases/turnpoint";
 
 interface Props {
   unitSettings: UnitSettings;
@@ -39,13 +40,40 @@ function PhasesTable(props: Props) {
             key={phase.startAt.getTime()}
             onClick={() => onSelectPhase(phase)}
           >
-            <Cell>{phase.startAt.toLocaleTimeString()}</Cell>
-            <Cell className="hidden lg:table-cell">{phase.type}</Cell>
-            <Cell>{phaseStats(phase, unitSettings)}</Cell>
+            {phase instanceof Turnpoint
+              ? turnpointRow(phase, unitSettings)
+              : phaseRow(phase, unitSettings)}
           </Row>
         ))}
       </Body>
     </Table>
+  );
+}
+
+function turnpointRow(phase: Turnpoint, unitSettings: UnitSettings) {
+  return (
+    <>
+      <Cell className="text-center leading-none py-4" colSpan={3}>
+        <strong>{phase.turnpoint.name}</strong>
+        <br />
+        {!phase.isLastTurnpoint() && (
+          <span className="text-xs">
+            {phase.distanceToNext.convertTo(unitSettings.distance).toString()}{" "}
+            leg
+          </span>
+        )}
+      </Cell>
+    </>
+  );
+}
+
+function phaseRow(phase: Phase, unitSettings: UnitSettings) {
+  return (
+    <>
+      <Cell>{phase.startAt.toLocaleTimeString()}</Cell>
+      <Cell className="hidden lg:table-cell">{phase.type}</Cell>
+      <Cell>{phaseStats(phase, unitSettings)}</Cell>
+    </>
   );
 }
 

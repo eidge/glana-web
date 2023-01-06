@@ -43,6 +43,44 @@ export default function Map(props: Props) {
   useWeatherLayer(mapRenderer, analysis, showWeather);
   useAirspaceLayer(mapRenderer, analysis, showAirspace);
 
+  useEffect(() => {
+    if (!mapRenderer || !isPlaying) return;
+
+    const canvas = mapRenderer.getCanvas();
+
+    if (!canvas) return;
+
+    const chunks = [];
+    const stream = canvas.captureStream(30);
+    const mediaRecorder = new MediaRecorder(stream, {
+      mimeType: "video/mp4",
+    });
+    mediaRecorder.ondataavailable = (e) => {
+      chunks.push(e.data);
+    };
+    mediaRecorder.onstop = () => {
+      const blob = new Blob(chunks, { type: "video/mp4" });
+      const videoUrl = URL.createObjectURL(blob);
+
+      const a = document.createElement("a");
+      a.style = "display: none;";
+      a.href = videoUrl;
+      a.download = "glana.mp4";
+      document.body.appendChild(a);
+
+      a.click();
+
+      setTimeout(() => {
+        // Clean up - see https://stackoverflow.com/a/48968694 for why it is in a timeout
+        URL.revokeObjectURL(videoUrl);
+        document.body.removeChild(a);
+      }, 0);
+    };
+    mediaRecorder.start(1000);
+
+    return () => mediaRecorder.stop();
+  }, [mapRenderer, isPlaying]);
+
   return (
     <div className="relative w-full h-full bg-gray-800">
       <div className="w-full h-full" ref={element}></div>

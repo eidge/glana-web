@@ -35,7 +35,9 @@ function PhasesTab(props: Props) {
 
   const filteredPhases = useMemo(() => {
     if (!phaseFilter) return phases;
-    return phases.filter((p) => p.type === phaseFilter);
+    return phases.filter(
+      (p) => p.type === phaseFilter || p.type === "turnpoint"
+    );
   }, [phases, phaseFilter]);
 
   return (

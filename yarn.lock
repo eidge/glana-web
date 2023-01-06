@@ -5618,10 +5618,10 @@ glana-igc-parser@^0.5.1:
   dependencies:
     flight-recorder-manufacturers "^1.0.1"
 
-glana@^0.3.0:
-  version "0.3.0"
-  resolved "https://registry.yarnpkg.com/glana/-/glana-0.3.0.tgz#7b90922b4aaa3749080eeb508a94c3b8c4e05b90"
-  integrity sha512-wByHJIuJZEjBZ9mHlpxrmgKpjVtAPekaET7k0lRpTf5qGuU3BcV3LbPK0XQ5f42kUxN73iAl56hj9CS/lesVLA==
+glana@^0.4.1:
+  version "0.4.1"
+  resolved "https://registry.yarnpkg.com/glana/-/glana-0.4.1.tgz#8486843c80e79fa53255aff9761d070c33326260"
+  integrity sha512-Qo+0C9uANI5lT9JCYrPMTMUzgBiHEsiKPsCcLshOqETXyIS99I0ywkb9vGHBSHoIMfKo/cuu2YRmw0K8t/kOLg==
   dependencies:
     "@turf/turf" "^5.1.6"
     "@types/lodash" "^4.14.191"
@@ -7260,13 +7260,6 @@ natural-compare@^1.4.0:
   version "1.4.0"
   resolved "https://registry.yarnpkg.com/natural-compare/-/natural-compare-1.4.0.tgz#4abebfeed7541f2c27acfb29bdbbd15c8d5ba4f7"
   integrity sha1-Sr6/7tdUHywnrPspvbvRXI1bpPc=
-
-next-transpile-modules@^10.0.0:
-  version "10.0.0"
-  resolved "https://registry.yarnpkg.com/next-transpile-modules/-/next-transpile-modules-10.0.0.tgz#7152880048835acb64d05fc7aa34910cbe7994da"
-  integrity sha512-FyeJ++Lm2Fq31gbThiRCrJlYpIY9QaI7A3TjuhQLzOix8ChQrvn5ny4MhfIthS5cy6+uK1AhDRvxVdW17y3Xdw==
-  dependencies:
-    enhanced-resolve "^5.10.0"
 
 next@^13.1.1:
   version "13.1.1"

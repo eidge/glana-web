@@ -92,8 +92,16 @@ export function Row(props: RowProps) {
   );
 }
 
-export function Cell(props: SharedProps) {
+interface CellProps extends SharedProps {
+  colSpan?: number;
+}
+
+export function Cell(props: CellProps) {
+  const { colSpan } = props;
+
   return (
-    <td className={withPropsClass(props, `${px} py-3`)}>{props.children}</td>
+    <td className={withPropsClass(props, `${px} py-3`)} colSpan={colSpan}>
+      {props.children}
+    </td>
   );
 }

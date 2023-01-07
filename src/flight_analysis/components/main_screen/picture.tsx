@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { Picture as PictureModel } from "../../store/models/flight_datum";
 
 interface Props {
@@ -15,7 +16,7 @@ export default function Picture(props: Props) {
     >
       <div className="absolute top-0 left-0 h-full w-full opacity-50 bg-gray-800" />
       <div className="relative max-h-full max-w-full">
-        <img
+        <Image
           src={picture.url}
           alt={picture.title || "In-flight picture"}
           className="block"

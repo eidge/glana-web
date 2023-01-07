@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-html-link-for-pages */
 import FileInput from "../../ui/components/file_input";
 import { useFlightAnalysisDispatch } from "../store";
 import { actions } from "../store/actions";

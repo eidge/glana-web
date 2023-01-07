@@ -1,16 +1,10 @@
 const colors = require("tailwindcss/colors");
 
 module.exports = {
-  purge: [
-    "./src/**/*.css",
-    "./src/**/*.jsx",
-    "./src/**/*.tsx",
-    "./pages/**/*.tsx",
-  ],
-  darkMode: false,
+  content: ["./src/**/*.{tsx,jsx,css}", "./pages/**/*.tsx"],
   theme: {
     colors: {
-      gray: colors.blueGray,
+      gray: colors.slate,
       white: colors.white,
       black: colors.black,
       primary: { ...colors.teal, DEFAULT: colors.teal["500"] },

@@ -79,8 +79,13 @@ function TaskRow(props: TaskRowProps) {
   const clickTask = useCallback(() => onClick(task), [onClick, task]);
 
   let containerClasses =
-    "rounded border border-gray-600 p-3 shadow hover:border-primary cursor-pointer mb-2";
-  if (isActive) containerClasses += " border-primary";
+    "rounded border p-3 shadow hover:border-primary cursor-pointer mb-2";
+
+  if (isActive) {
+    containerClasses += " border-primary";
+  } else {
+    containerClasses += " border-gray-600";
+  }
 
   return (
     <div className={containerClasses} onClick={clickTask}>

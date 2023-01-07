@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function Error() {
   return (
     <div className="flex flex-col h-screen w-screen bg-gray-800 items-center justify-center">
@@ -11,9 +13,9 @@ export default function Error() {
         <div className="mt-4">
           <span className="text-gray-700">
             You can manually upload a flight{" "}
-            <a href="/" className="text-primary">
+            <Link href="/" className="text-primary">
               here
-            </a>
+            </Link>
             .
           </span>
         </div>

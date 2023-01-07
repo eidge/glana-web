@@ -359,6 +359,7 @@ function buildAnalysisState(
 function handleSetActiveTask(state: State, action: Action): State {
   if (action.type !== ActionType.SetActiveTask) return state; // hack to get types to work
   if (!state.analysis) return state;
+  if (state.analysis.activeTask === action.task) return state;
 
   const flightData = state.analysis.flightData.map((f) => {
     const flightDatum = Object.create(f);

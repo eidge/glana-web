@@ -15,6 +15,7 @@ import Thermal from "glana/src/analysis/phases/thermal";
 import Glide from "glana/src/analysis/phases/glide";
 import Stop from "glana/src/analysis/phases/stop";
 import Turnpoint from "glana/src/analysis/phases/turnpoint";
+import { minutes } from "glana/src/units/duration";
 
 interface Props {
   unitSettings: UnitSettings;
@@ -70,7 +71,13 @@ function turnpointRow(phase: Turnpoint, unitSettings: UnitSettings) {
 function phaseRow(phase: Phase, unitSettings: UnitSettings) {
   return (
     <>
-      <Cell>{phase.startAt.toLocaleTimeString()}</Cell>
+      <Cell className="leading-none">
+        {phase.startAt.toLocaleTimeString()}
+        <br />
+        <span className="text-xs leading-none">
+          {phase.duration.convertTo(minutes).ceil().toString({ precision: 0 })}
+        </span>
+      </Cell>
       <Cell className="hidden lg:table-cell">{phase.type}</Cell>
       <Cell>{phaseStats(phase, unitSettings)}</Cell>
     </>

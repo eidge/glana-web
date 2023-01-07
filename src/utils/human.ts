@@ -38,3 +38,9 @@ function padded(value: number, unit: string) {
     return `0${value}${unit}`;
   }
 }
+
+export function pluralize(word: string, count: number, pluralForm = "s") {
+  let pluralized = word;
+  if (count !== 1) pluralized = word + pluralForm;
+  return `${count} ${pluralized}`;
+}

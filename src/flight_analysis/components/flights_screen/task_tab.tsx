@@ -1,20 +1,58 @@
-import Task, { TaskTurnpoint } from "glana/src/flight_computer/tasks/task";
+import Task from "glana/src/flight_computer/tasks/task";
 import { kilometers } from "glana/src/units/length";
 import { useCallback } from "react";
 import Icon from "../../../ui/components/icon";
+import { UnitSettings } from "../../settings";
+import { FlightDatum } from "../../store/models/flight_datum";
+import TaskStats from "./task_stats";
+import TaskStatsPerLeg from "./task_stats_per_leg";
 
 interface Props {
+  flightData: FlightDatum[];
   activeTask: Task | null;
   availableTasks: Task[];
   onSelectTask: (task: Task) => void;
+  unitSettings: UnitSettings;
+  followFlightId: string;
 }
 
 export default function TaskTab(props: Props) {
-  const { availableTasks, activeTask, onSelectTask } = props;
+  const { flightData, activeTask, unitSettings, followFlightId } = props;
 
   return (
-    <div className="space-y-3">
-      {availableTasks.length === 0 && "No tasks found on the given IGC files."}
+    <div className="space-y-8">
+      {taskSelector(props)}
+
+      {activeTask && (
+        <TaskStats
+          flightData={flightData}
+          unitSettings={unitSettings}
+          followFlightId={followFlightId}
+        />
+      )}
+
+      {activeTask && (
+        <TaskStatsPerLeg
+          flightData={flightData}
+          task={activeTask}
+          unitSettings={unitSettings}
+          followFlightId={followFlightId}
+        />
+      )}
+    </div>
+  );
+}
+
+function taskSelector(props: Props) {
+  const { availableTasks, activeTask, onSelectTask } = props;
+
+  if (availableTasks.length === 0) {
+    return <span>No tasks found on the given IGC files.</span>;
+  }
+
+  return (
+    <div>
+      <div className="mb-2 font-bold">Available tasks: </div>
       {availableTasks.map((t) => {
         const isActive = !!activeTask && t.isEqual(activeTask);
         return (
@@ -41,7 +79,7 @@ function TaskRow(props: TaskRowProps) {
   const clickTask = useCallback(() => onClick(task), [onClick, task]);
 
   let containerClasses =
-    "rounded border border-gray-600 p-3 shadow hover:border-primary cursor-pointer";
+    "rounded border border-gray-600 p-3 shadow hover:border-primary cursor-pointer mb-2";
   if (isActive) containerClasses += " border-primary";
 
   return (
@@ -58,7 +96,10 @@ function TaskRow(props: TaskRowProps) {
         <div className="ml-2">
           {task.turnpoints.map((tp, i) => (
             <div key={i}>
-              {tp.name} {distanceToNext(task, tp, i)}
+              {tp.name}{" "}
+              <span className="text-xs text-gray-300">
+                {distanceToNextText(task, i)}
+              </span>
             </div>
           ))}
         </div>
@@ -67,14 +108,17 @@ function TaskRow(props: TaskRowProps) {
   );
 }
 
-function distanceToNext(task: Task, tp: TaskTurnpoint, i: number) {
-  if (i === 0) return "";
+function distanceToNextText(task: Task, i: number) {
+  if (i === task.turnpoints.length - 1) return "";
 
-  const previous = task.turnpoints[i - 1];
-  const distance = tp.center
-    .distance2DTo(previous.center)
-    .convertTo(kilometers)
-    .toString();
+  const distance = distanceToNext(task, i).convertTo(kilometers).toString();
+  return ` ${distance}`;
+}
 
-  return ` (${distance})`;
+function distanceToNext(task: Task, i: number) {
+  if (i === task.turnpoints.length - 1) return kilometers(0);
+
+  const current = task.turnpoints[i];
+  const next = task.turnpoints[i + 1];
+  return current.center.distance2DTo(next.center);
 }

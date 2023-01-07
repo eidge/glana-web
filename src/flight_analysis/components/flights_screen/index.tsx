@@ -9,7 +9,7 @@ import { units } from "../../settings";
 import TaskTab from "./task_tab";
 import Task from "glana/src/flight_computer/tasks/task";
 
-type Tab = "Summary" | "Task" | "Phases" | "More";
+type Tab = "Summary" | "Task" | "Phases";
 
 export default function FlightsScreen() {
   const { analysis, settings } = useFlightAnalysisState();
@@ -55,25 +55,19 @@ export default function FlightsScreen() {
           tab="Summary"
           isActive={tab === "Summary"}
           onClick={setTab}
-          isComing={false}
+          isNew={false}
         />
         <TabLink
           tab="Task"
           isActive={tab === "Task"}
           onClick={setTab}
-          isComing={false}
+          isNew={true}
         />
         <TabLink
           tab="Phases"
           isActive={tab === "Phases"}
           onClick={setTab}
-          isComing={false}
-        />
-        <TabLink
-          tab="More"
-          isActive={tab === "More"}
-          onClick={setTab}
-          isComing={true}
+          isNew={false}
         />
       </div>
 
@@ -88,9 +82,12 @@ export default function FlightsScreen() {
         )}
         {tab === "Task" && (
           <TaskTab
+            flightData={flightData}
+            followFlightId={followFlightId}
             activeTask={activeTask}
             availableTasks={availableTasks}
             onSelectTask={selectTask}
+            unitSettings={units[settings.units]}
           />
         )}
         {tab === "Phases" && (
@@ -111,29 +108,25 @@ export default function FlightsScreen() {
 function TabLink(props: {
   tab: Tab;
   isActive: boolean;
-  isComing: boolean;
+  isNew: boolean;
   onClick: (tab: Tab) => void;
 }) {
-  const { tab, isActive, isComing, onClick } = props;
+  const { tab, isActive, isNew, onClick } = props;
 
   const classNames = ["p-1 relative text-lg focus:outline-none"];
   if (isActive) classNames.push("border-b-2 border-primary font-bold");
-  if (isComing) classNames.push("cursor-not-allowed");
 
   return (
-    <button
-      className={classNames.join(" ")}
-      onClick={() => !isComing && onClick(tab)}
-    >
+    <button className={classNames.join(" ")} onClick={() => onClick(tab)}>
       <span
         className="gl-tab transition-all duration-200 ease-in-out"
         title={tab}
       >
         {tab}
       </span>
-      {isComing && (
+      {isNew && (
         <div className="gl-coming-soon animate-pulse">
-          <span className="animate-pulse">soon</span>
+          <span className="animate-pulse">new</span>
         </div>
       )}
       <style jsx>{`

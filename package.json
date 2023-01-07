@@ -11,7 +11,7 @@
     "@nivo/line": "^0.64.0",
     "autoprefixer": "^9",
     "eslint-config-next": "^13.1.1",
-    "glana": "^0.4.1",
+    "glana": "^0.4.3",
     "global": "^4.4.0",
     "lodash": "^4.17.21",
     "luxon": "^2.4.0",

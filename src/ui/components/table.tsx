@@ -54,13 +54,18 @@ export function HeadRow(props: SharedProps) {
   );
 }
 
-export function HeadCell(props: SharedProps) {
+interface HeadProps extends SharedProps {
+  colSpan?: number;
+}
+
+export function HeadCell(props: HeadProps) {
   return (
     <th
       className={withPropsClass(
         props,
         `py-2 ${px} border-b border-gray-200 bg-primary text-white`
       )}
+      colSpan={props.colSpan}
     >
       {props.children}
     </th>

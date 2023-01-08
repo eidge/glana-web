@@ -24,6 +24,14 @@ export class FlightDatum {
     this.pictures = extra.pictures || [];
   }
 
+  get label(): string {
+    return (
+      this.flight.metadata.callsign ||
+      this.flight.metadata.registration ||
+      "G-DOE"
+    );
+  }
+
   get task(): Task | null {
     return this.flight.task;
   }

@@ -16,6 +16,8 @@ type FlightGeoJSON = GeoJSON.FeatureCollection<
   TrackProperties
 >;
 
+type MarkerGeoJSON = GeoJSON.FeatureCollection<GeoJSON.Point>;
+
 type TrackProperties = {
   title: string;
   opacity: number;
@@ -36,12 +38,15 @@ export default class FlightRenderer {
   private map: Map;
   private sourceId: string;
   private layerId: string;
+  private markerSourceId: string;
+  private markerLayerId: string;
   private geoJSON: FlightGeoJSON;
   private bounds: LngLatBounds;
   private isActive: boolean;
   private shouldRenderFullTracks: boolean;
   private timestamp: Date;
   private marker: mapboxgl.Marker;
+  private markerGeoJSON: MarkerGeoJSON;
   private trackSegments: TrackSegment[];
   private isDestroyed: boolean = false;
   private pictureMarkers: mapboxgl.Marker[] = [];
@@ -57,13 +62,45 @@ export default class FlightRenderer {
     this.timestamp = flightDatum.flight.getRecordingStartedAt();
     this.sourceId = `source-flight-${this.flightDatum.id}`;
     this.layerId = `layer-flight-${this.flightDatum.id}`;
+    this.markerSourceId = `source-marker-${this.flightDatum.id}`;
+    this.markerLayerId = `layer-marker-${this.flightDatum.id}`;
     this.trackSegments = this.buildTrackSegments(flightDatum);
     this.geoJSON = this.buildGeoJSON(this.trackSegments);
     this.bounds = this.calculateBounds(this.geoJSON);
     this.isActive = true;
     this.shouldRenderFullTracks = true;
     this.currentPosition = this.trackSegments[0].geometry.coordinates[0] as any;
+    this.markerGeoJSON = this.buildMarkerGeoJSON(
+      flightDatum,
+      this.currentPosition
+    );
     this.marker = this.buildMarker(this.currentPosition);
+  }
+
+  private buildMarkerGeoJSON(
+    flightDatum: FlightDatum,
+    position: LngLatLike
+  ): MarkerGeoJSON {
+    const heading =
+      flightDatum.flight.datums[0].heading.convertTo(degrees).value;
+
+    return {
+      type: "FeatureCollection",
+      features: [
+        {
+          type: "Feature",
+          geometry: {
+            type: "Point",
+            coordinates: position as any,
+          },
+          properties: {
+            label: flightDatum.label,
+            color: flightDatum.color,
+            heading,
+          },
+        },
+      ],
+    };
   }
 
   private positionToGeoJSON(position: Position): LngLatLike {
@@ -152,12 +189,40 @@ export default class FlightRenderer {
         type: "line",
         paint: {
           "line-color": ["get", "color"],
-          "line-width": 2,
           "line-opacity": ["get", "opacity"],
+          "line-width": 2,
         },
       },
       this.zIndex
     );
+
+    this.map.addSource(this.markerSourceId, {
+      type: "geojson",
+      data: this.markerGeoJSON,
+    });
+
+    this.map.addLayer(
+      {
+        id: this.markerLayerId,
+        source: this.markerSourceId,
+        type: "symbol",
+        layout: {
+          "icon-image": "airport",
+          "icon-size": 1.5,
+          "icon-rotate": ["get", "heading"],
+          "icon-rotation-alignment": "map",
+          "icon-allow-overlap": true,
+          "icon-ignore-placement": true,
+          //"text-field": ["get", "label"],
+          //"text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"],
+          //"text-offset": [1.25, 0],
+          //"text-size": 12,
+          //"text-anchor": "top",
+        },
+      },
+      this.zIndex
+    );
+
     this.renderPictures();
   }
 
@@ -230,6 +295,8 @@ export default class FlightRenderer {
     this.pictureMarkers.forEach((m) => m.remove());
     this.map.removeLayer(this.layerId);
     this.map.removeSource(this.sourceId);
+    this.map.removeLayer(this.markerLayerId);
+    this.map.removeSource(this.markerSourceId);
   }
 
   getBounds() {
@@ -276,12 +343,14 @@ export default class FlightRenderer {
     const datum = this.flightDatum.flight.datums[datumIdx];
     this.currentPosition = this.positionToGeoJSON(datum.position);
 
-    this.maybeUpdateTrack(datumIdx);
     this.updateMarker(datum);
+    this.maybeUpdateTrack(datumIdx);
   }
 
   private maybeUpdateTrack(datumIdx: number) {
     this.geoJSON.features.forEach((trackSegment) => {
+      if (trackSegment.geometry.type !== "LineString") return;
+
       const startIdx = 0;
       let endIdx: number;
 
@@ -312,7 +381,14 @@ export default class FlightRenderer {
 
   private updateMarker(datum: Datum) {
     const coordinate = this.positionToGeoJSON(datum.position);
-    this.marker.setLngLat(coordinate);
-    this.marker.setRotation(datum.heading.value);
+    // this.marker.setLngLat(coordinate);
+    // this.marker.setRotation(datum.heading.value);
+
+    const markerSource = this.map.getSource(
+      this.markerSourceId
+    ) as GeoJSONSource;
+    this.markerGeoJSON.features[0].geometry.coordinates = coordinate as any;
+    this.markerGeoJSON.features[0].properties!.heading = datum.heading.value;
+    markerSource.setData(this.markerGeoJSON);
   }
 }

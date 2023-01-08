@@ -1,14 +1,9 @@
-import SavedFlight from "glana/src/saved_flight";
 import { FlightDatum } from "../../flight_analysis/store/models/flight_datum";
 
 interface Props {
   flightDatum: FlightDatum;
   isActive: boolean;
 }
-
-const labelText = (flight: SavedFlight) => {
-  return flight.metadata.callsign || flight.metadata.registration || "G-DOE";
-};
 
 const containerClasses = () => {
   const textSize = "text-base";
@@ -28,7 +23,7 @@ export default function FlightLabel(props: Props) {
           borderColor: color,
         }}
       ></div>
-      <div className="overflow-hidden">{labelText(flightDatum.flight)}</div>
+      <div className="overflow-hidden">{flightDatum.label}</div>
     </div>
   );
 }

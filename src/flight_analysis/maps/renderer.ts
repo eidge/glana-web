@@ -317,6 +317,11 @@ export default class Renderer {
     console.log(`Flight removed id=${flightDatum.id}`);
   }
 
+  getCanvas(): HTMLCanvasElement | null {
+    if (!this.map) return null;
+    return this.map.getCanvas() as HTMLCanvasElement;
+  }
+
   setTime(timestamp: Date) {
     if (!this.map) return;
 

@@ -83,7 +83,7 @@ export default class Renderer {
       container: this.element,
       style: this.style(),
       failIfMajorPerformanceCaveat: !isProduction(),
-      attributionControl: false,
+      attributionControl: true,
       logoPosition: "top-right",
       hash: true,
       trackResize: false,

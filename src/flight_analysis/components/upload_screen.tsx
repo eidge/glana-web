@@ -7,6 +7,7 @@ import { useState } from "react";
 import Image from "next/image";
 import IGCBlob from "../igc_blob";
 import errorTracker from "../../error_tracker";
+import Link from "next/link";
 
 export default function UploadScreen() {
   const [isLoading, setIsLoading] = useState(false);
@@ -51,7 +52,7 @@ export default function UploadScreen() {
       <div className="my-6">or try one of the demos</div>
 
       <div className="flex flex-row space-x-6">
-        <a
+        <Link
           className="border border-white rounded mb-3 flex flex-col hover:border-primary overflow-hidden"
           href="/?igcUrl=%2Fdun1.igc,%2Fdun2.igc,%2Fdun3.igc"
         >
@@ -66,9 +67,9 @@ export default function UploadScreen() {
             <br />
             United Kingdom
           </div>
-        </a>
+        </Link>
 
-        <a
+        <Link
           className="border border-white rounded mb-3 flex flex-col hover:border-primary overflow-hidden"
           href="/?igcUrl=%2Fsa750.igc"
         >
@@ -83,7 +84,7 @@ export default function UploadScreen() {
             <br />
             South Africa
           </div>
-        </a>
+        </Link>
       </div>
     </div>
   );

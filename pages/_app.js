@@ -1,6 +1,7 @@
 /* eslint-disable react/prop-types */
 import "../src/styles/tailwind.css";
 import Head from "next/head";
+import { Analytics } from "@vercel/analytics/react";
 
 export default function MyApp({ Component, pageProps }) {
   return (
@@ -13,6 +14,7 @@ export default function MyApp({ Component, pageProps }) {
         />
       </Head>
       <Component {...pageProps} />
+      <Analytics />
     </>
   );
 }

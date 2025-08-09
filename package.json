@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@nivo/line": "^0.87.0",
+    "@vercel/analytics": "^1.5.0",
     "eslint-config-next": "^13.1.1",
     "glana": "^0.4.3",
     "global": "^4.4.0",

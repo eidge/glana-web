@@ -8,7 +8,7 @@
     "start": "next start"
   },
   "dependencies": {
-    "@nivo/line": "^0.64.0",
+    "@nivo/line": "^0.87.0",
     "eslint-config-next": "^13.1.1",
     "glana": "^0.4.3",
     "global": "^4.4.0",
@@ -28,7 +28,7 @@
     "@types/lodash": "^4.14.191",
     "@types/luxon": "^2.3.2",
     "@types/mapbox-gl": "^2.1.2",
-    "@types/node": "^14.14.6",
+    "@types/node": "^20.0.0",
     "@types/react": "18.0.1",
     "@types/react-dom": "^17.0.0",
     "@types/react-modal": "^3.10.6",
@@ -42,7 +42,7 @@
     "eslint-plugin-react-hooks": "^4.6.0",
     "jest": "^26.6.3",
     "postcss": "^8.4.21",
-    "postcss-preset-env": "^6.7.0",
+    "postcss-preset-env": "^9.0.0",
     "prettier": "^2.8.1",
     "styled-jsx-plugin-postcss": "^3.0.2",
     "tailwindcss": "^3.2.4",
